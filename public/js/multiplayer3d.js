@@ -88,10 +88,6 @@ class DiwaliMultiplayer3D {
     const tip = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffffff }));
     tip.position.y = 0.3;
     sparklerGroup.add(tip);
-
-    const light = new THREE.PointLight(0xffb703, 1.8, 6);
-    light.position.y = 0.32;
-    sparklerGroup.add(light);
     rightArmGroup.add(sparklerGroup);
     root.add(rightArmGroup);
 

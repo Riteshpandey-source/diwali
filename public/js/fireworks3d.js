@@ -23,8 +23,28 @@ class DiwaliFireworks3D {
     // Shared Spark Texture
     this.sparkTex = this.createSparkTexture();
 
+    // Reusable Permanent FX PointLight (Permanent in scene graph to prevent WebGL shader recompiles)
+    this.fxLight = new THREE.PointLight(0xffb703, 0, 48);
+    this.fxLight.position.set(0, -50, 0);
+    this.fxLightAge = 0;
+    this.fxLightDuration = 0;
+    this.fxLightMaxIntensity = 0;
+    this.scene.add(this.fxLight);
+
     // Schedule ambient celebratory fireworks over the eastern temple sky
     this.scheduleAmbientCelebratoryFireworks();
+  }
+
+  // Trigger reusable flash without altering scene light count
+  triggerFxFlash(x, y, z, hexColor = 0xffb703, intensity = 4.5, duration = 1.0) {
+    if (!this.fxLight) return;
+    this.fxLight.position.set(x, y, z);
+    this.fxLight.color.setHex(hexColor);
+    this.fxLight.intensity = intensity;
+    this.fxLight.distance = 48;
+    this.fxLightAge = 0;
+    this.fxLightDuration = duration;
+    this.fxLightMaxIntensity = intensity;
   }
 
   playSafeAudio(methodName, ...args) {
@@ -85,13 +105,11 @@ class DiwaliFireworks3D {
     cone.position.y = 0.3;
     group.add(cone);
 
-    // Dynamic Golden Light from Fountain
-    const light = new THREE.PointLight(0xffa200, 3.5, 14);
-    light.position.y = 0.8;
-    group.add(light);
+    // Trigger Shared FX Flash for fountain illumination
+    this.triggerFxFlash(pos.x, 0.8, pos.z, 0xffaa00, 3.2, 5.5);
 
     // Fountain Particle System
-    const particleCount = this.isReducedMotion ? 120 : 350;
+    const particleCount = this.isReducedMotion ? 90 : 180;
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const velocities = [];
@@ -138,7 +156,6 @@ class DiwaliFireworks3D {
 
     const fountain = {
       group,
-      light,
       geo,
       velocities,
       positions,
@@ -156,6 +173,11 @@ class DiwaliFireworks3D {
     }
   }
 
+  // Compatibility alias for NPC / external caller invocations
+  launchAnarFountain(x2d, y2d, color = null, isLocal = false) {
+    return this.placeAnar(x2d, y2d, isLocal);
+  }
+
   // -------------------------------------------------------------
   // 2. CHAKRI (GROUND SPINNER)
   // -------------------------------------------------------------
@@ -170,11 +192,9 @@ class DiwaliFireworks3D {
     const disc = new THREE.Mesh(discGeo, discMat);
     group.add(disc);
 
-    const light = new THREE.PointLight(0xff6600, 2.5, 10);
-    light.position.y = 0.3;
-    group.add(light);
+    this.triggerFxFlash(pos.x, 0.4, pos.z, 0xff6600, 2.5, 3.5);
 
-    const count = this.isReducedMotion ? 90 : 240;
+    const count = this.isReducedMotion ? 60 : 120;
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
@@ -241,15 +261,11 @@ class DiwaliFireworks3D {
     const rMesh = new THREE.Mesh(rGeo, rMat);
     group.add(rMesh);
 
-    const rocketLight = new THREE.PointLight(0xffaa00, 2.0, 8);
-    group.add(rocketLight);
-
     this.scene.add(group);
 
     const burstHeight = targetAltitude || (22 + Math.random() * 12);
     const rocket = {
       group,
-      light: rocketLight,
       vy: 18.0 + Math.random() * 4.0,
       burstHeight,
       burstColor: presetColor || this.getRandomFestiveColor(),
@@ -279,7 +295,7 @@ class DiwaliFireworks3D {
   }
 
   explodeRocketBurst(x, y, z, baseColor, rocket = null) {
-    const count = this.isReducedMotion ? 180 : 500;
+    const count = this.isReducedMotion ? 100 : 180;
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const velocities = [];
@@ -325,16 +341,13 @@ class DiwaliFireworks3D {
     const pMesh = new THREE.Points(geo, pMat);
     this.scene.add(pMesh);
 
-    // Illuminating Sky Flash Light
-    const flashLight = new THREE.PointLight(baseColor.getHex(), 6.0, 60);
-    flashLight.position.set(x, y, z);
-    this.scene.add(flashLight);
+    // Illuminating Sky Flash Light via Reusable Pool (Zero Shader Recompiles)
+    this.triggerFxFlash(x, y, z, baseColor.getHex(), 5.5, 1.2);
 
     const burst = {
       pMesh,
       geo,
       pMat,
-      flashLight,
       velocities,
       positions,
       age: 0
@@ -346,6 +359,11 @@ class DiwaliFireworks3D {
     // Notify cinematic camera to hold on the aerial burst
     if (window.diwaliPlayer3D && window.diwaliPlayer3D.cameraController) {
       window.diwaliPlayer3D.cameraController.onRocketExploded(rocket, x, y, z, baseColor);
+    }
+
+    // Notify living colony NPCs to react to fireworks burst
+    if (window.diwaliNPCManager3D && typeof window.diwaliNPCManager3D.onFireworksBurst === 'function') {
+      window.diwaliNPCManager3D.onFireworksBurst(x, y, z);
     }
   }
 
@@ -400,15 +418,10 @@ class DiwaliFireworks3D {
     flame.position.y = -0.52 * scale;
     group.add(flame);
 
-    const light = new THREE.PointLight(0xff9e1b, 2.5, 16);
-    light.position.y = -0.42 * scale;
-    group.add(light);
-
     this.scene.add(group);
 
     const lantern = {
       group,
-      light,
       vy: 1.8 + Math.random() * 0.6,
       vx: (Math.random() - 0.5) * 0.4,
       vz: (Math.random() - 0.5) * 0.4,
@@ -465,12 +478,8 @@ class DiwaliFireworks3D {
     flame.position.y = 0.15;
     group.add(flame);
 
-    const light = new THREE.PointLight(0xffa200, 1.5, 6);
-    light.position.y = 0.25;
-    group.add(light);
-
     this.scene.add(group);
-    this.placedDiyas.push({ group, light, flame, age: 0 });
+    this.placedDiyas.push({ group, flame, age: 0 });
     this.playSafeAudio('playDiyaChime');
   }
 
@@ -541,7 +550,6 @@ class DiwaliFireworks3D {
       }
 
       posAttr.needsUpdate = true;
-      f.light.intensity = 2.5 + Math.random() * 1.5;
     }
 
     // 2. Update Chakri Spinners
@@ -580,14 +588,12 @@ class DiwaliFireworks3D {
       }
 
       posAttr.needsUpdate = true;
-      c.light.intensity = 2.0 + Math.random() * 1.2;
     }
 
     // 3. Update Sky Rockets
     for (let i = this.activeRockets.length - 1; i >= 0; i--) {
       const r = this.activeRockets[i];
       r.group.position.y += r.vy * delta;
-      r.light.intensity = 1.5 + Math.random() * 1.0;
 
       if (r.group.position.y >= r.burstHeight) {
         this.scene.remove(r.group);
@@ -635,16 +641,23 @@ class DiwaliFireworks3D {
       posAttr.needsUpdate = true;
       b.pMat.opacity = Math.max(0, 1.0 - b.age * 0.85);
 
-      if (b.flashLight) {
-        b.flashLight.intensity = Math.max(0, 6.0 - b.age * 12.0);
-      }
-
       if (allDead || b.age > 2.2) {
         this.scene.remove(b.pMesh);
-        if (b.flashLight) this.scene.remove(b.flashLight);
         b.geo.dispose();
         b.pMat.dispose();
         this.particles.splice(i, 1);
+      }
+    }
+
+    // Smoothly decay Reusable Static FX Light
+    if (this.fxLightDuration > 0) {
+      this.fxLightAge += delta;
+      if (this.fxLightAge >= this.fxLightDuration) {
+        this.fxLight.intensity = 0;
+        this.fxLightDuration = 0;
+      } else {
+        const factor = 1.0 - (this.fxLightAge / this.fxLightDuration);
+        this.fxLight.intensity = this.fxLightMaxIntensity * factor;
       }
     }
 
@@ -666,8 +679,8 @@ class DiwaliFireworks3D {
 
     // 6. Update Placed Diyas Flame Dancing
     for (let d of this.placedDiyas) {
-      d.light.intensity = 1.2 + Math.random() * 0.4;
-      d.flame.scale.y = 1.4 + Math.random() * 0.4;
+      if (d.light) d.light.intensity = 1.2 + Math.random() * 0.4;
+      if (d.flame) d.flame.scale.y = 1.4 + Math.random() * 0.4;
     }
   }
 }

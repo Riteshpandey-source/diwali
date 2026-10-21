@@ -421,9 +421,9 @@ class DiwaliPlayer3D {
     this.y = 0;
     this.z = (startY - this.centerZ) * this.scale;
 
-    this.radius = 1.0; // 3D collision radius
-    this.speed = 0.32; // Normal walking speed
-    this.sprintSpeed = 0.52; // Sprint speed
+    this.radius = 0.45; // 3D capsule collision radius (human scale)
+    this.speed = 9.5; // meters per second (walking)
+    this.sprintSpeed = 15.0; // meters per second (sprint)
     this.rotation = 0; // Current heading angle (radians)
     this.targetRotation = 0;
 
@@ -748,11 +748,16 @@ class DiwaliPlayer3D {
     let forward = 0;
     let strafe = 0;
 
-    // Keyboard controls (WASD / Arrows)
-    if (keys['KeyW'] || keys['ArrowUp'] || keys['w']) forward += 1;
-    if (keys['KeyS'] || keys['ArrowDown'] || keys['s']) forward -= 1;
-    if (keys['KeyA'] || keys['ArrowLeft'] || keys['a']) strafe -= 1;
-    if (keys['KeyD'] || keys['ArrowRight'] || keys['d']) strafe += 1;
+    // Case-insensitive key checks (prevents Shift or CapsLock from stopping character)
+    const isW = !!(keys['KeyW'] || keys['ArrowUp'] || keys['w'] || keys['W']);
+    const isS = !!(keys['KeyS'] || keys['ArrowDown'] || keys['s'] || keys['S']);
+    const isA = !!(keys['KeyA'] || keys['ArrowLeft'] || keys['a'] || keys['A']);
+    const isD = !!(keys['KeyD'] || keys['ArrowRight'] || keys['d'] || keys['D']);
+
+    if (isW) forward += 1;
+    if (isS) forward -= 1;
+    if (isA) strafe -= 1;
+    if (isD) strafe += 1;
 
     // Mobile touch joystick
     if (joystickVector && (joystickVector.x !== 0 || joystickVector.y !== 0)) {
@@ -776,21 +781,24 @@ class DiwaliPlayer3D {
       const rightX = -forwardZ;
       const rightZ = forwardX;
 
-      const ndx = (forwardX * nForward + rightX * nStrafe) * curSpeed;
-      const ndz = (forwardZ * nForward + rightZ * nStrafe) * curSpeed;
+      // Scale move distance by delta for smooth framerate independence
+      const moveDist = curSpeed * Math.min(delta, 0.05);
+      const ndx = (forwardX * nForward + rightX * nStrafe) * moveDist;
+      const ndz = (forwardZ * nForward + rightZ * nStrafe) * moveDist;
 
       // Desired heading angle
       this.targetRotation = Math.atan2(ndx, ndz);
 
-      // Attempt move with collision checks on X and Z axes independently
-      const nextX = this.x + ndx;
-      if (!world3D.checkCollision(nextX, this.z, this.radius)) {
-        this.x = nextX;
-      }
-
-      const nextZ = this.z + ndz;
-      if (!world3D.checkCollision(this.x, nextZ, this.radius)) {
-        this.z = nextZ;
+      // Smooth collision movement with wall sliding and depenetration unsticking
+      if (world3D && typeof world3D.resolveMovement === 'function') {
+        const resolved = world3D.resolveMovement(this.x, this.z, ndx, ndz, this.radius);
+        this.x = resolved.x;
+        this.z = resolved.z;
+      } else {
+        const nextX = this.x + ndx;
+        if (!world3D || !world3D.checkCollision(nextX, this.z, this.radius)) this.x = nextX;
+        const nextZ = this.z + ndz;
+        if (!world3D || !world3D.checkCollision(this.x, nextZ, this.radius)) this.z = nextZ;
       }
 
       // Progress walk cycle animation

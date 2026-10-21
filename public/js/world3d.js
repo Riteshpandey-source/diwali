@@ -335,15 +335,10 @@ class DiwaliWorld3D {
       cap.position.set(px, 3.8, pz);
       group.add(cap);
 
-      // Ornate Diya / Lantern on top of pillar
+      // Ornate Diya / Lantern on top of pillar (emissive glow)
       const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.2, 0.5, 8), this.materials.lampGlow);
       lamp.position.set(px, 4.3, pz);
       group.add(lamp);
-
-      const light = new THREE.PointLight(0xf59e0b, 1.4, 14);
-      light.position.set(px, 4.4, pz);
-      group.add(light);
-      this.pointLights.push(light);
     });
 
     return group;
@@ -467,10 +462,10 @@ class DiwaliWorld3D {
     deepamFlame.position.set(p3D.x, 1.45, p3D.z);
     group.add(deepamFlame);
 
-    // Radiant Golden Light from Maha Deepam
+    // Radiant Golden Light from Maha Deepam (No shadow cube for maximum performance)
     const altarLight = new THREE.PointLight(0xffaa22, 2.8, 22);
     altarLight.position.set(p3D.x, 2.0, p3D.z);
-    altarLight.castShadow = true;
+    altarLight.castShadow = false;
     group.add(altarLight);
     this.pointLights.push(altarLight);
 
@@ -489,7 +484,7 @@ class DiwaliWorld3D {
     for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
       const dx = p3D.x + Math.cos(a) * 9.5;
       const dz = p3D.z + Math.sin(a) * 9.5;
-      const diya = this.createDiyaMesh(dx, 0.12, dz, true);
+      const diya = this.createDiyaMesh(dx, 0.12, dz, false);
       group.add(diya);
     }
 
@@ -759,7 +754,7 @@ class DiwaliWorld3D {
       for (let di = 0; di <= stepsCount; di++) {
         const dx = posX - w / 2 - di * stepDepth;
         const dy = jagatiH * 0.5 + 0.72;
-        const diya = this.createDiyaMesh(dx, dy, posZ + bz, di % 2 === 0);
+        const diya = this.createDiyaMesh(dx, dy, posZ + bz, false);
         group.add(diya);
       }
     });
@@ -874,17 +869,17 @@ class DiwaliWorld3D {
       group.add(bell);
     });
 
-    // Divine Sanctum Golden Point Light radiating Westward across steps
+    // Divine Sanctum Golden Point Light radiating Westward across steps (No cube shadow pass)
     const templeLight = new THREE.PointLight(0xffa200, 3.8, 32);
     templeLight.position.set(mandapaX, jagatiH + 3.2, posZ);
-    templeLight.castShadow = true;
+    templeLight.castShadow = false;
     group.add(templeLight);
     this.pointLights.push(templeLight);
 
-    // Register Temple Colliders
+    // Register Temple Colliders (Keep sacred mandir building solid, steps/plaza open)
     this.colliders.push({
       tag: 'temple_mandir',
-      minX: posX - w / 2 - 5.5, // Covers steps
+      minX: posX - w / 2 + 1.2,
       maxX: posX + w / 2 + 0.5,
       minZ: posZ - d / 2 - 0.5,
       maxZ: posZ + d / 2 + 0.5
@@ -1115,12 +1110,6 @@ class DiwaliWorld3D {
       const lampHead = new THREE.Mesh(new THREE.OctahedronGeometry(0.35, 0), this.materials.lampGlass);
       lampHead.position.set(lx, h + plinthH - 1.6, d * 0.36 + 0.65);
       group.add(lampHead);
-
-      const lampLight = new THREE.PointLight(0xffa200, 1.8, 9);
-      lampLight.position.set(lx, h + plinthH - 1.6, d * 0.36 + 0.65);
-      group.add(lampLight);
-      this.pointLights.push(lampLight);
-      this.flickeringDiyas.push(lampLight);
     });
 
     // 10. Recognizable 3D Product Displays on Risers
@@ -1153,8 +1142,8 @@ class DiwaliWorld3D {
       samai.position.set(0, topY + 0.32, counterZ - counterD * 0.22);
       group.add(samai);
 
-      [-0.7, 0, 0.7].forEach((dx, di) => {
-        const diya = this.createDiyaMesh(dx, topY + 0.12, counterZ + counterD * 0.28, di === 1);
+      [-0.7, 0, 0.7].forEach((dx) => {
+        const diya = this.createDiyaMesh(dx, topY + 0.12, counterZ + counterD * 0.28, false);
         group.add(diya);
       });
 
@@ -1219,13 +1208,13 @@ class DiwaliWorld3D {
     this.pointLights.push(stallLight);
     this.flickeringDiyas.push(stallLight);
 
-    // 13. Register Collider for Counter and Enclosure
+    // 13. Register Collider for Counter and Enclosure (Does not bleed into walking avenue)
     this.colliders.push({
       tag: `stall_${stallData.id}`,
-      minX: 24.0,
-      maxX: 41.5,
-      minZ: isShop ? 0.0 : -24.0,
-      maxZ: isShop ? 18.0 : -6.0
+      minX: 26.0,
+      maxX: 37.8,
+      minZ: isShop ? 1.0 : -22.0,
+      maxZ: isShop ? 17.0 : -8.0
     });
 
     // 14. Register Interactive Target for Shopping or Rangoli Minigame
@@ -1609,10 +1598,6 @@ class DiwaliWorld3D {
     flame.position.y = 1.6;
     group.add(flame);
 
-    const light = new THREE.PointLight(0xffa200, 1.2, 6);
-    light.position.y = 1.7;
-    group.add(light);
-
     return group;
   }
 
@@ -1705,12 +1690,12 @@ class DiwaliWorld3D {
       const tree = this.createTreeMesh(pos.x, pos.z, scale);
       group.add(tree);
 
-      // Tree trunk collider
+      // Slender tree trunk collider
       this.colliders.push({
-        minX: pos.x - 1.2,
-        maxX: pos.x + 1.2,
-        minZ: pos.z - 1.2,
-        maxZ: pos.z + 1.2
+        minX: pos.x - 0.45,
+        maxX: pos.x + 0.45,
+        minZ: pos.z - 0.45,
+        maxZ: pos.z + 0.45
       });
     });
 
@@ -1786,17 +1771,19 @@ class DiwaliWorld3D {
       [1230, 440], [1230, 740]
     ];
 
-    lampCoords.forEach(([lx, ly]) => {
+    lampCoords.forEach(([lx, ly], idx) => {
       const pos = this.to3D(lx, ly);
       const lamp = this.createStreetLampMesh(pos.x, pos.z);
       group.add(lamp);
 
-      // Soft Warm Street Illumination
-      const light = new THREE.PointLight(0xffb703, 1.8, 18);
-      light.position.set(pos.x, 5.0, pos.z);
-      light.castShadow = false; // Performance: keep shadows on main key lights
-      group.add(light);
-      this.pointLights.push(light);
+      // Key Warm Street Illumination on alternate corners (keep budget under 6 total scene pointlights)
+      if (idx === 0 || idx === 3) {
+        const light = new THREE.PointLight(0xffb703, 1.8, 22);
+        light.position.set(pos.x, 5.0, pos.z);
+        light.castShadow = false;
+        group.add(light);
+        this.pointLights.push(light);
+      }
     });
 
     return group;
@@ -1935,11 +1922,15 @@ class DiwaliWorld3D {
     flame.position.y = -0.52 * scale;
     group.add(flame);
 
-    // 5. Internal Warm Point Light
-    const lanternLight = new THREE.PointLight(0xff9e1b, isHero ? 3.8 : 1.2, isHero ? 30 : 14);
-    lanternLight.position.y = -0.42 * scale;
-    group.add(lanternLight);
-    this.pointLights.push(lanternLight);
+    // 5. Internal Warm Point Light (Exclusive to Hero Lantern for max performance)
+    let lanternLight = null;
+    if (isHero) {
+      lanternLight = new THREE.PointLight(0xff9e1b, 3.2, 28);
+      lanternLight.position.y = -0.42 * scale;
+      lanternLight.castShadow = false;
+      group.add(lanternLight);
+      this.pointLights.push(lanternLight);
+    }
 
     // 6. Falling Spark / Ember Particle Stream underneath
     let embersGeo = null;
@@ -2128,7 +2119,7 @@ class DiwaliWorld3D {
   }
 
   // Check collision against all 3D building and wall bounding boxes
-  checkCollision(nextX, nextZ, radius = 1.2) {
+  checkCollision(nextX, nextZ, radius = 0.45) {
     for (let c of this.colliders) {
       if (
         nextX + radius > c.minX &&
@@ -2140,6 +2131,54 @@ class DiwaliWorld3D {
       }
     }
     return false;
+  }
+
+  // Resolve player movement with wall sliding and automatic depenetration unsticking
+  resolveMovement(curX, curZ, dx, dz, radius = 0.45) {
+    let newX = curX;
+    let newZ = curZ;
+
+    // 1. Direct free movement
+    if (!this.checkCollision(curX + dx, curZ + dz, radius)) {
+      return { x: curX + dx, z: curZ + dz };
+    }
+
+    // 2. Wall sliding along X axis
+    if (Math.abs(dx) > 0.0001 && !this.checkCollision(curX + dx, curZ, radius)) {
+      newX = curX + dx;
+    }
+
+    // 3. Wall sliding along Z axis
+    if (Math.abs(dz) > 0.0001) {
+      if (!this.checkCollision(newX, curZ + dz, radius)) {
+        newZ = curZ + dz;
+      } else if (!this.checkCollision(curX, curZ + dz, radius)) {
+        newZ = curZ + dz;
+      }
+    }
+
+    // 4. Depenetration: Push player outside if overlapping any collider boundary
+    for (let c of this.colliders) {
+      if (
+        newX + radius > c.minX &&
+        newX - radius < c.maxX &&
+        newZ + radius > c.minZ &&
+        newZ - radius < c.maxZ
+      ) {
+        const oLeft = (newX + radius) - c.minX;
+        const oRight = c.maxX - (newX - radius);
+        const oBottom = (newZ + radius) - c.minZ;
+        const oTop = c.maxZ - (newZ - radius);
+
+        const minO = Math.min(oLeft, oRight, oBottom, oTop);
+        if (minO === oLeft) newX = c.minX - radius - 0.02;
+        else if (minO === oRight) newX = c.maxX + radius + 0.02;
+        else if (minO === oBottom) newZ = c.minZ - radius - 0.02;
+        else if (minO === oTop) newZ = c.maxZ + radius + 0.02;
+      }
+    }
+
+    return { x: newX, z: newZ };
   }
 
   // Find nearest interactive target (converted to 2D coordinates for compatibility)

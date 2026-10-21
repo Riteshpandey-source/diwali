@@ -13,7 +13,9 @@ class DiwaliEngine3D {
     this.isRunning = false;
     this.width = window.innerWidth;
     this.height = window.innerHeight;
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.dpr = Math.min(window.devicePixelRatio || 1, 1.25); // Clamped DPR for high fillrate performance
+    this.minimapBgCanvas = null;
+    this.minimapLastRender = 0;
 
     // Three.js Core Systems
     this.scene = null;
@@ -84,7 +86,7 @@ class DiwaliEngine3D {
     this.renderer.setSize(this.width, this.height, false);
     this.renderer.setPixelRatio(this.dpr);
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.35;
     this.renderer.setClearColor(0x111c2e, 1.0);
@@ -140,7 +142,13 @@ class DiwaliEngine3D {
     this.multiplayer3D = new DiwaliMultiplayer3D(this.scene);
     window.diwaliMultiplayer3D = this.multiplayer3D;
 
-    // 9. Build 3D Mission Coin Pickups
+    // 9. Build 3D Living Colony NPC Population
+    if (typeof DiwaliNPCManager3D !== 'undefined') {
+      this.npcManager3D = new DiwaliNPCManager3D(this.scene, this.world3D, this.fireworks3D);
+      window.diwaliNPCManager3D = this.npcManager3D;
+    }
+
+    // 10. Build 3D Mission Coin Pickups
     this.setupMissionCoins();
 
     // 10. Wire compatibility shims
@@ -165,8 +173,8 @@ class DiwaliEngine3D {
     const moonDir = new THREE.DirectionalLight(0xfffaed, 1.85);
     moonDir.position.set(65, 85, -55);
     moonDir.castShadow = true;
-    moonDir.shadow.mapSize.width = 2048;
-    moonDir.shadow.mapSize.height = 2048;
+    moonDir.shadow.mapSize.width = 1024; // Optimized 1024x1024 for smooth framerate
+    moonDir.shadow.mapSize.height = 1024;
     moonDir.shadow.camera.near = 10;
     moonDir.shadow.camera.far = 240;
     const d = 110;
@@ -313,12 +321,8 @@ class DiwaliEngine3D {
       const coinMesh = new THREE.Mesh(coinGeo, coinMat);
       group.add(coinMesh);
 
-      // Light aura
-      const clight = new THREE.PointLight(0xf59e0b, 1.2, 5);
-      group.add(clight);
-
       this.scene.add(group);
-      this.missionCoinMeshes.push({ id: cp.id, group, mesh: coinMesh, light: clight });
+      this.missionCoinMeshes.push({ id: cp.id, group, mesh: coinMesh });
     });
   }
 
@@ -366,6 +370,7 @@ class DiwaliEngine3D {
     // 2. Shim window.diwaliFireworks to invoke 3D fireworks simulation
     if (this.fireworks3D && window.diwaliFireworks) {
       window.diwaliFireworks.placeAnar = (x, y, isLocal = true) => this.fireworks3D.placeAnar(x, y, isLocal);
+      window.diwaliFireworks.launchAnarFountain = (x, y, color = null, isLocal = true) => this.fireworks3D.launchAnarFountain(x, y, color, isLocal);
       window.diwaliFireworks.placeChakri = (x, y, isLocal = true) => this.fireworks3D.placeChakri(x, y, isLocal);
       window.diwaliFireworks.launchRocket = (x, y, alt, _, color, isLocal = true) => this.fireworks3D.launchRocket(x, y, alt, color, isLocal);
       window.diwaliFireworks.launchLantern = (x, y, isLocal = true) => this.fireworks3D.launchLantern(x, y, isLocal);
@@ -422,7 +427,8 @@ class DiwaliEngine3D {
     const handleResize = () => {
       this.width = window.innerWidth;
       this.height = window.innerHeight;
-      this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+      this.dpr = Math.min(window.devicePixelRatio || 1, 1.25);
+      this.minimapBgCanvas = null; // Rebuild cached minimap on window resize
 
       if (this.camera && this.renderer) {
         this.camera.aspect = this.width / this.height;
@@ -454,6 +460,18 @@ class DiwaliEngine3D {
     window.addEventListener('keyup', (e) => {
       this.keys[e.code] = false;
       this.keys[e.key] = false;
+      if (e.key) {
+        this.keys[e.key.toLowerCase()] = false;
+        this.keys[e.key.toUpperCase()] = false;
+      }
+    });
+
+    window.addEventListener('blur', () => {
+      this.keys = {};
+      if (this.joystickVector) {
+        this.joystickVector.x = 0;
+        this.joystickVector.y = 0;
+      }
     });
 
     // Touch Joystick Hook
@@ -604,11 +622,18 @@ class DiwaliEngine3D {
       if (window.colonyDecoration) {
         window.colonyDecoration.openDecoratorModal(target.data);
       }
+    } else if (target.type === 'diwali_education') {
+      if (this.npcManager3D) {
+        this.npcManager3D.openEducationModal();
+      }
     } else if (target.type === 'shop') {
       if (window.diwaliShop) {
         window.diwaliShop.openShopModal();
       }
     } else if (target.type === 'temple') {
+      if (this.npcManager3D) {
+        this.npcManager3D.triggerTempleAarti();
+      }
       if (window.diwaliMiniGames) {
         window.diwaliMiniGames.openGamesModal();
         window.diwaliMiniGames.launchTriviaQuiz();
@@ -713,6 +738,11 @@ class DiwaliEngine3D {
         c.group.visible = true;
       }
     }
+
+    // 6. Update 3D Living Colony NPCs
+    if (this.npcManager3D) {
+      this.npcManager3D.update(delta, elapsedTime, this.player3D);
+    }
   }
 
   updateInteractionPrompt() {
@@ -739,59 +769,132 @@ class DiwaliEngine3D {
     this.renderMinimap();
   }
 
+  // Trigger overhead dialogue speech bubble for NPCs
+  triggerNpcSpeech(npc, text, duration = 4.0) {
+    const bubblesLayer = document.getElementById('emoteBubblesLayer');
+    if (!bubblesLayer || !this.camera) return;
+
+    const headPos = new THREE.Vector3(npc.x, 2.7 * (npc.charScale || 1.0), npc.z);
+    headPos.project(this.camera);
+
+    if (headPos.z > 1.0) return; // Behind camera
+
+    const screenX = (headPos.x * 0.5 + 0.5) * window.innerWidth;
+    const screenY = (-(headPos.y * 0.5) + 0.5) * window.innerHeight;
+
+    const bubble = document.createElement('div');
+    bubble.className = 'player-emote-bubble';
+    bubble.style.position = 'absolute';
+    bubble.style.left = `${screenX}px`;
+    bubble.style.top = `${screenY}px`;
+    bubble.style.background = 'rgba(15, 23, 42, 0.92)';
+    bubble.style.border = '1.5px solid #f59e0b';
+    bubble.style.borderRadius = '20px';
+    bubble.style.padding = '6px 14px';
+    bubble.style.color = '#fef08a';
+    bubble.style.fontSize = '13px';
+    bubble.style.fontWeight = '700';
+    bubble.style.zIndex = '40';
+    bubble.style.boxShadow = '0 6px 20px rgba(0,0,0,0.7), 0 0 15px rgba(245,158,11,0.35)';
+    bubble.innerHTML = text;
+
+    bubblesLayer.appendChild(bubble);
+
+    setTimeout(() => {
+      if (bubble.parentNode) bubble.parentNode.removeChild(bubble);
+    }, duration * 1000);
+  }
+
+  showToastNotice(msg) {
+    const toast = document.getElementById('audioNotice');
+    if (toast) {
+      toast.innerHTML = `<span>${msg}</span>`;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 4500);
+    }
+  }
+
+  buildMinimapBackground(mW, mH) {
+    const bgCanvas = document.createElement('canvas');
+    bgCanvas.width = mW;
+    bgCanvas.height = mH;
+    const bgCtx = bgCanvas.getContext('2d');
+
+    const scaleX = mW / 1780;
+    const scaleY = mH / 1220;
+
+    // Circular clip
+    bgCtx.beginPath();
+    bgCtx.arc(mW / 2, mH / 2, mW / 2 - 2, 0, Math.PI * 2);
+    bgCtx.clip();
+
+    // Night terrain
+    bgCtx.fillStyle = '#0b0a1a';
+    bgCtx.fillRect(0, 0, mW, mH);
+
+    // Roads
+    bgCtx.fillStyle = '#221c38';
+    bgCtx.fillRect(0, 390 * scaleY, mW, 110 * scaleY);
+    bgCtx.fillRect(0, 690 * scaleY, mW, 110 * scaleY);
+    bgCtx.fillRect(600 * scaleX, 0, 100 * scaleX, mH);
+    bgCtx.fillRect(1190 * scaleX, 0, 90 * scaleX, mH);
+
+    // Central Chowk
+    bgCtx.fillStyle = '#d97706';
+    bgCtx.beginPath();
+    bgCtx.arc(650 * scaleX, 580 * scaleY, 15, 0, Math.PI * 2);
+    bgCtx.fill();
+
+    // Houses, Temple, Stalls
+    if (window.diwaliWorld) {
+      bgCtx.fillStyle = '#f59e0b';
+      window.diwaliWorld.houses.forEach(h => {
+        bgCtx.fillRect(h.x * scaleX, h.y * scaleY, h.width * scaleX, h.height * scaleY);
+      });
+
+      bgCtx.fillStyle = '#e11d48';
+      const tm = window.diwaliWorld.temple;
+      bgCtx.fillRect(tm.x * scaleX, tm.y * scaleY, tm.width * scaleX, tm.height * scaleY);
+
+      bgCtx.fillStyle = '#10b981';
+      window.diwaliWorld.stalls.forEach(s => {
+        bgCtx.fillRect(s.x * scaleX, s.y * scaleY, s.width * scaleX, s.height * scaleY);
+      });
+    }
+
+    return bgCanvas;
+  }
+
   renderMinimap() {
     if (!this.miniCtx || !this.player3D) return;
+
+    // Throttle minimap redraw to ~12 FPS (every 80ms) to save CPU
+    const now = (typeof performance !== 'undefined') ? performance.now() : Date.now();
+    if (now - this.minimapLastRender < 80) return;
+    this.minimapLastRender = now;
+
     const mCtx = this.miniCtx;
     const mW = this.miniCanvas.width;
     const mH = this.miniCanvas.height;
 
-    // Coordinate mapping (1780 x 1220 => mW x mH)
     const scaleX = mW / 1780;
     const scaleY = mH / 1220;
+
+    // Build or reuse cached static background
+    if (!this.minimapBgCanvas || this.minimapBgCanvas.width !== mW) {
+      this.minimapBgCanvas = this.buildMinimapBackground(mW, mH);
+    }
 
     mCtx.save();
     mCtx.clearRect(0, 0, mW, mH);
 
-    // Circular Clip for celestial compass aesthetic
+    // Blit pre-rendered static colony map in 1 blit operation
+    mCtx.drawImage(this.minimapBgCanvas, 0, 0);
+
+    // Circular clip for active blips
     mCtx.beginPath();
     mCtx.arc(mW / 2, mH / 2, mW / 2 - 2, 0, Math.PI * 2);
     mCtx.clip();
-
-    // Night terrain
-    mCtx.fillStyle = '#0b0a1a';
-    mCtx.fillRect(0, 0, mW, mH);
-
-    // Roads
-    mCtx.fillStyle = '#221c38';
-    mCtx.fillRect(0, 390 * scaleY, mW, 110 * scaleY);
-    mCtx.fillRect(0, 690 * scaleY, mW, 110 * scaleY);
-    mCtx.fillRect(600 * scaleX, 0, 100 * scaleX, mH);
-    mCtx.fillRect(1190 * scaleX, 0, 90 * scaleX, mH);
-
-    // Central Chowk
-    mCtx.fillStyle = '#d97706';
-    mCtx.beginPath();
-    mCtx.arc(650 * scaleX, 580 * scaleY, 15, 0, Math.PI * 2);
-    mCtx.fill();
-
-    // Houses
-    if (window.diwaliWorld) {
-      mCtx.fillStyle = '#f59e0b';
-      window.diwaliWorld.houses.forEach(h => {
-        mCtx.fillRect(h.x * scaleX, h.y * scaleY, h.width * scaleX, h.height * scaleY);
-      });
-
-      // Temple
-      mCtx.fillStyle = '#e11d48';
-      const tm = window.diwaliWorld.temple;
-      mCtx.fillRect(tm.x * scaleX, tm.y * scaleY, tm.width * scaleX, tm.height * scaleY);
-
-      // Stalls
-      mCtx.fillStyle = '#10b981';
-      window.diwaliWorld.stalls.forEach(s => {
-        mCtx.fillRect(s.x * scaleX, s.y * scaleY, s.width * scaleX, s.height * scaleY);
-      });
-    }
 
     // Remote Players
     if (this.multiplayer3D) {
@@ -805,12 +908,10 @@ class DiwaliEngine3D {
       });
     }
 
-    // Local Player (Blinking Gold Dot with direction cone)
+    // Local Player (Blinking Gold Dot)
     const px = this.player3D.x2d;
     const py = this.player3D.y2d;
     mCtx.fillStyle = '#ffffff';
-    mCtx.shadowBlur = 8;
-    mCtx.shadowColor = '#fbbf24';
     mCtx.beginPath();
     mCtx.arc(px * scaleX, py * scaleY, 4.5, 0, Math.PI * 2);
     mCtx.fill();

@@ -14,6 +14,34 @@ class FestiveAudioEngine {
     this.isMusicPlaying = false;
     this.ambientNodes = [];
     this.musicInterval = null;
+    this.whiteNoiseBuffer = null;
+    this.explosionBuffer = null;
+  }
+
+  getWhiteNoiseBuffer() {
+    if (!this.whiteNoiseBuffer && this.ctx) {
+      const len = Math.floor(this.ctx.sampleRate * 1.5);
+      const b = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+      const d = b.getChannelData(0);
+      for (let i = 0; i < len; i++) {
+        d[i] = Math.random() * 2 - 1;
+      }
+      this.whiteNoiseBuffer = b;
+    }
+    return this.whiteNoiseBuffer;
+  }
+
+  getExplosionBuffer() {
+    if (!this.explosionBuffer && this.ctx) {
+      const len = Math.floor(this.ctx.sampleRate * 1.5);
+      const b = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+      const d = b.getChannelData(0);
+      for (let i = 0; i < len; i++) {
+        d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * 0.45));
+      }
+      this.explosionBuffer = b;
+    }
+    return this.explosionBuffer;
   }
 
   init() {
@@ -182,13 +210,8 @@ class FestiveAudioEngine {
       const t = this.ctx.currentTime;
       const dur = size === 'large' ? 1.6 : 0.9;
       
-      // Noise burst
-      const bufferSize = Math.floor(this.ctx.sampleRate * dur);
-      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * (dur * 0.4)));
-      }
+      const buffer = this.getExplosionBuffer();
+      if (!buffer) return;
 
       const noise = this.ctx.createBufferSource();
       noise.buffer = buffer;
@@ -246,16 +269,12 @@ class FestiveAudioEngine {
       const t = this.ctx.currentTime;
       const durSec = durationMs / 1000;
 
-      // Filtered rushing air sound
-      const bufferSize = Math.floor(this.ctx.sampleRate * durSec);
-      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-      }
+      const buffer = this.getWhiteNoiseBuffer();
+      if (!buffer) return;
 
       const noise = this.ctx.createBufferSource();
       noise.buffer = buffer;
+      noise.loop = true;
 
       const filter = this.ctx.createBiquadFilter();
       filter.type = 'bandpass';
