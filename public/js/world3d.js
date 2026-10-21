@@ -447,63 +447,7 @@ class DiwaliWorld3D {
     group.add(ringMesh);
 
     // Grand Rangoli Centerpiece (Multi-layered sacred floral geometry)
-    const rangoliCanvas = document.createElement('canvas');
-    rangoliCanvas.width = 512;
-    rangoliCanvas.height = 512;
-    const rctx = rangoliCanvas.getContext('2d');
-
-    // Procedural Rangoli Art on Canvas Texture
-    rctx.clearRect(0, 0, 512, 512);
-    const cx = 256;
-    const cy = 256;
-
-    // Sacred Lotus & Geometries
-    for (let r = 240; r > 20; r -= 28) {
-      rctx.beginPath();
-      rctx.arc(cx, cy, r, 0, Math.PI * 2);
-      rctx.strokeStyle = r % 56 === 0 ? '#f59e0b' : '#e11d48';
-      rctx.lineWidth = 6;
-      rctx.stroke();
-    }
-
-    // Petals
-    const petals = 16;
-    for (let i = 0; i < petals; i++) {
-      const angle = (i * Math.PI * 2) / petals;
-      rctx.save();
-      rctx.translate(cx, cy);
-      rctx.rotate(angle);
-      rctx.beginPath();
-      rctx.ellipse(110, 0, 50, 18, 0, 0, Math.PI * 2);
-      rctx.fillStyle = i % 2 === 0 ? '#f43f5e' : '#fbbf24';
-      rctx.fill();
-      rctx.lineWidth = 3;
-      rctx.strokeStyle = '#fff';
-      rctx.stroke();
-      rctx.restore();
-    }
-
-    // Sacred OM / Diya symbol in center
-    rctx.fillStyle = '#f59e0b';
-    rctx.beginPath();
-    rctx.arc(cx, cy, 32, 0, Math.PI * 2);
-    rctx.fill();
-    rctx.fillStyle = '#ffffff';
-    rctx.font = 'bold 36px serif';
-    rctx.textAlign = 'center';
-    rctx.textBaseline = 'middle';
-    rctx.fillText('ॐ', cx, cy + 2);
-
-    const rangoliTex = new THREE.CanvasTexture(rangoliCanvas);
-    const rangoliGeo = new THREE.PlaneGeometry(16, 16);
-    rangoliGeo.rotateX(-Math.PI / 2);
-    const rangoliMat = new THREE.MeshBasicMaterial({
-      map: rangoliTex,
-      transparent: true,
-      opacity: 0.95
-    });
-    const rangoliMesh = new THREE.Mesh(rangoliGeo, rangoliMat);
-    rangoliMesh.position.set(p3D.x, 0.12, p3D.z);
+    const rangoliMesh = this.createRangoliMesh(p3D.x, 0.12, p3D.z, 8.0, 'temple');
     group.add(rangoliMesh);
 
     // Maha Deepotsav Celebration Switch Altar at Chowk Center
@@ -1302,59 +1246,62 @@ class DiwaliWorld3D {
   // BAZAAR HELPER: ILLUMINATED 3D SIGNBOARD
   // -------------------------------------------------------------
   createShopSignboard(title, subtitle, w, h, isShop) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1024;
-    canvas.height = 256;
-    const ctx = canvas.getContext('2d');
+    let texture = null;
+    if (typeof document !== 'undefined') {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1024;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d');
 
-    // Rich velvet background gradient
-    const grad = ctx.createLinearGradient(0, 0, 1024, 0);
-    if (isShop) {
-      grad.addColorStop(0, '#500724');
-      grad.addColorStop(0.5, '#881337');
-      grad.addColorStop(1, '#500724');
-    } else {
-      grad.addColorStop(0, '#064e3b');
-      grad.addColorStop(0.5, '#047857');
-      grad.addColorStop(1, '#064e3b');
+      // Rich velvet background gradient
+      const grad = ctx.createLinearGradient(0, 0, 1024, 0);
+      if (isShop) {
+        grad.addColorStop(0, '#500724');
+        grad.addColorStop(0.5, '#881337');
+        grad.addColorStop(1, '#500724');
+      } else {
+        grad.addColorStop(0, '#064e3b');
+        grad.addColorStop(0.5, '#047857');
+        grad.addColorStop(1, '#064e3b');
+      }
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1024, 256);
+
+      // Multi-layer ornate gold filigree border
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(12, 12, 1000, 232);
+
+      ctx.strokeStyle = '#fef08a';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(20, 20, 984, 216);
+
+      // Corner decorative rosettes
+      [[32, 32], [992, 32], [32, 224], [992, 224]].forEach(([cx, cy]) => {
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 9, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Main Header Title
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 54px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(245, 158, 11, 0.9)';
+      ctx.shadowBlur = 10;
+      ctx.fillText(title, 512, 92);
+
+      // Subtitle
+      ctx.fillStyle = '#fef08a';
+      ctx.font = 'bold 26px sans-serif';
+      ctx.shadowBlur = 5;
+      ctx.fillText(subtitle, 512, 168);
+
+      texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
     }
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 1024, 256);
-
-    // Multi-layer ornate gold filigree border
-    ctx.strokeStyle = '#f59e0b';
-    ctx.lineWidth = 6;
-    ctx.strokeRect(12, 12, 1000, 232);
-
-    ctx.strokeStyle = '#fef08a';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(20, 20, 984, 216);
-
-    // Corner decorative rosettes
-    [[32, 32], [992, 32], [32, 224], [992, 224]].forEach(([cx, cy]) => {
-      ctx.fillStyle = '#f59e0b';
-      ctx.beginPath();
-      ctx.arc(cx, cy, 9, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // Main Header Title
-    ctx.fillStyle = '#fbbf24';
-    ctx.font = 'bold 54px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(245, 158, 11, 0.9)';
-    ctx.shadowBlur = 10;
-    ctx.fillText(title, 512, 92);
-
-    // Subtitle
-    ctx.fillStyle = '#fef08a';
-    ctx.font = 'bold 26px sans-serif';
-    ctx.shadowBlur = 5;
-    ctx.fillText(subtitle, 512, 168);
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
 
     const group = new THREE.Group();
 
@@ -1368,11 +1315,11 @@ class DiwaliWorld3D {
     const signGeo = new THREE.BoxGeometry(w, h, 0.22);
     const signMat = new THREE.MeshStandardMaterial({
       map: texture,
+      color: texture ? 0xffffff : (isShop ? 0x881337 : 0x047857),
       roughness: 0.35,
       metalness: 0.15,
-      emissive: new THREE.Color(0xfff0c2),
-      emissiveMap: texture,
-      emissiveIntensity: 0.65
+      emissive: isShop ? 0x4c0519 : 0x064e3b,
+      emissiveIntensity: 0.45
     });
     const signMesh = new THREE.Mesh(signGeo, signMat);
     group.add(signMesh);

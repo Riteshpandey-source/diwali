@@ -686,6 +686,13 @@ class DiwaliPlayer3D {
   }
 
   createNameSprite(text) {
+    if (typeof document === 'undefined') {
+      const mat = new THREE.SpriteMaterial({ color: 0xfef08a, transparent: true });
+      const sprite = new THREE.Sprite(mat);
+      sprite.scale.set(3.5, 0.85, 1);
+      return sprite;
+    }
+
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 64;

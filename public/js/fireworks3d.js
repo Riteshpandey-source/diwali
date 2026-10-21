@@ -38,6 +38,9 @@ class DiwaliFireworks3D {
   }
 
   createSparkTexture() {
+    if (typeof document === 'undefined') {
+      return new THREE.Texture();
+    }
     const canvas = document.createElement('canvas');
     canvas.width = 64;
     canvas.height = 64;
