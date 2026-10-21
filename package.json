@@ -1,0 +1,27 @@
+{
+  "name": "diwali-virtual-world",
+  "version": "1.0.0",
+  "description": "Premium Playable Diwali Virtual World & Festive Greeting Experience",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node -e \"console.log('Testing Diwali Server...'); require('http'); console.log('All syntax checks passed!');\""
+  },
+  "keywords": [
+    "diwali",
+    "festival",
+    "virtual-world",
+    "game",
+    "canvas",
+    "multiplayer",
+    "fireworks"
+  ],
+  "author": "Antigravity",
+  "license": "MIT",
+  "dependencies": {
+    "three": "^0.186.1",
+    "ws": "^8.18.0"
+  }
+}

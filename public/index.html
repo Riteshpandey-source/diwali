@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Shubh Deepawali - Playable Diwali Virtual World & Festive Greetings</title>
+  <meta name="description" content="Experience a complete, premium, playable Diwali Virtual World! Explore a vibrant festive Indian colony, decorate houses, light diyas, ignite virtual fireworks, play mini-games, and celebrate with friends in real-time.">
+  <meta name="theme-color" content="#0d0b1e">
+
+  <!-- OpenGraph / Social Meta -->
+  <meta property="og:title" content="Shubh Deepawali - Virtual Festival Celebration">
+  <meta property="og:description" content="Celebrate Diwali in an interactive 3D virtual colony with fireworks, decorations, and multiplayer!">
+  <meta property="og:type" content="website">
+
+  <!-- Google Fonts (Cinzel, Playfair Display, Plus Jakarta Sans, Tiro Devanagari) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Tiro+Devanagari+Sanskrit:ital@0;1&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="festive-theme">
+
+  <!-- ========================================================= -->
+  <!-- 1. DIWALI GREETING PAGE (PRESERVED & ENHANCED)           -->
+  <!-- ========================================================= -->
+  <div id="greetingScreen" class="screen-view active">
+    <!-- Starry background with floating glow particles -->
+    <canvas id="greetingCanvas" class="background-canvas"></canvas>
+
+    <div class="greeting-container">
+      <header class="greeting-header">
+        <div class="sanskrit-banner">
+          <span class="om-symbol">ॐ</span>
+          <p class="shloka-text">ॐ असतो मा सद्गमय। तमसो मा ज्योतिर्गमय। मृत्योर्माऽमृतं गमय॥</p>
+          <span class="shloka-trans">"Lead us from darkness unto light, from falsehood unto truth, from mortality unto immortality."</span>
+        </div>
+        <h1 class="main-title">
+          <span class="title-sub">Heartiest Wishes for a Blessed & Joyous</span>
+          <span class="title-festive">SHUBH DEEPAWALI</span>
+          <span class="title-year">✨ Happy Diwali 2026 ✨</span>
+        </h1>
+      </header>
+
+      <!-- Interactive Diya Lighting Altar -->
+      <section class="diya-altar-card">
+        <div class="altar-info">
+          <h3>🪔 Light the Sacred Deepams</h3>
+          <p id="diyaInstruction">Click or tap each earthen diya to kindle its sacred flame and receive divine blessings!</p>
+          <div class="altar-progress">
+            <span id="diyasLitCount">0</span> of 5 Diyas Lit
+          </div>
+        </div>
+
+        <div class="interactive-diyas-row">
+          <div class="diya-item" data-index="0" title="Click to Light Diya of Peace (Shanti)">
+            <div class="diya-aura"></div>
+            <div class="diya-flame"></div>
+            <div class="diya-clay"></div>
+            <span class="diya-blessing">Shanti</span>
+          </div>
+          <div class="diya-item" data-index="1" title="Click to Light Diya of Prosperity (Samriddhi)">
+            <div class="diya-aura"></div>
+            <div class="diya-flame"></div>
+            <div class="diya-clay"></div>
+            <span class="diya-blessing">Samriddhi</span>
+          </div>
+          <div class="diya-item center-diya" data-index="2" title="Click to Light Maha Diya of Health (Arogya)">
+            <div class="diya-aura"></div>
+            <div class="diya-flame"></div>
+            <div class="diya-clay"></div>
+            <span class="diya-blessing">Maha Jyoti</span>
+          </div>
+          <div class="diya-item" data-index="3" title="Click to Light Diya of Happiness (Ananda)">
+            <div class="diya-aura"></div>
+            <div class="diya-flame"></div>
+            <div class="diya-clay"></div>
+            <span class="diya-blessing">Ananda</span>
+          </div>
+          <div class="diya-item" data-index="4" title="Click to Light Diya of Success (Vijaya)">
+            <div class="diya-aura"></div>
+            <div class="diya-flame"></div>
+            <div class="diya-clay"></div>
+            <span class="diya-blessing">Vijaya</span>
+          </div>
+        </div>
+
+        <div id="altarBlessingBanner" class="blessing-banner hidden">
+          <p>✨ "May the divine radiant light of Deepawali illuminate your life with infinite joy, good health, and glorious success!" ✨</p>
+        </div>
+      </section>
+
+      <!-- Personalization & Share Section -->
+      <section class="personalization-card">
+        <div class="card-inner">
+          <div id="personalizedGreetingDisplay" class="greeting-message-box">
+            <p class="greeting-from-to">
+              Warmest festive wishes to <strong id="recipientDisplay">My Dear Friend</strong>,<br>
+              From <strong id="senderDisplay">Your Well Wisher</strong>!
+            </p>
+            <p class="greeting-quote">
+              "May Goddess Mahalakshmi and Lord Ganesha shower your home with eternal abundance, love, and light."
+            </p>
+          </div>
+
+          <!-- Personalize Form -->
+          <div class="customize-form">
+            <div class="input-row">
+              <div class="input-group">
+                <label for="senderInput">Your Name (Sender):</label>
+                <input type="text" id="senderInput" placeholder="e.g. Rahul Sharma" maxlength="30">
+              </div>
+              <div class="input-group">
+                <label for="recipientInput">Recipient's Name:</label>
+                <input type="text" id="recipientInput" placeholder="e.g. Priya & Family" maxlength="30">
+              </div>
+            </div>
+
+            <div class="action-buttons-row">
+              <button id="updateGreetingBtn" class="btn btn-secondary">
+                <span>✍️ Update Greeting</span>
+              </button>
+              <button id="shareWhatsAppBtn" class="btn btn-whatsapp">
+                <span>💬 Share on WhatsApp</span>
+              </button>
+              <button id="copyShareLinkBtn" class="btn btn-gold">
+                <span>🔗 Copy Share Link</span>
+              </button>
+            </div>
+            <p id="shareToast" class="toast-message"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- GRAND CTA: ENTER PLAYABLE VIRTUAL WORLD -->
+      <section class="world-entry-banner">
+        <div class="entry-card-glow"></div>
+        <div class="entry-card-content">
+          <div class="entry-badge">🎆 NEW IMMERSIVE EXPERIENCE</div>
+          <h2>Step Inside the Diwali Virtual Colony</h2>
+          <p>Walk through a beautifully lit Indian neighborhood at night! Decorate houses with fairy lights, visit the festive bazaar, launch realistic fireworks, earn virtual coins in mini-games, and celebrate with friends in real-time!</p>
+          <button id="enterWorldBtn" class="btn btn-grand-cta">
+            <span class="cta-sparkle">✨</span>
+            <span class="cta-text">ENTER VIRTUAL WORLD</span>
+            <span class="cta-arrow">➔</span>
+          </button>
+          <div class="controls-hint">
+            <span>💻 Keyboard: WASD / Arrows to Move</span>
+            <span>📱 Mobile: On-Screen Touch Joystick</span>
+            <span>🌐 Real-time Multiplayer Available</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- 2. PLAYABLE DIWALI VIRTUAL WORLD SCREEN                   -->
+  <!-- ========================================================= -->
+  <div id="gameScreen" class="screen-view">
+    <!-- Main Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- UI Overlay / HUD -->
+    <div id="gameHud" class="hud-overlay">
+      
+      <!-- Top HUD Header -->
+      <header class="hud-top-bar">
+        <div class="hud-left-group">
+          <button id="returnToGreetingBtn" class="hud-btn" title="Return to Greeting Card">
+            <span class="icon">📜</span>
+            <span class="label">Greeting Card</span>
+          </button>
+
+          <div class="coin-display" title="Your Lakshmi Gold Coins">
+            <span class="coin-icon">🪙</span>
+            <span id="playerCoinCount" class="coin-amount">150</span>
+            <button id="quickEarnCoinsBtn" class="btn-micro" title="Play mini-games to earn coins">+</button>
+          </div>
+
+          <div class="colony-mode-badge" id="colonyCelebrationBadge">
+            <span class="dot"></span>
+            <span id="colonyModeLabel">Night Ambience</span>
+          </div>
+        </div>
+
+        <div class="hud-center-group">
+          <!-- Room info & online indicator -->
+          <div class="room-pill" id="roomStatusPill" title="Multiplayer Status">
+            <span class="status-indicator online"></span>
+            <span id="roomNameLabel">Colony Chowk</span>
+            <span id="playerCountBadge" class="badge">1</span>
+          </div>
+        </div>
+
+        <div class="hud-right-group">
+          <button id="skyShowBtn" class="hud-btn hud-btn-accent" title="Trigger Grand Choreographed Sky Fireworks Show">
+            <span class="icon">🎆</span>
+            <span class="label">Sky Fireworks Show</span>
+          </button>
+
+          <button id="multiplayerModalBtn" class="hud-btn" title="Multiplayer Rooms & Invite Friends">
+            <span class="icon">👥</span>
+            <span class="label">Friends</span>
+          </button>
+
+          <button id="audioToggleBtn" class="hud-btn icon-only" title="Toggle Sound & Festive Music">
+            <span id="audioIcon">🔊</span>
+          </button>
+
+          <button id="settingsModalBtn" class="hud-btn icon-only" title="Settings & Graphics">
+            <span>⚙️</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Mission Tracker Widget (Top-Left) -->
+      <div id="missionTrackerWidget" class="mission-tracker-widget" title="Click to view Diwali Night Mission">
+        <div class="tracker-header">
+          <span class="tracker-icon">📜</span>
+          <span class="tracker-title">Diwali Night Mission</span>
+        </div>
+        <div class="tracker-status">Tap to View Objectives ➔</div>
+      </div>
+
+      <!-- Mini-map / Radar (Top-Right) -->
+      <div id="miniMapContainer" class="minimap-box">
+        <canvas id="miniMapCanvas" width="140" height="140"></canvas>
+        <span class="minimap-title">Colony Map</span>
+      </div>
+
+      <!-- Interaction Toast / Prompt (Appears near player or bottom center) -->
+      <div id="interactionPrompt" class="interaction-prompt hidden">
+        <div class="prompt-key" id="promptKeyBadge">E</div>
+        <div class="prompt-text" id="promptMessage">Press [E] to Decorate House</div>
+      </div>
+
+      <!-- Emote Float Bubbles Container -->
+      <div id="emoteBubblesLayer" class="emote-layer"></div>
+
+      <!-- Bottom Toolbar: Quick Fireworks & Items -->
+      <footer class="hud-bottom-bar">
+        <div class="quick-inventory-tray">
+          <div class="item-slot active" data-item="phuljhadi" data-slot="1" title="[1] Phuljhadi (Handheld Sparkler)">
+            <span class="slot-num">1</span>
+            <div class="item-icon">✨</div>
+            <div class="item-info">
+              <span class="item-name">Phuljhadi</span>
+              <span class="item-qty" id="qty_phuljhadi">∞</span>
+            </div>
+          </div>
+          <div class="item-slot" data-item="anar" data-slot="2" title="[2] Anar (Golden Fountain Cracker)">
+            <span class="slot-num">2</span>
+            <div class="item-icon">🌋</div>
+            <div class="item-info">
+              <span class="item-name">Anar</span>
+              <span class="item-qty" id="qty_anar">5</span>
+            </div>
+          </div>
+          <div class="item-slot" data-item="chakri" data-slot="3" title="[3] Chakri (Ground Spinner)">
+            <span class="slot-num">3</span>
+            <div class="item-icon">🌀</div>
+            <div class="item-info">
+              <span class="item-name">Chakri</span>
+              <span class="item-qty" id="qty_chakri">5</span>
+            </div>
+          </div>
+          <div class="item-slot" data-item="rocket" data-slot="4" title="[4] Sky Rocket">
+            <span class="slot-num">4</span>
+            <div class="item-icon">🚀</div>
+            <div class="item-info">
+              <span class="item-name">Rocket</span>
+              <span class="item-qty" id="qty_rocket">5</span>
+            </div>
+          </div>
+          <div class="item-slot" data-item="diya" data-slot="5" title="[5] Earthen Diya">
+            <span class="slot-num">5</span>
+            <div class="item-icon">🪔</div>
+            <div class="item-info">
+              <span class="item-name">Clay Diya</span>
+              <span class="item-qty" id="qty_diya">10</span>
+            </div>
+          </div>
+          <div class="item-slot" data-item="kandil" data-slot="6" title="[6] Sky Lantern (Floating Kandil)">
+            <span class="slot-num">6</span>
+            <div class="item-icon">🏮</div>
+            <div class="item-info">
+              <span class="item-name">Sky Lantern</span>
+              <span class="item-qty" id="qty_kandil">3</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-action-buttons">
+          <button id="openMissionBtn" class="action-btn mission-btn" title="Diwali Night Mission">
+            <span class="icon">📜</span>
+            <span class="btn-label">Mission</span>
+          </button>
+          <button id="openShopBtn" class="action-btn shop-btn">
+            <span class="icon">🛒</span>
+            <span class="btn-label">Bazaar Shop</span>
+          </button>
+          <button id="openGamesBtn" class="action-btn games-btn">
+            <span class="icon">🎯</span>
+            <span class="btn-label">Mini-Games</span>
+          </button>
+          <button id="openEmoteMenuBtn" class="action-btn emote-btn">
+            <span class="icon">🙏</span>
+            <span class="btn-label">Emotes</span>
+          </button>
+        </div>
+      </footer>
+
+      <!-- Mobile Touch Controls (Shown on touch devices / narrow screens) -->
+      <div id="mobileControlsContainer" class="mobile-controls">
+        <div id="joystickZone" class="joystick-zone">
+          <div id="joystickBase" class="joystick-base">
+            <div id="joystickStick" class="joystick-stick"></div>
+          </div>
+        </div>
+        <div class="mobile-action-buttons">
+          <button id="mobileSprintBtn" class="mobile-btn sprint-btn" title="Sprint">
+            <span>🏃</span>
+          </button>
+          <button id="mobileInteractBtn" class="mobile-btn interact-btn" title="Interact">
+            <span>✋</span>
+            <span class="sub">Interact</span>
+          </button>
+          <button id="mobileUseItemBtn" class="mobile-btn use-item-btn" title="Use / Place Item">
+            <span>💥</span>
+            <span class="sub">Ignite</span>
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /gameHud -->
+  </div><!-- /gameScreen -->
+
+
+  <!-- ========================================================= -->
+  <!-- MODALS & POPUPS                                           -->
+  <!-- ========================================================= -->
+
+  <!-- 1. FESTIVAL BAZAAR SHOP MODAL -->
+  <div id="shopModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="title-icon">🎪</span>
+          <h2>Shubh Deepawali Bazaar</h2>
+        </div>
+        <div class="shop-balance-pill">
+          <span>Coins: </span>
+          <strong id="shopModalCoins">150</strong> 🪙
+        </div>
+        <button class="modal-close-btn" data-close="shopModal">&times;</button>
+      </div>
+
+      <div class="shop-tabs">
+        <button class="shop-tab active" data-category="fireworks">🎆 Fireworks & Sparklers</button>
+        <button class="shop-tab" data-category="lights">💡 Lights & Diyas</button>
+        <button class="shop-tab" data-category="decor">🌸 Festive Decor</button>
+      </div>
+
+      <div class="modal-body">
+        <div id="shopItemsGrid" class="shop-items-grid">
+          <!-- Dynamic item cards will be populated here -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <p class="safe-notice">🛡️ 100% Virtual in-game festive items. No real currency or real explosives.</p>
+        <button class="btn btn-secondary" data-close="shopModal">Done Shopping</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. HOUSE DECORATOR MODAL -->
+  <div id="decoratorModal" class="modal-backdrop hidden">
+    <div class="modal-dialog decorator-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="title-icon">🏡</span>
+          <h2 id="decoratorHouseTitle">Decorate Sharma Niwas</h2>
+        </div>
+        <button class="modal-close-btn" data-close="decoratorModal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-subtext">Choose illumination styles and decorations for this residence. Progress is saved and shared with colony neighbors!</p>
+        
+        <div class="decorator-section">
+          <h4>Fairy Light Strings (Serial Bulbs)</h4>
+          <div class="option-grid">
+            <button class="light-style-btn" data-style="golden">
+              <span class="preview golden"></span>
+              <span>Warm Golden Glow</span>
+            </button>
+            <button class="light-style-btn" data-style="rainbow">
+              <span class="preview rainbow"></span>
+              <span>Festive Multi-Color RGB</span>
+            </button>
+            <button class="light-style-btn" data-style="cyan">
+              <span class="preview cyan"></span>
+              <span>Neon Blue-Violet Wave</span>
+            </button>
+            <button class="light-style-btn" data-style="off">
+              <span class="preview off"></span>
+              <span>Turn Off Lights</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="decorator-section">
+          <h4>Doorstep & Porch Adornment</h4>
+          <div class="checkbox-options">
+            <label class="custom-check">
+              <input type="checkbox" id="checkDoorstepDiyas" checked>
+              <span class="checkmark"></span>
+              <span>Earthen Clay Diyas along Walkway & Entrance</span>
+            </label>
+            <label class="custom-check">
+              <input type="checkbox" id="checkMarigoldToran" checked>
+              <span class="checkmark"></span>
+              <span>Fresh Marigold & Mango Leaf Floral Toran</span>
+            </label>
+            <label class="custom-check">
+              <input type="checkbox" id="checkHangingKandil" checked>
+              <span class="checkmark"></span>
+              <span>Hanging Akash Kandil (Traditional Lantern)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="saveDecorationBtn" class="btn btn-gold">Save & Illuminate House</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. MINI-GAMES HUB MODAL -->
+  <div id="miniGamesModal" class="modal-backdrop hidden">
+    <div class="modal-dialog wide-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="title-icon">🎯</span>
+          <h2>Diwali Festival Mini-Games</h2>
+        </div>
+        <button class="modal-close-btn" data-close="miniGamesModal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="minigames-selection-grid">
+          <!-- Game 1: Diya Sprint -->
+          <div class="minigame-card">
+            <div class="mg-icon">🪔</div>
+            <h3>Diya Lighting Sprint</h3>
+            <p>Race against the clock to light as many unlit diyas as possible! Test your speed and precision.</p>
+            <div class="mg-reward">Reward: Up to 100 🪙</div>
+            <button id="startDiyaSprintBtn" class="btn btn-gold">Play Diya Sprint</button>
+          </div>
+
+          <!-- Game 2: Rangoli Master -->
+          <div class="minigame-card">
+            <div class="mg-icon">🌸</div>
+            <h3>Rangoli Artisan</h3>
+            <p>Complete the sacred geometric floral Rangoli pattern with vibrant festive colors.</p>
+            <div class="mg-reward">Reward: 60 🪙</div>
+            <button id="startRangoliBtn" class="btn btn-gold">Play Rangoli</button>
+          </div>
+
+          <!-- Game 3: Cultural Quiz -->
+          <div class="minigame-card">
+            <div class="mg-icon">📜</div>
+            <h3>Diwali Traditions & Trivia</h3>
+            <p>Answer questions on the legends, spiritual significance, and history of the Festival of Lights!</p>
+            <div class="mg-reward">Reward: 25 🪙 per correct answer</div>
+            <button id="startQuizBtn" class="btn btn-gold">Play Trivia</button>
+          </div>
+        </div>
+
+        <!-- Active Mini-game Container (Shown when a game is launched) -->
+        <div id="activeMiniGameArea" class="active-minigame-area hidden">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. MULTIPLAYER ROOMS & FRIENDS MODAL -->
+  <div id="multiplayerModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="title-icon">👥</span>
+          <h2>Play With Friends</h2>
+        </div>
+        <button class="modal-close-btn" data-close="multiplayerModal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="multiplayer-status-card">
+          <div class="status-header">
+            <span>Connection:</span>
+            <span id="mpConnectionBadge" class="badge-online">Connected to Server</span>
+          </div>
+          <div class="current-room-info">
+            <span>Current Room: <strong id="mpCurrentRoomName">shanti-colony</strong></span>
+            <span>Your Name: <strong id="mpPlayerNameDisplay">You</strong></span>
+          </div>
+        </div>
+
+        <div class="join-room-section">
+          <h4>Switch or Create Room</h4>
+          <div class="input-row">
+            <input type="text" id="mpRoomInput" placeholder="Enter Room Code (e.g. diwali-party-1)" maxlength="24">
+            <button id="mpJoinRoomBtn" class="btn btn-secondary">Join Room</button>
+          </div>
+          <div class="invite-link-row">
+            <input type="text" id="mpInviteUrlInput" readonly>
+            <button id="mpCopyInviteBtn" class="btn btn-gold">Copy Invite</button>
+          </div>
+        </div>
+
+        <div class="player-customization-section">
+          <h4>Your Character Outfit</h4>
+          <div class="outfit-color-picker">
+            <label>Kurta Color:</label>
+            <div class="color-swatches" id="kurtaColorSwatches">
+              <span class="swatch active" data-color="#dc2626" style="background:#dc2626"></span>
+              <span class="swatch" data-color="#ea580c" style="background:#ea580c"></span>
+              <span class="swatch" data-color="#0284c7" style="background:#0284c7"></span>
+              <span class="swatch" data-color="#16a34a" style="background:#16a34a"></span>
+              <span class="swatch" data-color="#7c3aed" style="background:#7c3aed"></span>
+            </div>
+          </div>
+          <div class="outfit-color-picker">
+            <label>Turban / Dupatta Color:</label>
+            <div class="color-swatches" id="turbanColorSwatches">
+              <span class="swatch active" data-color="#f59e0b" style="background:#f59e0b"></span>
+              <span class="swatch" data-color="#e11d48" style="background:#e11d48"></span>
+              <span class="swatch" data-color="#10b981" style="background:#10b981"></span>
+              <span class="swatch" data-color="#f43f5e" style="background:#f43f5e"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="online-players-list-section">
+          <h4>Friends In This Room (<span id="mpPlayersListCount">1</span>)</h4>
+          <ul id="mpConnectedPlayersList" class="players-list">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-close="multiplayerModal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. EMOTE WHEEL / POPUP -->
+  <div id="emoteMenu" class="emote-menu hidden">
+    <div class="emote-menu-header">
+      <span>Send Festive Emote</span>
+      <button id="closeEmoteMenuBtn">&times;</button>
+    </div>
+    <div class="emote-grid">
+      <button class="emote-item" data-text="Namaste! 🙏" data-emoji="🙏">
+        <span class="emoji">🙏</span>
+        <span class="label">Namaste</span>
+      </button>
+      <button class="emote-item" data-text="Happy Diwali! 🪔" data-emoji="🪔">
+        <span class="emoji">🪔</span>
+        <span class="label">Happy Diwali</span>
+      </button>
+      <button class="emote-item" data-text="Shubh Deepawali! ✨" data-emoji="✨">
+        <span class="emoji">✨</span>
+        <span class="label">Blessings</span>
+      </button>
+      <button class="emote-item" data-text="Boom! 💥" data-emoji="💥">
+        <span class="emoji">💥</span>
+        <span class="label">Boom!</span>
+      </button>
+      <button class="emote-item" data-text="Spectacular! 🎆" data-emoji="🎆">
+        <span class="emoji">🎆</span>
+        <span class="label">Fireworks</span>
+      </button>
+      <button class="emote-item" data-text="Bhangra Dance! 💃" data-emoji="💃">
+        <span class="emoji">💃</span>
+        <span class="label">Dance</span>
+      </button>
+      <button class="emote-item" data-text="Mithai for all! 🍬" data-emoji="🍬">
+        <span class="emoji">🍬</span>
+        <span class="label">Mithai</span>
+      </button>
+      <button class="emote-item" data-text="Joy & Love! ❤️" data-emoji="❤️">
+        <span class="emoji">❤️</span>
+        <span class="label">Love</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 6. SETTINGS MODAL -->
+  <div id="settingsModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="title-icon">⚙️</span>
+          <h2>Festival Settings</h2>
+        </div>
+        <button class="modal-close-btn" data-close="settingsModal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="settings-group">
+          <label>Audio & Music Volume</label>
+          <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.7">
+        </div>
+
+        <div class="settings-group">
+          <label class="custom-check">
+            <input type="checkbox" id="checkSoundEffects" checked>
+            <span class="checkmark"></span>
+            <span>Firework & Cracker Sound Effects</span>
+          </label>
+        </div>
+
+        <div class="settings-group">
+          <label class="custom-check">
+            <input type="checkbox" id="checkFestiveMusic" checked>
+            <span class="checkmark"></span>
+            <span>Festive Sitar & Tanpura Ambient Music</span>
+          </label>
+        </div>
+
+        <div class="settings-group">
+          <label class="custom-check">
+            <input type="checkbox" id="checkReducedMotion">
+            <span class="checkmark"></span>
+            <span>Reduced Motion / Battery Saver (Simpler Fireworks)</span>
+          </label>
+        </div>
+
+        <div class="settings-group">
+          <label class="custom-check">
+            <input type="checkbox" id="checkShowFps">
+            <span class="checkmark"></span>
+            <span>Show Performance FPS Counter</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-close="settingsModal">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. DIWALI NIGHT MISSION INTRO & OBJECTIVES MODAL -->
+  <div id="missionIntroModal" class="modal-backdrop hidden">
+    <div class="modal-dialog wide-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="title-icon">📜</span>
+          <h2>Diwali Night Mission — Light Up the Colony!</h2>
+        </div>
+        <button class="modal-close-btn" data-close="missionIntroModal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mission-intro-banner">
+          <p class="mission-intro-lead">
+            The sacred festival night has fallen upon Shanti Colony. The temple bells await worship, the bazaar merchants have laid out festive treats, and the homes yearn for radiant light. As the festival champion, embark on this auspicious quest to awaken the Colony and unlock the legendary <strong>Maha Deepotsav</strong>!
+          </p>
+        </div>
+
+        <div class="mission-objectives-section">
+          <h3>🎯 Mission Objective Checklist</h3>
+          <div id="missionChecklistContainer" class="mission-checklist-grid">
+            <!-- Dynamically populated checklist -->
+          </div>
+        </div>
+
+        <div class="mission-rewards-card">
+          <div class="rewards-header">
+            <span class="reward-sparkle">✨</span>
+            <h4>Grand Completion Rewards</h4>
+          </div>
+          <div class="rewards-items">
+            <div class="reward-pill">
+              <span class="r-icon">🏆</span>
+              <span class="r-name">Diwali Champion 2026 Badge</span>
+            </div>
+            <div class="reward-pill">
+              <span class="r-icon">🪙</span>
+              <span class="r-name">+250 Lakshmi Gold Coins</span>
+            </div>
+            <div class="reward-pill">
+              <span class="r-icon">🎆</span>
+              <span class="r-name">Unlocks Maha Deepotsav Fireworks Show</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="resetMissionBtn" class="btn btn-secondary" title="Reset mission objectives">🔄 Reset Mission</button>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-secondary" data-close="missionIntroModal">Close</button>
+          <button id="startMissionBtn" class="btn btn-gold">Start Mission ➔</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. DIWALI NIGHT MISSION COMPLETION MODAL -->
+  <div id="missionCompletionModal" class="modal-backdrop hidden">
+    <div class="modal-dialog completion-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="title-icon">🏆</span>
+          <h2>Diwali Night Mission Accomplished!</h2>
+        </div>
+        <button class="modal-close-btn" data-close="missionCompletionModal">&times;</button>
+      </div>
+
+      <div class="modal-body completion-body">
+        <div class="champion-badge-hero">
+          <div class="badge-ring">
+            <span class="badge-icon">🪔</span>
+          </div>
+          <h3>SHUBH DEEPAWALI CHAMPION</h3>
+          <span class="badge-sub">Honor of Shanti Colony 2026</span>
+          <p class="congrats-text">
+            You have brought eternal radiance and joy to every home, awakened the sacred temple, and led the community into the glorious light of Deepotsav!
+          </p>
+        </div>
+
+        <div class="stats-summary-card">
+          <h4>📊 Mission Performance Statistics</h4>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <span class="stat-label">Time Taken</span>
+              <strong id="statTimeTaken" class="stat-val">--</strong>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Colony Coins</span>
+              <strong id="statCoinsCollected" class="stat-val">5 / 5</strong>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Houses Illuminated</span>
+              <strong id="statHousesDecorated" class="stat-val">6 / 6</strong>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Challenges Won</span>
+              <strong id="statChallengesCompleted" class="stat-val">--</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="reward-awarded-banner">
+          <span>🪙 +250 Lakshmi Gold Coins Added to Your Festival Balance!</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="playAgainBtn" class="btn btn-secondary">🔄 Play Mission Again</button>
+        <button id="freePlayBtn" class="btn btn-gold" data-close="missionCompletionModal">Continue Free Play ➔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grand Colony Celebration Banner Overlay -->
+  <div id="grandCelebrationBanner" class="grand-celebration-banner hidden">
+    <div class="celebration-particles"></div>
+    <div class="banner-inner">
+      <span class="banner-om">ॐ</span>
+      <h2>✨ MAHA DEEPOTSAV ✨</h2>
+      <p>THE ENTIRE COLONY IS RADIANT WITH DIVINE LIGHT!</p>
+      <span class="banner-sub" id="celebrationInitiatorText">Light rekindled across all residences & the sacred temple!</span>
+    </div>
+  </div>
+
+  <!-- Audio Context Activation Notice / Toast -->
+  <div id="audioNotice" class="audio-notice hidden">
+    <span>🔊 Click anywhere to enable festive music & firework sounds</span>
+  </div>
+
+  <!-- Scripts -->
+  <!-- 1. Standalone Three.js WebGL Core Engine -->
+  <script src="js/vendor/three.min.js"></script>
+
+  <!-- 2. Audio & Greeting Systems -->
+  <script src="js/audio.js"></script>
+  <script src="js/greeting.js"></script>
+
+  <!-- 3. World & 3D Indian Architecture -->
+  <script src="js/world.js"></script>
+  <script src="js/world3d.js"></script>
+
+  <!-- 4. Player & 3D Character Controller -->
+  <script src="js/player.js"></script>
+  <script src="js/player3d.js"></script>
+
+  <!-- 5. Fireworks & 3D Particle Simulation -->
+  <script src="js/fireworks.js"></script>
+  <script src="js/fireworks3d.js"></script>
+
+  <!-- 6. Economy, Decorations, Minigames & Mission -->
+  <script src="js/decorations.js"></script>
+  <script src="js/shop.js"></script>
+  <script src="js/minigames.js"></script>
+  <script src="js/multiplayer.js"></script>
+  <script src="js/multiplayer3d.js"></script>
+  <script src="js/mission.js"></script>
+
+  <!-- 7. Master 3D WebGL Engine -->
+  <script src="js/engine3d.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
