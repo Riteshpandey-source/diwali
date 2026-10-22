@@ -179,10 +179,10 @@ class DiwaliTheaterModal {
       }
     }
 
-    // Polling interval to keep scrub slider and time display 100% in sync with YouTube
+    // Polling interval to keep scrub slider, 3D video texture, and YouTube audio 100% synchronized
     if (!this.ytTimeInterval) {
       this.ytTimeInterval = setInterval(() => {
-        if (this.isOpen && this.ytPlayer && typeof this.ytPlayer.getCurrentTime === 'function') {
+        if (this.ytPlayer && typeof this.ytPlayer.getCurrentTime === 'function') {
           try {
             const cur = this.ytPlayer.getCurrentTime() || 0;
             const dur = (typeof this.ytPlayer.getDuration === 'function' && this.ytPlayer.getDuration() > 0)
@@ -191,15 +191,15 @@ class DiwaliTheaterModal {
             if (!this.isUserSeeking) {
               if (this.seekSlider) this.seekSlider.value = cur;
               if (this.stageSeekSlider) this.stageSeekSlider.value = cur;
+              this.updateTimeDisplay(cur, dur);
             }
-            this.updateTimeDisplay(cur, dur);
-            // Synchronize 3D stage screen video element playhead
-            if (this.video && Math.abs((this.video.currentTime || 0) - cur) > 2) {
+            // Continuous Sync: Ensure 3D stage screen video never drifts from audio (>1s difference snaps in sync)
+            if (this.video && Math.abs((this.video.currentTime || 0) - cur) > 1.2) {
               try { this.video.currentTime = cur; } catch (_) {}
             }
           } catch (_) {}
         }
-      }, 500);
+      }, 350);
     }
   }
 
@@ -342,11 +342,22 @@ class DiwaliTheaterModal {
       const onSeekInput = (e) => {
         const val = parseFloat(e.target.value);
         if (Number.isFinite(val)) {
-          if (this.isOpen && this.ytPlayer && typeof this.ytPlayer.seekTo === 'function') {
+          if (this.ytPlayer && typeof this.ytPlayer.seekTo === 'function') {
             try { this.ytPlayer.seekTo(val, true); } catch (_) {}
-          } else if (this.video) {
-            this.video.currentTime = val;
+          } else if (this.iframe && this.iframe.contentWindow) {
+            try {
+              this.iframe.contentWindow.postMessage(JSON.stringify({
+                event: 'command',
+                func: 'seekTo',
+                args: [val, true]
+              }), '*');
+            } catch (_) {}
           }
+          if (this.video) {
+            try { this.video.currentTime = val; } catch (_) {}
+          }
+          if (this.seekSlider) this.seekSlider.value = val;
+          if (this.stageSeekSlider) this.stageSeekSlider.value = val;
           this.updateTimeDisplay(val, this.currentEp?.durationSec || 1455);
         }
       };
@@ -442,11 +453,22 @@ class DiwaliTheaterModal {
       const onStageSeek = (e) => {
         const val = parseFloat(e.target.value);
         if (Number.isFinite(val)) {
-          if (this.isOpen && this.ytPlayer && typeof this.ytPlayer.seekTo === 'function') {
+          if (this.ytPlayer && typeof this.ytPlayer.seekTo === 'function') {
             try { this.ytPlayer.seekTo(val, true); } catch (_) {}
-          } else if (this.video) {
-            this.video.currentTime = val;
+          } else if (this.iframe && this.iframe.contentWindow) {
+            try {
+              this.iframe.contentWindow.postMessage(JSON.stringify({
+                event: 'command',
+                func: 'seekTo',
+                args: [val, true]
+              }), '*');
+            } catch (_) {}
           }
+          if (this.video) {
+            try { this.video.currentTime = val; } catch (_) {}
+          }
+          if (this.seekSlider) this.seekSlider.value = val;
+          if (this.stageSeekSlider) this.stageSeekSlider.value = val;
           this.updateTimeDisplay(val, this.currentEp?.durationSec || 1455);
         }
       };
@@ -593,49 +615,44 @@ class DiwaliTheaterModal {
     }
   }
 
-  // Seek relative seconds (Skip 10s forward or backward)
+  // Seek relative seconds (Skip 10s forward or backward with instant Audio & Video sync)
   seekRelative(deltaSec) {
-    let dur = this.currentEp?.durationSec || 1455;
-    let newTime = 0;
+    const dur = this.currentEp?.durationSec || 1455;
+    let cur = 0;
 
-    // 1. If YouTube player is active in modal, seek YouTube directly!
-    if (this.isOpen && this.ytPlayer && typeof this.ytPlayer.seekTo === 'function') {
+    // Get current playhead from YouTube if active, or video element
+    if (this.ytPlayer && typeof this.ytPlayer.getCurrentTime === 'function') {
+      try { cur = this.ytPlayer.getCurrentTime() || 0; } catch (_) {}
+    } else if (this.video) {
+      cur = this.video.currentTime || 0;
+    }
+
+    const newTime = Math.max(0, Math.min(dur, cur + deltaSec));
+
+    // 1. Immediately seek YouTube audio (whether on stage ground or in modal)
+    if (this.ytPlayer && typeof this.ytPlayer.seekTo === 'function') {
+      try { this.ytPlayer.seekTo(newTime, true); } catch (_) {}
+    } else if (this.iframe && this.iframe.contentWindow) {
       try {
-        const cur = (typeof this.ytPlayer.getCurrentTime === 'function') ? this.ytPlayer.getCurrentTime() : 0;
-        dur = (typeof this.ytPlayer.getDuration === 'function' && this.ytPlayer.getDuration() > 0) ? this.ytPlayer.getDuration() : dur;
-        newTime = Math.max(0, Math.min(dur, cur + deltaSec));
-        this.ytPlayer.seekTo(newTime, true);
-        this.updateTimeDisplay(newTime, dur);
-        if (this.seekSlider) this.seekSlider.value = newTime;
-        if (this.stageSeekSlider) this.stageSeekSlider.value = newTime;
-      } catch (err) {
-        console.warn('YT seek error:', err);
-      }
-    } else if (this.isOpen && this.iframe && this.iframe.contentWindow) {
-      try {
-        this.estimatedTime = Math.max(0, Math.min(dur, (this.estimatedTime || 0) + deltaSec));
-        newTime = this.estimatedTime;
         this.iframe.contentWindow.postMessage(JSON.stringify({
           event: 'command',
           func: 'seekTo',
           args: [newTime, true]
         }), '*');
-        this.updateTimeDisplay(newTime, dur);
       } catch (_) {}
     }
 
-    // 2. Also seek in local video if playing on stage
-    if (this.video && !this.isOpen) {
-      const vidDur = this.video.duration || 120;
-      const vidCur = this.video.currentTime || 0;
-      newTime = Math.max(0, Math.min(vidDur, vidCur + deltaSec));
-      this.video.currentTime = newTime;
-      this.updateTimeDisplay(newTime, dur);
-      if (this.seekSlider) this.seekSlider.value = newTime;
-      if (this.stageSeekSlider) this.stageSeekSlider.value = newTime;
+    // 2. Immediately seek 3D stage screen video to the exact same second
+    if (this.video) {
+      try { this.video.currentTime = newTime; } catch (_) {}
     }
 
-    // 3. Show instant on-screen skip flash badge
+    // 3. Update sliders & time display
+    this.updateTimeDisplay(newTime, dur);
+    if (this.seekSlider) this.seekSlider.value = newTime;
+    if (this.stageSeekSlider) this.stageSeekSlider.value = newTime;
+
+    // 4. Show instant on-screen skip flash badge
     if (this.skipIndicator && this.skipText) {
       this.skipText.textContent = deltaSec > 0 ? `+${Math.abs(deltaSec)}s ⏩` : `⏪ -${Math.abs(deltaSec)}s`;
       this.skipIndicator.classList.remove('hidden');
@@ -645,7 +662,6 @@ class DiwaliTheaterModal {
       }, 850);
     }
   }
-
   // Toggle Fullscreen Mode
   toggleFullscreen() {
     const wrapper = document.getElementById('theaterVideoWrapper');
