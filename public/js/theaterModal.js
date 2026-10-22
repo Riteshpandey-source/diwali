@@ -429,7 +429,7 @@ class DiwaliTheaterModal {
     if (stageStandUpBtn) {
       stageStandUpBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const p = window.diwaliPlayer3D || window.diwaliEngine?.player3D;
+        const p = window.diwaliPlayer3D || window.diwaliEngine3D?.player3D || window.diwaliEngine?.player3D;
         if (p && typeof p.standUp === 'function') {
           p.standUp();
         }
@@ -880,15 +880,17 @@ class DiwaliTheaterModal {
   // Real-Time Location & Proximity Tracker
   updateProximity(player3DX, player3DZ) {
     const isPlayerSittingInTheater = Boolean(
-      window.diwaliEngine?.player3D?.isSitting &&
-      window.diwaliEngine?.player3D?.currentBench?.isTheaterBench
+      (window.diwaliEngine3D?.player3D?.isSitting && window.diwaliEngine3D?.player3D?.currentBench?.isTheaterBench) ||
+      (window.diwaliEngine?.player3D?.isSitting && window.diwaliEngine?.player3D?.currentBench?.isTheaterBench) ||
+      (typeof document !== 'undefined' && document.body.classList.contains('theater-seated'))
     );
 
     const dist = Math.hypot(player3DX - this.theaterCenter.x, player3DZ - this.theaterCenter.z);
     let inRange = isPlayerSittingInTheater || (dist <= this.triggerRadius);
 
     // Suppress theater stage controls when near or interacting with other features (e.g. storytelling board, temple)
-    if (!isPlayerSittingInTheater && inRange && window.diwaliEngine?.currentInteractive && window.diwaliEngine.currentInteractive.type !== 'society_theater') {
+    const curInteract = window.diwaliEngine3D?.currentInteractive || window.diwaliEngine?.currentInteractive;
+    if (!isPlayerSittingInTheater && inRange && curInteract && curInteract.type !== 'society_theater') {
       inRange = false;
     }
 
@@ -907,6 +909,8 @@ class DiwaliTheaterModal {
         const bubblesLayer = document.getElementById('emoteBubblesLayer');
         if (bubblesLayer) bubblesLayer.innerHTML = '';
       }
+    } else if (isPlayerSittingInTheater && this.stageQuickControls && this.stageQuickControls.classList.contains('hidden')) {
+      this.stageQuickControls.classList.remove('hidden');
     }
   }
 }

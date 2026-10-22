@@ -4606,27 +4606,41 @@ html, body {
 
   /* Cinema Stage Quick Controls on Mobile (Ultra-compact horizontal bar anchored cleanly to bottom) */
   .stage-quick-controls {
-    bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+    position: fixed !important;
+    bottom: calc(18px + env(safe-area-inset-bottom, 12px)) !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     max-width: 96vw !important;
-    z-index: 60 !important;
+    z-index: 100 !important;
     display: flex !important;
     justify-content: center !important;
+    pointer-events: auto !important;
   }
 
   .stage-quick-controls.hidden {
     display: none !important;
   }
 
+  /* When player is seated in theater, ALWAYS FORCE stage quick controls to be visible */
+  .theater-seated .stage-quick-controls,
+  .theater-seated #stageQuickControls,
+  .theater-seated .stage-quick-controls.hidden {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
   .stage-controls-glass {
-    padding: 4px 8px !important;
+    padding: 6px 10px !important;
     gap: 6px !important;
     border-radius: 20px !important;
     flex-wrap: nowrap !important;
     justify-content: center !important;
     align-items: center !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7) !important;
+    background: rgba(13, 11, 36, 0.94) !important;
+    border: 1.5px solid rgba(251, 191, 36, 0.7) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.85), 0 0 16px rgba(245, 158, 11, 0.3) !important;
   }
 
   /* Hide bulky title badge, 10s skips, scrubber, pills, and camera dropdown on tiny mobile controller */
@@ -4640,20 +4654,47 @@ html, body {
   }
 
   .stage-btn-primary {
-    padding: 6px 14px !important;
+    padding: 6px 12px !important;
     font-size: 12px !important;
     border-radius: 12px !important;
-    height: 36px !important;
-    min-width: 84px !important;
+    height: 38px !important;
+    min-width: 76px !important;
   }
 
   .stage-btn-secondary,
-  .stage-btn-standup,
   .stage-btn-icon {
     padding: 6px 10px !important;
     font-size: 12px !important;
     border-radius: 10px !important;
-    height: 36px !important;
+    height: 38px !important;
+  }
+
+  #stageEnlargeBtn,
+  .stage-btn-gold {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    border-radius: 10px !important;
+    height: 38px !important;
+    white-space: nowrap !important;
+  }
+
+  #stageStandUpBtn,
+  .stage-btn-standup {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    border-radius: 10px !important;
+    height: 38px !important;
+    white-space: nowrap !important;
+    background: linear-gradient(135deg, #e11d48 0%, #be123c 100%) !important;
+    border: 1.5px solid #fb7185 !important;
+    color: #fff !important;
+    font-weight: 700 !important;
   }
 
   /* 4. BOTTOM BAR & DESKTOP ACTIONS DE-CLUTTER */

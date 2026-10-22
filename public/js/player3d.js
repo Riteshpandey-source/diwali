@@ -1023,6 +1023,10 @@ class DiwaliPlayer3D {
       document.body.classList.add('player-is-seated');
       if (benchData.isTheaterBench) {
         document.body.classList.add('theater-seated');
+        const stageControls = document.getElementById('stageQuickControls');
+        if (stageControls) {
+          stageControls.classList.remove('hidden');
+        }
       }
       const standBtn = document.getElementById('stageStandUpBtn');
       if (standBtn) standBtn.style.display = benchData.isTheaterBench ? 'inline-flex' : 'none';
@@ -1076,6 +1080,10 @@ class DiwaliPlayer3D {
 
     if (typeof document !== 'undefined') {
       document.body.classList.remove('player-is-seated', 'theater-seated');
+      const stageControls = document.getElementById('stageQuickControls');
+      if (stageControls) {
+        stageControls.classList.add('hidden');
+      }
       const standBtn = document.getElementById('stageStandUpBtn');
       if (standBtn) standBtn.style.display = 'none';
     }
