@@ -1,0 +1,11 @@
+# Robots.txt for Shubh Deepawali 3D Virtual World
+# Production Domain: https://diwali-i7j4.onrender.com/
+
+User-agent: *
+Allow: /
+Allow: /assets/
+Allow: /css/
+Allow: /js/
+Disallow: /api/
+
+Sitemap: https://diwali-i7j4.onrender.com/sitemap.xml

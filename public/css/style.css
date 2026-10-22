@@ -121,6 +121,35 @@ html, body {
   gap: 30px;
 }
 
+.greeting-legal-footer {
+  margin-top: 15px;
+  padding: 20px 16px;
+  text-align: center;
+  border-top: 1px solid rgba(251, 191, 36, 0.25);
+  background: rgba(13, 11, 30, 0.4);
+  border-radius: 12px;
+}
+
+.greeting-blessing {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95rem;
+  color: #fbbf24;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.greeting-disclaimer {
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: rgba(226, 232, 240, 0.65);
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.greeting-disclaimer strong {
+  color: rgba(251, 191, 36, 0.9);
+}
+
 .greeting-header {
   text-align: center;
   display: flex;

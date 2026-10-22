@@ -21,7 +21,9 @@ const MIME_TYPES = {
   '.mp3': 'audio/mpeg',
   '.wav': 'audio/wav',
   '.ogg': 'audio/ogg',
-  '.webp': 'image/webp'
+  '.webp': 'image/webp',
+  '.txt': 'text/plain; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8'
 };
 
 // HTTP Static Server
@@ -43,7 +45,8 @@ const server = http.createServer((req, res) => {
   }
 
   // Sanitize path
-  let safePath = path.normalize(decodeURI(req.url.split('?')[0]));
+  const parsedUrl = req.url.split('?')[0];
+  let safePath = path.normalize(decodeURI(parsedUrl));
   if (safePath === '/' || safePath === '\\') {
     safePath = '/index.html';
   }
@@ -59,11 +62,19 @@ const server = http.createServer((req, res) => {
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
-      // Fallback to index.html for SPA if not found
+      // Don't fallback to index.html for api, robots, sitemap, or files with extensions (avoids soft-404)
+      const hasExt = Boolean(path.extname(safePath));
+      if (parsedUrl.startsWith('/api/') || parsedUrl === '/robots.txt' || parsedUrl === '/sitemap.xml' || hasExt) {
+        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('404 Not Found');
+        return;
+      }
+
+      // Fallback to index.html for SPA clean URLs if not found
       filePath = path.join(PUBLIC_DIR, 'index.html');
       fs.stat(filePath, (fallbackErr, fallbackStats) => {
         if (fallbackErr || !fallbackStats.isFile()) {
-          res.writeHead(404, { 'Content-Type': 'text/plain' });
+          res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
           res.end('404 Not Found');
           return;
         }

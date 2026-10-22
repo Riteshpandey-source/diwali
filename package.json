@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node tests/e2e_full_audit.js && node tests/deep_feature_audit.js && node tests/test_mobile_responsive.js"
+    "test": "node tests/e2e_full_audit.js && node tests/deep_feature_audit.js && node tests/test_mobile_responsive.js && node tests/test_seo_production.js"
   },
   "keywords": [
     "diwali",
