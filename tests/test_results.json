@@ -3,14 +3,14 @@
     "category": "Startup & Server",
     "name": "API Status Endpoint Health",
     "status": "PASS",
-    "details": "Uptime: 66400.4s, Active Rooms: 1",
+    "details": "Uptime: 68555.4s, Active Rooms: 1",
     "error": null
   },
   {
     "category": "Startup & Server",
     "name": "Index HTML Delivery",
     "status": "PASS",
-    "details": "Received 56692 bytes",
+    "details": "Received 56698 bytes",
     "error": null
   },
   {
@@ -24,7 +24,7 @@
     "category": "Theater & Streaming",
     "name": "Episode 53 HTTP 206 Range Streaming",
     "status": "PASS",
-    "details": "Content-Range: bytes 0-1024/34902420",
+    "details": "Content-Range: bytes 0-1024/51461745",
     "error": null
   },
   {
@@ -38,7 +38,7 @@
     "category": "Multiplayer",
     "name": "WebSocket Client A Handshake & Welcome",
     "status": "PASS",
-    "details": "Assigned ID: player_tes8q3x, Room: audit-room-1792672515063",
+    "details": "Assigned ID: player_a3ruegk, Room: audit-room-1792674668264",
     "error": null
   },
   {
@@ -59,14 +59,14 @@
     "category": "Multiplayer",
     "name": "Realtime Movement Broadcast",
     "status": "PASS",
-    "details": "Received movement for: player_grc7xyi at (820, 710)",
+    "details": "Received movement for: player_irf765z at (820, 710)",
     "error": null
   },
   {
     "category": "Multiplayer",
     "name": "Shared Firework Event Broadcast",
     "status": "PASS",
-    "details": "Received fwType: anar from player_tes8q3x",
+    "details": "Received fwType: anar from player_a3ruegk",
     "error": null
   },
   {

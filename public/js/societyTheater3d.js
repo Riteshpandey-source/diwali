@@ -1616,7 +1616,10 @@ class DiwaliSocietyTheater3D {
     if (!videoEl) return;
     try {
       this.videoEl = videoEl;
-      if (!this.videoTexture) {
+      if (!this.videoTexture || this.videoTexture.image !== videoEl) {
+        if (this.videoTexture) {
+          try { this.videoTexture.dispose(); } catch (_) {}
+        }
         this.videoTexture = new THREE.VideoTexture(videoEl);
         this.videoTexture.minFilter = THREE.LinearFilter;
         this.videoTexture.magFilter = THREE.LinearFilter;
@@ -1629,6 +1632,25 @@ class DiwaliSocietyTheater3D {
       this.hasBoundVideo = true;
     } catch (e) {
       console.warn('Could not bind VideoTexture, falling back to canvas:', e);
+    }
+  }
+
+  // Update 3D Stage Screen visuals to match active episode
+  updateEpisode(ep) {
+    if (!ep) return;
+    if (ep.title) {
+      this.currentEpisodeTitle = ep.title;
+    }
+    if (ep.ytId) {
+      const thumb = new Image();
+      thumb.crossOrigin = 'anonymous';
+      thumb.onload = () => {
+        this.posterImage = thumb;
+        this.posterLoaded = true;
+        this.renderScreenTexture(0, ep.durationSec || 1455);
+        if (this.screenTexture) this.screenTexture.needsUpdate = true;
+      };
+      thumb.src = `https://img.youtube.com/vi/${ep.ytId}/hqdefault.jpg`;
     }
   }
 

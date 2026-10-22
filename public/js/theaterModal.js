@@ -191,6 +191,10 @@ class DiwaliTheaterModal {
               if (this.stageSeekSlider) this.stageSeekSlider.value = cur;
             }
             this.updateTimeDisplay(cur, dur);
+            // Synchronize 3D stage screen video element playhead
+            if (this.video && Math.abs((this.video.currentTime || 0) - cur) > 2) {
+              try { this.video.currentTime = cur; } catch (_) {}
+            }
           } catch (_) {}
         }
       }, 500);
@@ -695,6 +699,11 @@ class DiwaliTheaterModal {
       }
     }
 
+    // Update 3D society theater display & poster
+    if (window.diwaliWorld3D?.societyTheater?.updateEpisode) {
+      window.diwaliWorld3D.societyTheater.updateEpisode(this.currentEp);
+    }
+
     if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
       window.diwaliEngine.showToastNotice(`🎬 Now Playing: ${this.currentEp.num} - ${this.currentEp.subtitle}`);
     }
@@ -707,6 +716,9 @@ class DiwaliTheaterModal {
       this.modal.classList.remove('hidden');
     }
 
+    // Capture current 3D stage playhead so YouTube starts at the exact second
+    const curStageTime = Math.floor(this.video?.currentTime || 0);
+
     // Pause and hide local video so its sound does not clash with the full episode
     if (this.video) {
       this.video.pause();
@@ -716,9 +728,12 @@ class DiwaliTheaterModal {
     // Play the full 20+ minute episode in the iframe
     if (this.iframe && this.currentEp) {
       this.iframe.classList.remove('hidden');
-      const targetSrc = `https://www.youtube-nocookie.com/embed/${this.currentEp.ytId}?autoplay=1&enablejsapi=1&rel=0`;
+      const startParam = curStageTime > 2 ? `&start=${curStageTime}` : '';
+      const targetSrc = `https://www.youtube-nocookie.com/embed/${this.currentEp.ytId}?autoplay=1&enablejsapi=1&rel=0${startParam}`;
       if (!this.iframe.src || !this.iframe.src.includes(this.currentEp.ytId)) {
         this.iframe.src = targetSrc;
+      } else if (curStageTime > 2 && this.ytPlayer && typeof this.ytPlayer.seekTo === 'function') {
+        try { this.ytPlayer.seekTo(curStageTime, true); } catch (_) {}
       }
     }
     this.isIframePaused = false;
@@ -756,6 +771,12 @@ class DiwaliTheaterModal {
       this.modal.classList.add('hidden');
     }
 
+    // Retrieve latest playtime from YouTube so 3D screen continues seamlessly
+    let ytCurTime = 0;
+    if (this.ytPlayer && typeof this.ytPlayer.getCurrentTime === 'function') {
+      try { ytCurTime = this.ytPlayer.getCurrentTime() || 0; } catch (_) {}
+    }
+
     // Stop YouTube iframe audio immediately on modal close
     if (this.iframe) {
       this.iframe.src = '';
@@ -767,9 +788,12 @@ class DiwaliTheaterModal {
       this.stageVideoHost.appendChild(this.video);
     }
 
-    // Unhide local video and resume 3D stage screen playback
+    // Unhide local video and resume 3D stage screen playback at exact timestamp
     if (this.video) {
       this.video.classList.remove('hidden');
+      if (ytCurTime > 0) {
+        try { this.video.currentTime = ytCurTime; } catch (_) {}
+      }
       const playPromise = this.video.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {});
