@@ -644,22 +644,49 @@ class DiwaliWorld3D {
     // Porch Diyas (2 terracotta lamps guarding the entrance)
     const diya1 = this.createDiyaMesh(pos.x - 1.6, plinthH + 0.05, pos.z + doorZOffset + (isNorthLane ? 0.8 : -0.8));
     const diya2 = this.createDiyaMesh(pos.x + 1.6, plinthH + 0.05, pos.z + doorZOffset + (isNorthLane ? 0.8 : -0.8));
-    group.add(diya1);
-    group.add(diya2);
+    const diyasGroup = new THREE.Group();
+    diyasGroup.name = `Diyas_${houseData.id}`;
+    diyasGroup.add(diya1);
+    diyasGroup.add(diya2);
+    group.add(diyasGroup);
 
     // Fairy Light Strings running across the roof parapet
     const fairyLights = this.buildFairyLightString(pos.x, plinthH + groundFloorH + upperFloorH + parapetH, pos.z, upperW + 0.5, upperD + 0.5, houseData.lights.style);
     group.add(fairyLights);
-    this.fairyLightStrings.push({
+    const fairyItem = {
       houseId: houseData.id,
       group: fairyLights,
-      style: houseData.lights.style,
-      on: houseData.lights.on
-    });
+      style: houseData.lights.style || 'golden',
+      on: houseData.lights.on !== false
+    };
+    this.fairyLightStrings.push(fairyItem);
 
     // Hanging Akash Kandil Lantern at porch entrance
     const kandil = this.buildKandilLantern(pos.x - 1.2, plinthH + doorH + 0.6, pos.z + doorZOffset + (isNorthLane ? 0.6 : -0.6));
+    kandil.name = `Kandil_${houseData.id}`;
     group.add(kandil);
+
+    // Store comprehensive house decoration tracking
+    this.houseDecorations = this.houseDecorations || {};
+    this.houseDecorations[houseData.id] = {
+      houseId: houseData.id,
+      fairyLightsGroup: fairyLights,
+      diyasGroup: diyasGroup,
+      toranMesh: toran,
+      kandilGroup: kandil,
+      style: houseData.lights.style || 'golden',
+      lightsOn: houseData.lights.on !== false
+    };
+
+    // Apply initial decor visibility
+    if (houseData.decor) {
+      if (houseData.decor.diyas === false) diyasGroup.visible = false;
+      if (houseData.decor.toran === false) toran.visible = false;
+      if (houseData.decor.kandil === false) kandil.visible = false;
+    }
+    if (houseData.lights && houseData.lights.on === false) {
+      fairyLights.visible = false;
+    }
 
     // Register 3D Bounding Box Collider for this Haveli
     this.colliders.push({
@@ -2337,9 +2364,11 @@ class DiwaliWorld3D {
     const colors = [];
 
     const colorPalette = {
-      golden: [new THREE.Color(0xfef08a), new THREE.Color(0xf59e0b)],
-      rainbow: [new THREE.Color(0xef4444), new THREE.Color(0xf59e0b), new THREE.Color(0x10b981), new THREE.Color(0x3b82f6), new THREE.Color(0xa855f7)],
-      cyan: [new THREE.Color(0x06b6d4), new THREE.Color(0x3b82f6), new THREE.Color(0x8b5cf6)]
+      golden: [new THREE.Color(0xfff08a), new THREE.Color(0xf59e0b), new THREE.Color(0xffd700), new THREE.Color(0xfbbf24)],
+      rainbow: [new THREE.Color(0xff2222), new THREE.Color(0xffaa00), new THREE.Color(0x00ff66), new THREE.Color(0x00d4ff), new THREE.Color(0xb53fe6), new THREE.Color(0xff1493)],
+      cyan: [new THREE.Color(0x00ffff), new THREE.Color(0x38bdf8), new THREE.Color(0x818cf8), new THREE.Color(0xa855f7)],
+      pink: [new THREE.Color(0xff3399), new THREE.Color(0xff66cc), new THREE.Color(0xf472b6), new THREE.Color(0xffd700)],
+      emerald: [new THREE.Color(0x10b981), new THREE.Color(0x34d399), new THREE.Color(0x22c55e), new THREE.Color(0xfef08a)]
     };
 
     const activePalette = colorPalette[style] || colorPalette.golden;
@@ -2358,14 +2387,23 @@ class DiwaliWorld3D {
     bulbGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
     const bulbMat = new THREE.PointsMaterial({
-      size: 0.35,
+      size: 0.75, // Rich festive glow visible from ground and distance
       vertexColors: true,
       transparent: true,
-      opacity: 0.95
+      opacity: 0.98,
+      sizeAttenuation: true
     });
 
     const bulbsMesh = new THREE.Points(bulbGeo, bulbMat);
+    bulbsMesh.name = 'FairyLightPoints';
     group.add(bulbsMesh);
+
+    group.userData = {
+      bulbsMesh: bulbsMesh,
+      bulbGeo: bulbGeo,
+      currentStyle: style,
+      bulbCount: bulbCount
+    };
 
     return group;
   }
@@ -2605,14 +2643,89 @@ class DiwaliWorld3D {
     if (this.societyTheater && typeof this.societyTheater.update === 'function') {
       this.societyTheater.update(0.016, time);
     }
+
+    // 4. Animate House Fairy Light Strings (Dynamic Chasing Rainbow & Twinkling Colors)
+    if (this.fairyLightStrings && this.fairyLightStrings.length > 0) {
+      const colorPalette = {
+        golden: [new THREE.Color(0xfff08a), new THREE.Color(0xf59e0b), new THREE.Color(0xffd700), new THREE.Color(0xfbbf24)],
+        rainbow: [new THREE.Color(0xff2222), new THREE.Color(0xffaa00), new THREE.Color(0x00ff66), new THREE.Color(0x00d4ff), new THREE.Color(0xb53fe6), new THREE.Color(0xff1493)],
+        cyan: [new THREE.Color(0x00ffff), new THREE.Color(0x38bdf8), new THREE.Color(0x818cf8), new THREE.Color(0xa855f7)],
+        pink: [new THREE.Color(0xff3399), new THREE.Color(0xff66cc), new THREE.Color(0xf472b6), new THREE.Color(0xffd700)],
+        emerald: [new THREE.Color(0x10b981), new THREE.Color(0x34d399), new THREE.Color(0x22c55e), new THREE.Color(0xfef08a)]
+      };
+
+      const stepOffset = Math.floor(time * 4.0);
+      for (let f of this.fairyLightStrings) {
+        if (!f.on || !f.group || !f.group.visible) continue;
+        const bulbsMesh = f.group.userData?.bulbsMesh || f.group.children.find(c => c.isPoints);
+        if (!bulbsMesh || !bulbsMesh.geometry) continue;
+        const colorAttr = bulbsMesh.geometry.getAttribute('color');
+        if (!colorAttr) continue;
+
+        const st = f.style || 'golden';
+        const pal = colorPalette[st] || colorPalette.golden;
+        const count = colorAttr.count;
+
+        for (let i = 0; i < count; i++) {
+          let c;
+          if (st === 'rainbow' || st === 'cyan') {
+            c = pal[(i + stepOffset) % pal.length];
+          } else {
+            const flicker = 0.82 + Math.sin(time * 3.5 + i * 0.75) * 0.18;
+            const baseC = pal[i % pal.length];
+            c = { r: baseC.r * flicker, g: baseC.g * flicker, b: baseC.b * flicker };
+          }
+          colorAttr.setXYZ(i, c.r, c.g, c.b);
+        }
+        colorAttr.needsUpdate = true;
+      }
+    }
   }
 
-  // Update house lights dynamically when toggled by Decorator modal or Maha Deepotsav
-  updateHouseLighting(houseId, isOn, style) {
+  // Update house lights & decorations dynamically when toggled by Decorator modal or Maha Deepotsav
+  updateHouseLighting(houseId, isOn, style, decor = null) {
+    const colorPalette = {
+      golden: [new THREE.Color(0xfff08a), new THREE.Color(0xf59e0b), new THREE.Color(0xffd700), new THREE.Color(0xfbbf24)],
+      rainbow: [new THREE.Color(0xff2222), new THREE.Color(0xffaa00), new THREE.Color(0x00ff66), new THREE.Color(0x00d4ff), new THREE.Color(0xb53fe6), new THREE.Color(0xff1493)],
+      cyan: [new THREE.Color(0x00ffff), new THREE.Color(0x38bdf8), new THREE.Color(0x818cf8), new THREE.Color(0xa855f7)],
+      pink: [new THREE.Color(0xff3399), new THREE.Color(0xff66cc), new THREE.Color(0xf472b6), new THREE.Color(0xffd700)],
+      emerald: [new THREE.Color(0x10b981), new THREE.Color(0x34d399), new THREE.Color(0x22c55e), new THREE.Color(0xfef08a)]
+    };
+
+    // 1. Update fairy lights mesh and vertex colors
     const item = this.fairyLightStrings.find(f => f.houseId === houseId);
     if (item && item.group) {
       item.group.visible = isOn;
       item.on = isOn;
+      if (style) {
+        item.style = style;
+      }
+      if (isOn) {
+        const bulbsMesh = item.group.userData?.bulbsMesh || item.group.children.find(c => c.isPoints);
+        if (bulbsMesh && bulbsMesh.geometry) {
+          const colorAttr = bulbsMesh.geometry.getAttribute('color');
+          if (colorAttr) {
+            const pal = colorPalette[item.style] || colorPalette.golden;
+            for (let i = 0; i < colorAttr.count; i++) {
+              const c = pal[i % pal.length];
+              colorAttr.setXYZ(i, c.r, c.g, c.b);
+            }
+            colorAttr.needsUpdate = true;
+          }
+        }
+      }
+    }
+
+    // 2. Update houseDecorations (diyas, toran, kandil)
+    if (this.houseDecorations && this.houseDecorations[houseId]) {
+      const dec = this.houseDecorations[houseId];
+      dec.lightsOn = isOn;
+      if (style) dec.style = style;
+      if (decor) {
+        if (dec.diyasGroup) dec.diyasGroup.visible = (decor.diyas !== false);
+        if (dec.toranMesh) dec.toranMesh.visible = (decor.toran !== false);
+        if (dec.kandilGroup) dec.kandilGroup.visible = (decor.kandil !== false);
+      }
     }
   }
 

@@ -1834,6 +1834,16 @@ html, body {
   box-shadow: 0 0 10px #06b6d4;
 }
 
+.preview.pink {
+  background: linear-gradient(135deg, #ec4899, #f472b6, #fbbf24);
+  box-shadow: 0 0 10px #ec4899;
+}
+
+.preview.emerald {
+  background: linear-gradient(135deg, #10b981, #34d399, #84cc16);
+  box-shadow: 0 0 10px #10b981;
+}
+
 .preview.off {
   background: #475569;
 }

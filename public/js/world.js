@@ -1100,7 +1100,13 @@ class DiwaliWorld {
           const colors = ['#ef4444', '#fbbf24', '#10b981', '#06b6d4', '#ec4899', '#8b5cf6'];
           color = colors[(i + Math.floor(time * 4)) % colors.length];
         } else if (h.lights.style === 'cyan') {
-          const colors = ['#06b6d4', '#38bdf8', '#818cf8'];
+          const colors = ['#06b6d4', '#38bdf8', '#818cf8', '#a855f7'];
+          color = colors[(i + Math.floor(time * 4)) % colors.length];
+        } else if (h.lights.style === 'pink') {
+          const colors = ['#ec4899', '#f472b6', '#fbbf24'];
+          color = colors[(i + Math.floor(time * 4)) % colors.length];
+        } else if (h.lights.style === 'emerald') {
+          const colors = ['#10b981', '#34d399', '#84cc16'];
           color = colors[(i + Math.floor(time * 4)) % colors.length];
         }
 

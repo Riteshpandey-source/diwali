@@ -24,6 +24,11 @@ class ColonyDecorationManager {
           if (parsed[h.id]) {
             h.lights = parsed[h.id].lights || h.lights;
             h.decor = parsed[h.id].decor || h.decor;
+            if (window.diwaliWorld3D?.updateHouseLighting) {
+              window.diwaliWorld3D.updateHouseLighting(h.id, h.lights.on, h.lights.style, h.decor);
+            } else if (window.diwaliEngine3D?.world3D?.updateHouseLighting) {
+              window.diwaliEngine3D.world3D.updateHouseLighting(h.id, h.lights.on, h.lights.style, h.decor);
+            }
           }
         });
       }
@@ -113,6 +118,13 @@ class ColonyDecorationManager {
         h.decor.kandil = checkKandil ? checkKandil.checked : true;
 
         this.saveDecorations();
+
+        // Directly notify 3D world immediately for real-time visual update!
+        if (window.diwaliWorld3D?.updateHouseLighting) {
+          window.diwaliWorld3D.updateHouseLighting(h.id, h.lights.on, h.lights.style, h.decor);
+        } else if (window.diwaliEngine3D?.world3D?.updateHouseLighting) {
+          window.diwaliEngine3D.world3D.updateHouseLighting(h.id, h.lights.on, h.lights.style, h.decor);
+        }
 
         // Sync with multiplayer room if connected
         if (window.diwaliMultiplayer && window.diwaliMultiplayer.isConnected) {
