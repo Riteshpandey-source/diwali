@@ -150,6 +150,11 @@ class DiwaliShopManager {
       slot.addEventListener('click', () => {
         const item = slot.getAttribute('data-item');
         this.selectItem(item);
+
+        // Instantly ignite and place the firework right in front of the player!
+        const px = (window.diwaliPlayer3D ? window.diwaliPlayer3D.x2d : (window.diwaliPlayer ? window.diwaliPlayer.x : 370));
+        const py = (window.diwaliPlayer3D ? window.diwaliPlayer3D.y2d : (window.diwaliPlayer ? window.diwaliPlayer.y : 610));
+        this.useCurrentItem(px, py);
       });
     });
 
@@ -186,35 +191,45 @@ class DiwaliShopManager {
   }
 
   useCurrentItem(playerX, playerY) {
-    const item = this.selectedItem;
+    const item = this.selectedItem || 'anar';
+
+    // Safe coordinate fallbacks for 3D world
+    if (playerX === undefined || isNaN(playerX)) {
+      playerX = (window.diwaliPlayer3D ? window.diwaliPlayer3D.x2d : (window.diwaliPlayer ? window.diwaliPlayer.x : 370));
+    }
+    if (playerY === undefined || isNaN(playerY)) {
+      playerY = (window.diwaliPlayer3D ? window.diwaliPlayer3D.y2d : (window.diwaliPlayer ? window.diwaliPlayer.y : 610));
+    }
 
     if (item === 'phuljhadi') {
-      window.diwaliPlayer.sparklerActive = true;
-      window.festiveAudio.playSparklerSpark();
+      if (window.diwaliPlayer) window.diwaliPlayer.sparklerActive = true;
+      if (window.festiveAudio) window.festiveAudio.playSparklerSpark();
       return true;
     }
 
-    // Check quantity
-    if (this.inventory[item] <= 0) {
-      alert(`You ran out of ${item}s! Visit the Diwali Bazaar Shop or play mini-games to get more.`);
-      return false;
+    // Auto-replenish if out of stock
+    if (!this.inventory[item] || this.inventory[item] <= 0) {
+      this.inventory[item] = 10;
+      if (window.diwaliSocietyInteractions && typeof window.diwaliSocietyInteractions.showToast === 'function') {
+        window.diwaliSocietyInteractions.showToast(`✨ Received 10 free ${item}s! Shubh Deepawali!`, 3000);
+      }
     }
 
-    this.inventory[item]--;
+    this.inventory[item] = Math.max(0, this.inventory[item] - 1);
     this.saveInventory();
     this.updateHUD();
 
-    // Trigger item effect in world
+    // Trigger item effect in world (placed slightly in front of player)
     if (item === 'anar') {
-      window.diwaliFireworks.placeAnar(playerX, playerY + 10);
+      window.diwaliFireworks.placeAnar(playerX, playerY + 8);
     } else if (item === 'chakri') {
-      window.diwaliFireworks.placeChakri(playerX, playerY + 10);
+      window.diwaliFireworks.placeChakri(playerX, playerY + 8);
     } else if (item === 'rocket') {
       window.diwaliFireworks.launchRocket(playerX, playerY - 10);
     } else if (item === 'kandil') {
       window.diwaliFireworks.launchLantern(playerX, playerY - 10);
     } else if (item === 'diya') {
-      window.diwaliFireworks.placeDiya(playerX, playerY + 10);
+      window.diwaliFireworks.placeDiya(playerX, playerY + 8);
     }
 
     // Sync with multiplayer room if connected

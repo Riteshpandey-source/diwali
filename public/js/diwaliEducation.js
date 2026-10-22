@@ -215,6 +215,10 @@ class DiwaliEducation3D {
     if (this.storyTimer <= 0) {
       this.storyTimer = this.storyInterval;
       if (this.dadaji) {
+        // Do not broadcast storytelling while player is in or watching the theater/cinema
+        if (window.diwaliTheaterModal?.isNearTheater || (window.diwaliEngine3D?.player3D?.isSitting && window.diwaliEngine3D.player3D.currentBench?.isTheaterBench)) {
+          return;
+        }
         const text = this.storyLines[this.storyIndex % this.storyLines.length];
         this.dadaji.showDialogue(text, 5.5);
         this.dadaji.state = NPCState.TALKING;
@@ -325,9 +329,12 @@ class DiwaliEducation3D {
 
         </div>
 
-        <div class="modal-footer" style="padding: 14px 24px; border-top: 1px solid rgba(245,158,11,0.2); display: flex; justify-content: flex-end; background: #080612;">
-          <button id="closeEducationModalBottomBtn" style="background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); color: #fff; border: none; padding: 9px 24px; border-radius: 20px; font-weight: 700; cursor: pointer;">
-            Close & Explore Colony ➔
+        <div class="modal-footer" style="padding: 14px 24px; border-top: 1px solid rgba(245,158,11,0.2); display: flex; justify-content: space-between; align-items: center; background: #080612; flex-wrap: wrap; gap: 10px;">
+          <button id="launchQuizFromEducationBtn" style="background: rgba(245,158,11,0.2); border: 1px solid #f59e0b; color: #fbbf24; padding: 9px 18px; border-radius: 20px; font-weight: 600; cursor: pointer; font-size: 13.5px;">
+            🎯 Optional: Take Diwali Traditions Quiz
+          </button>
+          <button id="closeEducationModalBottomBtn" style="background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); color: #fff; border: none; padding: 9px 24px; border-radius: 20px; font-weight: 700; cursor: pointer; font-size: 13.5px;">
+            Close & Return to Temple ➔
           </button>
         </div>
       </div>
@@ -341,6 +348,7 @@ class DiwaliEducation3D {
     // Event listeners
     const closeBtn = document.getElementById('closeEducationModalBtn');
     const closeBottomBtn = document.getElementById('closeEducationModalBottomBtn');
+    const quizBtn = document.getElementById('launchQuizFromEducationBtn');
     const modal = document.getElementById('diwaliEducationModal');
 
     const closeModal = () => {
@@ -349,9 +357,23 @@ class DiwaliEducation3D {
 
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
     if (closeBottomBtn) closeBottomBtn.addEventListener('click', closeModal);
+    if (quizBtn) {
+      quizBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeModal();
+        if (window.diwaliMiniGames) {
+          window.diwaliMiniGames.openGamesModal();
+          window.diwaliMiniGames.launchTriviaQuiz();
+        }
+      });
+    }
     if (modal) {
       modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
+      });
+      modal.addEventListener('keydown', (e) => {
+        e.stopPropagation();
+        if (e.key === 'Escape') closeModal();
       });
     }
   }

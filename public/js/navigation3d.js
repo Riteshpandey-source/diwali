@@ -48,12 +48,12 @@ class DiwaliNavigation3D {
       rangoli_front:  { id: 'rangoli_front',  x:  41.5, z:  28.0, label: 'Rangoli Pavilion Counter' },
 
       // 7. Shree Mandir Temple Complex (East side of Promenade)
-      temple_entry:   { id: 'temple_entry',   x:  58.0, z:   8.0, label: 'Temple Promenade Gateway' },
-      temple_steps:   { id: 'temple_steps',   x:  64.0, z:   8.0, label: 'Temple Marble Steps' },
-      temple_devotees:{ id: 'temple_devotees',x:  68.0, z:   8.0, label: 'Temple Devotees Area' },
-      temple_altar:   { id: 'temple_altar',   x:  73.5, z:   8.0, label: 'Temple Altar Sanctum' },
-      temple_diya_s:  { id: 'temple_diya_s',  x:  65.5, z:  13.5, label: 'Temple South Diya Row' },
-      temple_diya_n:  { id: 'temple_diya_n',  x:  65.5, z:   2.5, label: 'Temple North Diya Row' },
+      temple_entry:   { id: 'temple_entry',   x:  58.0, z:   8.0, y: 0.35, label: 'Temple Promenade Gateway' },
+      temple_steps:   { id: 'temple_steps',   x:  61.5, z:   8.0, y: 1.45, label: 'Temple Marble Steps' },
+      temple_devotees:{ id: 'temple_devotees',x:  67.5, z:   8.0, y: 1.6,  label: 'Temple Devotees Area' },
+      temple_altar:   { id: 'temple_altar',   x:  71.8, z:   8.0, y: 1.6,  label: 'Temple Altar Sanctum' },
+      temple_diya_s:  { id: 'temple_diya_s',  x:  65.5, z:  12.5, y: 1.6,  label: 'Temple South Diya Row' },
+      temple_diya_n:  { id: 'temple_diya_n',  x:  65.5, z:   3.5, y: 1.6,  label: 'Temple North Diya Row' },
 
       // 8. Fireworks Celebration Pads
       fw_chowk:       { id: 'fw_chowk',       x: -12.0, z:  -3.0, label: 'Chowk Fireworks Area' },
@@ -62,7 +62,12 @@ class DiwaliNavigation3D {
       fw_court_verma: { id: 'fw_court_verma', x: -14.0, z: -15.0, label: 'Verma House Play Area' },
 
       // 9. Diwali Educational Area ("Diwali Kyon Manate Hain?")
-      edu_kiosk:      { id: 'edu_kiosk',      x:  54.0, z:   2.0, label: 'Diwali Education Kiosk' }
+      edu_kiosk:      { id: 'edu_kiosk',      x:  54.0, z:   2.0, label: 'Diwali Education Kiosk' },
+
+      // 10. Gokuldham Society Specific Landmarks
+      comm_hall_entry:{ id: 'comm_hall_entry',x:  24.0, z:  28.0, label: 'Community Hall Entry' },
+      entrance_gate:  { id: 'entrance_gate',  x: -48.0, z:   0.0, label: 'Gokuldham Society Main Gate' },
+      noticeboard:    { id: 'noticeboard',    x: -18.0, z:   8.0, label: 'Society Noticeboard' }
     };
 
     // Graph Connectivity (Adjacency List)
@@ -75,24 +80,27 @@ class DiwaliNavigation3D {
       home_mukherjee: ['home_patel', 'chowk_south', 'home_singh'],
       home_singh:     ['home_mukherjee', 'road_se'],
 
-      road_nw:        ['home_sharma'],
-      road_sw:        ['home_patel'],
+      road_nw:        ['home_sharma', 'entrance_gate'],
+      road_sw:        ['home_patel', 'entrance_gate'],
+      entrance_gate:  ['road_nw', 'road_sw', 'chowk_center'],
 
       road_ne:        ['home_gupta', 'prom_north', 'bazaar_front'],
-      road_se:        ['home_singh', 'prom_south', 'rangoli_front'],
+      road_se:        ['home_singh', 'prom_south', 'rangoli_front', 'comm_hall_entry'],
+      comm_hall_entry:['road_se', 'prom_south'],
 
-      chowk_center:   ['chowk_north', 'chowk_south', 'chowk_east'],
+      chowk_center:   ['chowk_north', 'chowk_south', 'chowk_east', 'noticeboard'],
+      noticeboard:    ['chowk_center', 'chowk_south'],
       chowk_north:    ['home_verma', 'chowk_center'],
-      chowk_south:    ['home_mukherjee', 'chowk_center'],
+      chowk_south:    ['home_mukherjee', 'chowk_center', 'noticeboard'],
       chowk_east:     ['chowk_center', 'fw_chowk', 'prom_mid'],
 
       prom_north:     ['road_ne', 'prom_mid', 'fw_promenade', 'edu_kiosk'],
       prom_mid:       ['prom_north', 'prom_south', 'bazaar_front', 'temple_entry', 'edu_kiosk', 'chowk_east'],
-      prom_south:     ['prom_mid', 'road_se', 'rangoli_front'],
+      prom_south:     ['prom_mid', 'road_se', 'rangoli_front', 'comm_hall_entry'],
 
       bazaar_front:   ['prom_mid', 'bazaar_inside', 'rangoli_front', 'road_ne'],
       bazaar_inside:  ['bazaar_front'],
-      rangoli_front:  ['bazaar_front', 'prom_south', 'road_se'],
+      rangoli_front:  ['bazaar_front', 'prom_south', 'road_se', 'comm_hall_entry'],
 
       temple_entry:   ['prom_mid', 'temple_steps', 'edu_kiosk'],
       temple_steps:   ['temple_entry', 'temple_devotees', 'temple_diya_s', 'temple_diya_n'],

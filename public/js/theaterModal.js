@@ -1,0 +1,696 @@
+// ===================================================================
+// TMKOC HAPPY DIWALI THEATER - VIDEO PLAYBACK & MODAL CONTROLLER
+// Direct in-page HTML5 Video playback of official TMKOC Diwali Special,
+// synchronized 3D stage screen projection, responsive cinema controls,
+// episode switching, and guaranteed playback right here!
+// ===================================================================
+
+class DiwaliTheaterModal {
+  constructor() {
+    // Curated TMKOC Diwali Episodes (Full Uncut 20+ Minute Television Episodes)
+    this.episodes = {
+      ep53: {
+        id: 'ep53',
+        num: 'Ep 53 (Full Episode)',
+        title: 'TMKOC • Ep 53: Gokuldham Diwali Laxmi Pujan',
+        subtitle: 'Iconic Diwali Celebration & Comedy (Full Episode)',
+        desc: 'Jethalal, Daya, Champaklal, and the entire Gokuldham society celebrate their very first iconic Diwali celebration with Laxmi Pujan, festive sweets, and family laughter.',
+        videoSrc: 'assets/videos/tmkoc_ep53_full.mp4',
+        ytUrl: 'https://youtu.be/-j9CKPlPhnU?si=9e1NO_5_1LzRv2zY',
+        ytId: '-j9CKPlPhnU'
+      },
+      ep2598: {
+        id: 'ep2598',
+        num: 'Ep 2598 (Full Episode)',
+        title: 'TMKOC • Ep 2598: Popatlal Ke Patakhe',
+        subtitle: 'Gokuldham Society Grand Diwali Mela & Fireworks (Full Episode)',
+        desc: 'Popatlal brings fireworks to Gokuldham society while Jethalal, Champaklal, and the Tapu Sena prepare for the grand Diwali celebration.',
+        videoSrc: 'assets/videos/tmkoc_ep2598_full.mp4',
+        ytUrl: 'https://www.youtube.com/watch?v=7_bDxQEkpN8',
+        ytId: '7_bDxQEkpN8'
+      },
+      ep247: {
+        id: 'ep247',
+        num: 'Ep 247 (Full Episode)',
+        title: 'TMKOC • Ep 247: Classic Gokuldham Diwali',
+        subtitle: 'Festive Kavi Sammelan, Sweets & Laughter (Full Episode)',
+        desc: 'Taarak Mehta recites festive Diwali poetry while Jethalal relishes fresh hot jalebi fafda and the society distributes sweets.',
+        videoSrc: 'assets/videos/tmkoc_ep247_full.mp4',
+        ytUrl: 'https://www.youtube.com/watch?v=kES8Q1psYCI',
+        ytId: 'kES8Q1psYCI'
+      },
+      ep3604: {
+        id: 'ep3604',
+        num: 'Ep 3604 (Full Episode)',
+        title: 'TMKOC • Ep 3604: Gokuldham Deepotsav',
+        subtitle: 'Rangoli Pratiyogita & Colorful Illumination (Full Episode)',
+        desc: 'Mahila Mandal decorates the society ground with intricate rangoli patterns while Abdul helps illuminate the compound with fairy lights.',
+        videoSrc: 'assets/videos/tmkoc_ep3604_full.mp4',
+        ytUrl: 'https://www.youtube.com/watch?v=oK331RRfQac',
+        ytId: 'oK331RRfQac'
+      },
+      ep4231: {
+        id: 'ep4231',
+        num: 'Ep 4231 (Full Episode)',
+        title: 'TMKOC • Ep 4231: Mahasabha Diwali',
+        subtitle: 'Grand Society Garba & Dazzling Sky Fireworks (Full Episode)',
+        desc: 'All Gokuldham families gather in traditional festive attire for late-night garba, chakri, and magnificent sky shots.',
+        videoSrc: 'assets/videos/tmkoc_ep4231_full.mp4',
+        ytUrl: 'https://www.youtube.com/watch?v=2FuThuwrqeg',
+        ytId: '2FuThuwrqeg'
+      }
+    };
+
+    this.activeEpisodeKey = 'ep53';
+    this.currentEp = this.episodes.ep53;
+
+    // Playback State
+    this.isOpen = false;
+    this.theaterCenter = { x: 24.0, z: -14.0 };
+    this.triggerRadius = 14.5;
+    this.isNearTheater = false;
+
+    // Cache DOM Elements
+    this.modal = document.getElementById('theaterPlayerModal');
+    this.video = document.getElementById('theaterNativeVideo');
+    this.iframe = document.getElementById('theaterIframe');
+    this.playOverlay = document.getElementById('theaterPlayOverlay');
+    this.bigPlayBtn = document.getElementById('theaterBigPlayBtn');
+    this.playPauseBtn = document.getElementById('modalPlayPauseBtn');
+    this.skipBackBtn = document.getElementById('modalSkipBackBtn');
+    this.skipForwardBtn = document.getElementById('modalSkipForwardBtn');
+    this.skipIndicator = document.getElementById('theaterSkipIndicator');
+    this.skipText = document.getElementById('theaterSkipText');
+    this.muteBtn = document.getElementById('modalMuteBtn');
+    this.seekSlider = document.getElementById('modalSeekSlider');
+    this.timeDisplay = document.getElementById('modalTimeDisplay');
+    this.fullscreenBtn = document.getElementById('modalFullscreenBtn');
+    this.directYtLink = document.getElementById('directOfficialYtLink');
+    this.locationBadge = document.getElementById('theaterLocationBadge');
+
+    // Stage Quick Controls Elements
+    this.stageVideoHost = document.getElementById('stageVideoHost');
+    this.theaterVideoWrapper = document.getElementById('theaterVideoWrapper');
+    this.stageQuickControls = document.getElementById('stageQuickControls');
+    this.stagePlayPauseBtn = document.getElementById('stagePlayPauseBtn');
+    this.stagePlayPauseIcon = document.getElementById('stagePlayPauseIcon');
+    this.stagePlayPauseText = document.getElementById('stagePlayPauseText');
+    this.stageSkipBackBtn = document.getElementById('stageSkipBackBtn');
+    this.stageSkipFwdBtn = document.getElementById('stageSkipFwdBtn');
+    this.stageMuteToggleBtn = document.getElementById('stageMuteToggleBtn');
+    this.stageMuteIcon = document.getElementById('stageMuteIcon');
+    this.stageMuteText = document.getElementById('stageMuteText');
+    this.stageSeekSlider = document.getElementById('stageSeekSlider');
+    this.stageTimeText = document.getElementById('stageTimeText');
+    this.stageEnlargeBtn = document.getElementById('stageEnlargeBtn');
+
+    this.initVideoEventListeners();
+    this.initControlsListeners();
+
+    // Auto-bind to 3D theater screen if ready
+    setTimeout(() => {
+      if (window.diwaliWorld3D?.societyTheater?.bindVideoTexture && this.video) {
+        window.diwaliWorld3D.societyTheater.bindVideoTexture(this.video);
+      }
+    }, 600);
+  }
+
+  initVideoEventListeners() {
+    if (!this.video) return;
+
+    // When video starts playing
+    this.video.addEventListener('play', () => {
+      if (this.playPauseBtn) {
+        this.playPauseBtn.innerHTML = '<span class="ctrl-icon">⏸</span>';
+      }
+      if (this.stagePlayPauseIcon) this.stagePlayPauseIcon.textContent = '⏸️';
+      if (this.stagePlayPauseText) this.stagePlayPauseText.textContent = 'PAUSE';
+      if (this.stagePlayPauseBtn) this.stagePlayPauseBtn.classList.remove('paused');
+      if (this.playOverlay) {
+        this.playOverlay.classList.add('hidden');
+      }
+      // Inform 3D theater screen to bind video texture if ready
+      if (window.diwaliWorld3D?.societyTheater?.bindVideoTexture) {
+        window.diwaliWorld3D.societyTheater.bindVideoTexture(this.video);
+      }
+    });
+
+    // When video pauses
+    this.video.addEventListener('pause', () => {
+      if (this.playPauseBtn) {
+        this.playPauseBtn.innerHTML = '<span class="ctrl-icon">▶</span>';
+      }
+      if (this.stagePlayPauseIcon) this.stagePlayPauseIcon.textContent = '▶️';
+      if (this.stagePlayPauseText) this.stagePlayPauseText.textContent = 'RESUME';
+      if (this.stagePlayPauseBtn) this.stagePlayPauseBtn.classList.add('paused');
+      if (this.playOverlay && this.isOpen) {
+        this.playOverlay.classList.remove('hidden');
+      }
+    });
+
+    // Time update (advancing playhead)
+    this.video.addEventListener('timeupdate', () => {
+      if (!this.video) return;
+
+      const cur = this.video.currentTime || 0;
+      const dur = this.video.duration || 1200;
+
+      // Update sliders unless user is actively dragging them
+      if (!this.isUserSeeking) {
+        if (this.seekSlider) this.seekSlider.value = cur;
+        if (this.stageSeekSlider) this.stageSeekSlider.value = cur;
+      }
+      this.updateTimeDisplay(cur, dur);
+    });
+
+    // Loaded metadata
+    this.video.addEventListener('loadedmetadata', () => {
+      if (this.video.duration) {
+        const maxVal = Math.floor(this.video.duration);
+        if (this.seekSlider) this.seekSlider.max = maxVal;
+        if (this.stageSeekSlider) this.stageSeekSlider.max = maxVal;
+      }
+      this.updateTimeDisplay(this.video.currentTime, this.video.duration);
+    });
+
+    // Loop video on end
+    this.video.addEventListener('ended', () => {
+      this.video.currentTime = 0;
+      this.video.play().catch(() => {});
+    });
+
+    // Click on video directly to toggle play/pause
+    this.video.addEventListener('click', () => {
+      this.togglePlayPause();
+    });
+  }
+
+  initControlsListeners() {
+    // 1. Close Modal
+    const closeBtn = document.getElementById('closeTheaterModalBtn');
+    if (closeBtn) closeBtn.addEventListener('click', () => this.closeTheaterModal());
+
+    if (this.modal) {
+      this.modal.addEventListener('click', (e) => {
+        if (e.target === this.modal) this.closeTheaterModal();
+      });
+    }
+
+    // Keyboard Shortcuts: Space=Play/Pause (Push/Resume), Arrows/J/L=Skip 10s, M=Mute
+    window.addEventListener('keydown', (e) => {
+      if (!this.isOpen && !this.isNearTheater) return;
+
+      if (e.key === 'Escape' && this.isOpen) {
+        this.closeTheaterModal();
+      } else if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        this.togglePlayPause();
+      } else if (e.key === 'ArrowRight' || e.key === 'l' || e.key === 'L') {
+        e.preventDefault();
+        this.seekRelative(10);
+      } else if (e.key === 'ArrowLeft' || e.key === 'j' || e.key === 'J') {
+        e.preventDefault();
+        this.seekRelative(-10);
+      } else if (e.key === 'm' || e.key === 'M') {
+        this.toggleMute();
+      } else if (e.key === 'v' || e.key === 'V') {
+        if (window.diwaliPlayer3D && typeof window.diwaliPlayer3D.toggleTheaterCamView === 'function') {
+          window.diwaliPlayer3D.toggleTheaterCamView();
+        }
+      }
+    });
+
+    // 2. Play / Pause Buttons
+    if (this.bigPlayBtn) {
+      this.bigPlayBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.togglePlayPause();
+      });
+    }
+    if (this.playOverlay) {
+      this.playOverlay.addEventListener('click', () => this.togglePlayPause());
+    }
+    if (this.playPauseBtn) {
+      this.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
+    }
+
+    // 3. Skip 10 Seconds Backward & Forward Buttons
+    if (this.skipBackBtn) {
+      this.skipBackBtn.addEventListener('click', () => this.seekRelative(-10));
+    }
+    if (this.skipForwardBtn) {
+      this.skipForwardBtn.addEventListener('click', () => this.seekRelative(10));
+    }
+
+    // 4. Mute / Unmute
+    if (this.muteBtn) {
+      this.muteBtn.addEventListener('click', () => this.toggleMute());
+    }
+
+    // 5. Seek Slider
+    if (this.seekSlider) {
+      this.isUserSeeking = false;
+      this.seekSlider.addEventListener('mousedown', () => { this.isUserSeeking = true; });
+      this.seekSlider.addEventListener('touchstart', () => { this.isUserSeeking = true; }, { passive: true });
+
+      const onSeekInput = (e) => {
+        const val = parseFloat(e.target.value);
+        if (this.video && Number.isFinite(val)) {
+          this.video.currentTime = val;
+          this.updateTimeDisplay(val, this.video.duration || 1200);
+        }
+      };
+
+      this.seekSlider.addEventListener('input', onSeekInput);
+      this.seekSlider.addEventListener('change', onSeekInput);
+
+      this.seekSlider.addEventListener('mouseup', () => { this.isUserSeeking = false; });
+      this.seekSlider.addEventListener('touchend', () => { this.isUserSeeking = false; });
+    }
+
+    // 6. Fullscreen Toggle
+    if (this.fullscreenBtn) {
+      this.fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
+    }
+
+    // 6. Episode Tabs (Modal Tabs)
+    const epTabs = document.querySelectorAll('.ep-tab');
+    epTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const epKey = tab.getAttribute('data-ep');
+        if (epKey && this.episodes[epKey]) {
+          epTabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          const stagePills = document.querySelectorAll('.stage-pill');
+          stagePills.forEach(p => {
+            if (p.getAttribute('data-ep') === epKey) p.classList.add('active');
+            else p.classList.remove('active');
+          });
+          this.switchEpisode(epKey);
+        }
+      });
+    });
+
+    // 7. Stage Quick Controls Listeners (Push / Resume directly from Ground)
+    if (this.stagePlayPauseBtn) {
+      this.stagePlayPauseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.togglePlayPause();
+      });
+    }
+
+    if (this.stageSkipBackBtn) {
+      this.stageSkipBackBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.seekRelative(-10);
+      });
+    }
+
+    if (this.stageSkipFwdBtn) {
+      this.stageSkipFwdBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.seekRelative(10);
+      });
+    }
+
+    if (this.stageMuteToggleBtn) {
+      this.stageMuteToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggleMute();
+      });
+    }
+
+    if (this.stageEnlargeBtn) {
+      this.stageEnlargeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openTheaterModal();
+      });
+    }
+
+    const camViewBtn = document.getElementById('stageCamViewBtn');
+    if (camViewBtn) {
+      camViewBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (window.diwaliPlayer3D && typeof window.diwaliPlayer3D.toggleTheaterCamView === 'function') {
+          window.diwaliPlayer3D.toggleTheaterCamView();
+        }
+      });
+    }
+
+    if (this.stageSeekSlider) {
+      const onStageSeek = (e) => {
+        const val = parseFloat(e.target.value);
+        if (this.video && Number.isFinite(val)) {
+          this.video.currentTime = val;
+          this.updateTimeDisplay(val, this.video.duration || 1200);
+        }
+      };
+      this.stageSeekSlider.addEventListener('mousedown', () => { this.isUserSeeking = true; });
+      this.stageSeekSlider.addEventListener('touchstart', () => { this.isUserSeeking = true; }, { passive: true });
+      this.stageSeekSlider.addEventListener('input', onStageSeek);
+      this.stageSeekSlider.addEventListener('change', onStageSeek);
+      this.stageSeekSlider.addEventListener('mouseup', () => { this.isUserSeeking = false; });
+      this.stageSeekSlider.addEventListener('touchend', () => { this.isUserSeeking = false; });
+    }
+
+    const stagePills = document.querySelectorAll('.stage-pill');
+    stagePills.forEach(pill => {
+      pill.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const epKey = pill.getAttribute('data-ep');
+        if (epKey && this.episodes[epKey]) {
+          stagePills.forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          epTabs.forEach(t => {
+            if (t.getAttribute('data-ep') === epKey) t.classList.add('active');
+            else t.classList.remove('active');
+          });
+          this.switchEpisode(epKey);
+        }
+      });
+    });
+
+    const modalYtBtn = document.getElementById('theaterModalYtBtn');
+    if (modalYtBtn) {
+      modalYtBtn.addEventListener('click', () => this.openOfficialYouTube());
+    }
+
+    // 9. Custom Source Configuration Form
+    const toggleConfigBtn = document.getElementById('toggleSourceConfigBtn');
+    const configPanel = document.getElementById('theaterSourceConfigPanel');
+    const saveSourceBtn = document.getElementById('saveSourceBtn');
+    const sourceInput = document.getElementById('customSourceInput');
+
+    if (toggleConfigBtn && configPanel) {
+      toggleConfigBtn.addEventListener('click', () => {
+        configPanel.classList.toggle('hidden');
+      });
+    }
+
+    if (saveSourceBtn && sourceInput) {
+      saveSourceBtn.addEventListener('click', () => {
+        const val = sourceInput.value.trim();
+        if (val) {
+          this.setCustomVideoSource(val);
+        }
+      });
+    }
+  }
+
+  // Toggle Video Play / Pause (Push / Resume)
+  togglePlayPause() {
+    if (!this.video) return;
+
+    if (this.video.paused) {
+      const playPromise = this.video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn('Playback error / autoplay blocked:', err);
+        });
+      }
+      if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
+        window.diwaliEngine.showToastNotice('▶️ Video Resumed • Playing on Stage');
+      }
+    } else {
+      this.video.pause();
+      if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
+        window.diwaliEngine.showToastNotice('⏸️ Video Paused (Push) • Click Screen or Press Space to Resume');
+      }
+    }
+  }
+
+  // Toggle Mute / Unmute
+  toggleMute() {
+    if (!this.video) return;
+
+    this.video.muted = !this.video.muted;
+    if (this.muteBtn) {
+      this.muteBtn.innerHTML = this.video.muted
+        ? '<span class="ctrl-icon">🔇</span>'
+        : '<span class="ctrl-icon">🔊</span>';
+    }
+    if (this.stageMuteIcon) {
+      this.stageMuteIcon.textContent = this.video.muted ? '🔇' : '🔊';
+    }
+    if (this.stageMuteText) {
+      this.stageMuteText.textContent = this.video.muted ? 'Muted' : 'Sound';
+    }
+    if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
+      window.diwaliEngine.showToastNotice(this.video.muted ? '🔇 Audio Muted' : '🔊 Audio Unmuted');
+    }
+  }
+
+  // Seek relative seconds (Skip 10s forward or backward)
+  seekRelative(deltaSec) {
+    if (!this.video) return;
+    const dur = this.video.duration || 1200;
+    const current = this.video.currentTime || 0;
+    const newTime = Math.max(0, Math.min(dur, current + deltaSec));
+    this.video.currentTime = newTime;
+    this.updateTimeDisplay(newTime, dur);
+
+    if (this.seekSlider) {
+      this.seekSlider.value = newTime;
+    }
+
+    // Show instant on-screen skip flash badge
+    if (this.skipIndicator && this.skipText) {
+      this.skipText.textContent = deltaSec > 0 ? `+${Math.abs(deltaSec)}s ⏩` : `⏪ -${Math.abs(deltaSec)}s`;
+      this.skipIndicator.classList.remove('hidden');
+      clearTimeout(this.skipTimeout);
+      this.skipTimeout = setTimeout(() => {
+        if (this.skipIndicator) this.skipIndicator.classList.add('hidden');
+      }, 850);
+    }
+  }
+
+  // Toggle Fullscreen Mode
+  toggleFullscreen() {
+    const wrapper = document.getElementById('theaterVideoWrapper');
+    if (!wrapper) return;
+
+    if (!document.fullscreenElement) {
+      if (wrapper.requestFullscreen) {
+        wrapper.requestFullscreen().catch(() => {});
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+  }
+
+  // Switch Episode
+  switchEpisode(epKey) {
+    if (!this.episodes[epKey]) return;
+    this.activeEpisodeKey = epKey;
+    this.currentEp = this.episodes[epKey];
+
+    // Highlight active episode tab
+    const epTabs = document.querySelectorAll('.ep-tab');
+    epTabs.forEach(t => {
+      if (t.getAttribute('data-ep') === epKey) {
+        t.classList.add('active');
+      } else {
+        t.classList.remove('active');
+      }
+    });
+
+    const titleEl = document.getElementById('theaterModalTitle');
+    const subtitleEl = document.getElementById('theaterModalSubtitle');
+    const descEl = document.getElementById('theaterEpisodeDesc');
+    const ytBannerTitle = document.getElementById('ytBannerTitle');
+
+    if (titleEl) titleEl.textContent = this.currentEp.title;
+    if (subtitleEl) subtitleEl.textContent = this.currentEp.subtitle;
+    if (descEl) descEl.textContent = this.currentEp.desc;
+    if (ytBannerTitle) ytBannerTitle.textContent = `Watch ${this.currentEp.num} on Official Sony SAB YouTube`;
+
+    if (this.directYtLink) {
+      this.directYtLink.href = this.currentEp.ytUrl;
+    }
+
+    // Switch and play selected episode video right here!
+    if (this.video) {
+      if (this.iframe) {
+        this.iframe.classList.add('hidden');
+        this.iframe.src = '';
+      }
+      this.video.classList.remove('hidden');
+
+      // Update source if different
+      if (!this.video.src.includes(this.currentEp.videoSrc)) {
+        this.video.src = this.currentEp.videoSrc;
+        this.video.load();
+      }
+      this.video.currentTime = 0;
+      const playPromise = this.video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn('Episode play interrupted / requires user gesture:', err);
+        });
+      }
+
+      // Project onto 3D stage screen
+      if (window.diwaliWorld3D?.societyTheater?.bindVideoTexture) {
+        window.diwaliWorld3D.societyTheater.bindVideoTexture(this.video);
+      }
+    }
+
+    if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
+      window.diwaliEngine.showToastNotice(`🎬 Now Playing: ${this.currentEp.num} - ${this.currentEp.subtitle}`);
+    }
+  }
+
+  // Open Theater Modal & Play Video Right Here!
+  openTheaterModal(data = null) {
+    this.isOpen = true;
+    if (this.modal) {
+      this.modal.classList.remove('hidden');
+    }
+
+    // Adopt video element into modal video wrapper if needed
+    if (this.theaterVideoWrapper && this.video && this.video.parentNode !== this.theaterVideoWrapper) {
+      this.theaterVideoWrapper.insertBefore(this.video, this.theaterVideoWrapper.firstChild);
+    }
+
+    // Play video right here!
+    if (this.video) {
+      const playPromise = this.video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // If browser policy blocks autoplay with audio, show overlay for user gesture
+          if (this.playOverlay) {
+            this.playOverlay.classList.remove('hidden');
+          }
+        });
+      }
+    }
+
+    // Inform 3D theater screen
+    if (window.diwaliWorld3D?.societyTheater?.bindVideoTexture && this.video) {
+      window.diwaliWorld3D.societyTheater.bindVideoTexture(this.video);
+    }
+
+    // Notify user
+    if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
+      window.diwaliEngine.showToastNotice('🎬 Now Playing: TMKOC Happy Diwali Special on Big Screen');
+    }
+  }
+
+  // Close Modal (Keep video playing on 3D stage!)
+  closeTheaterModal() {
+    this.isOpen = false;
+    if (this.modal) {
+      this.modal.classList.add('hidden');
+    }
+
+    // Return video element to persistent host so it continues active GPU decoding
+    if (this.stageVideoHost && this.video && this.video.parentNode !== this.stageVideoHost) {
+      this.stageVideoHost.appendChild(this.video);
+    }
+
+    // Stop iframe if active
+    if (this.iframe) {
+      this.iframe.src = '';
+    }
+
+    // Note: Video is NOT paused here so it seamlessly keeps playing on the 3D ground stage!
+  }
+
+  openOfficialYouTube() {
+    const url = this.currentEp ? this.currentEp.ytUrl : 'https://www.youtube.com/playlist?list=PLSXTaG1fT0cSttPNrUmDlLygONjGdRqNZ';
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  setCustomVideoSource(input) {
+    const parsedId = this.extractYouTubeId(input);
+    const toast = document.getElementById('theaterNoticeToast');
+
+    if (parsedId) {
+      if (this.video) {
+        this.video.pause();
+        this.video.classList.add('hidden');
+      }
+      if (this.iframe) {
+        this.iframe.classList.remove('hidden');
+        this.iframe.src = `https://www.youtube-nocookie.com/embed/${parsedId}?autoplay=1&enablejsapi=1&rel=0`;
+      }
+      if (toast) {
+        toast.textContent = '✅ Playing custom YouTube video!';
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 3500);
+      }
+    } else {
+      if (toast) {
+        toast.textContent = '⚠️ Invalid YouTube link. Please paste a standard watch?v= or youtu.be URL.';
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 3500);
+      }
+    }
+  }
+
+  extractYouTubeId(input) {
+    if (!input) return null;
+    input = input.trim();
+    if (/^[a-zA-Z0-9_-]{11}$/.test(input)) return input;
+    const vMatch = input.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+    if (vMatch) return vMatch[1];
+    const beMatch = input.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    if (beMatch) return beMatch[1];
+    const embMatch = input.match(/embed\/([a-zA-Z0-9_-]{11})/);
+    if (embMatch) return embMatch[1];
+    return null;
+  }
+
+  updateTimeDisplay(currentSec, totalSec) {
+    if (!this.timeDisplay) return;
+
+    currentSec = Math.max(0, currentSec || 0);
+    totalSec = Math.max(0, totalSec || 120);
+
+    const curMin = Math.floor(currentSec / 60).toString().padStart(2, '0');
+    const curS = Math.floor(currentSec % 60).toString().padStart(2, '0');
+    const totMin = Math.floor(totalSec / 60).toString().padStart(2, '0');
+    const totS = Math.floor(totalSec % 60).toString().padStart(2, '0');
+
+    const str = `${curMin}:${curS} / ${totMin}:${totS}`;
+    if (this.timeDisplay) this.timeDisplay.textContent = str;
+    if (this.stageTimeText) this.stageTimeText.textContent = str;
+  }
+
+  // Real-Time Location & Proximity Tracker
+  updateProximity(player3DX, player3DZ) {
+    const isPlayerSittingInTheater = Boolean(
+      window.diwaliEngine?.player3D?.isSitting &&
+      window.diwaliEngine?.player3D?.currentBench?.isTheaterBench
+    );
+
+    const dist = Math.hypot(player3DX - this.theaterCenter.x, player3DZ - this.theaterCenter.z);
+    let inRange = isPlayerSittingInTheater || (dist <= this.triggerRadius);
+
+    // Suppress theater stage controls when near or interacting with other features (e.g. storytelling board, temple)
+    if (!isPlayerSittingInTheater && inRange && window.diwaliEngine?.currentInteractive && window.diwaliEngine.currentInteractive.type !== 'society_theater') {
+      inRange = false;
+    }
+
+    if (inRange !== this.isNearTheater) {
+      this.isNearTheater = inRange;
+
+      if (this.locationBadge) {
+        this.locationBadge.classList.toggle('hidden', !inRange);
+      }
+
+      if (this.stageQuickControls) {
+        this.stageQuickControls.classList.toggle('hidden', !inRange);
+      }
+
+      if (inRange) {
+        const bubblesLayer = document.getElementById('emoteBubblesLayer');
+        if (bubblesLayer) bubblesLayer.innerHTML = '';
+      }
+    }
+  }
+}
+
+window.DiwaliTheaterModal = DiwaliTheaterModal;

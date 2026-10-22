@@ -34,6 +34,10 @@ class DiwaliNPCManager3D {
       this.removeNPC(config.id);
     }
 
+    if (config.y === undefined && this.world3D && typeof this.world3D.getElevation === 'function') {
+      config.y = this.world3D.getElevation(config.x || 0, config.z || 0);
+    }
+
     const npc = new DiwaliNPC3D(config);
     this.npcs.set(config.id, npc);
     this.scene.add(npc.group);

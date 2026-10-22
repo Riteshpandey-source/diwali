@@ -198,29 +198,73 @@ class GreetingController {
     }
   }
 
+  enterGokuldhamSociety() {
+    window.festiveAudio.ensureContext();
+    window.festiveAudio.playTempleBell();
+    window.festiveAudio.startFestiveAmbientMusic();
+
+    const portal = document.getElementById('gokuldhamGatePortal');
+    if (portal) {
+      portal.classList.add('entering-gate');
+    }
+
+    const doSwitch = () => {
+      document.getElementById('greetingScreen').classList.remove('active');
+      document.getElementById('gameScreen').classList.add('active');
+
+      if (portal) portal.classList.remove('entering-gate');
+
+      // Stop gate portal 3D loop to free GPU and prevent dual WebGL renderer contention
+      if (window.diwaliGatePortal3D && typeof window.diwaliGatePortal3D.stop === 'function') {
+        window.diwaliGatePortal3D.stop();
+      }
+
+      // Initialize virtual world game engine
+      if (window.diwaliEngine && !window.diwaliEngine.isRunning) {
+        window.diwaliEngine.start();
+      }
+
+      // Welcome message toast during gate banner reveal
+      setTimeout(() => {
+        if (window.diwaliSocietyInteractions) {
+          window.diwaliSocietyInteractions.showToast('✨ Welcome to Gokuldham Society! Shubh Deepawali! ✨', 4500);
+        }
+      }, 1000);
+
+      // Show Mission Introduction after entrance banner cinematic concludes (~5.2s)
+      if (window.diwaliMission && !window.diwaliMission.state.started) {
+        setTimeout(() => {
+          window.diwaliMission.openIntroModal();
+        }, 5300);
+      }
+    };
+
+    if (window.diwaliGatePortal3D && window.diwaliGatePortal3D.isRunning) {
+      window.diwaliGatePortal3D.triggerGateEntranceAnimation(() => {
+        doSwitch();
+      });
+    } else {
+      setTimeout(doSwitch, 380);
+    }
+  }
+
   setupScreenSwitching() {
     const enterWorldBtn = document.getElementById('enterWorldBtn');
     const returnToGreetingBtn = document.getElementById('returnToGreetingBtn');
+    const gatePortal = document.getElementById('gokuldhamGatePortal');
 
     if (enterWorldBtn) {
-      enterWorldBtn.addEventListener('click', () => {
-        window.festiveAudio.ensureContext();
-        window.festiveAudio.startFestiveAmbientMusic();
+      enterWorldBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.enterGokuldhamSociety();
+      });
+    }
 
-        document.getElementById('greetingScreen').classList.remove('active');
-        document.getElementById('gameScreen').classList.add('active');
-
-        // Initialize virtual world game engine
-        if (window.diwaliEngine && !window.diwaliEngine.isRunning) {
-          window.diwaliEngine.start();
-        }
-
-        // Show Mission Introduction if not started yet
-        if (window.diwaliMission && !window.diwaliMission.state.started) {
-          setTimeout(() => {
-            window.diwaliMission.openIntroModal();
-          }, 600);
-        }
+    if (gatePortal) {
+      gatePortal.addEventListener('click', (e) => {
+        // If clicked on input or button, let button handle
+        if (e.target.closest('button')) return;
+        this.enterGokuldhamSociety();
       });
     }
 
@@ -228,6 +272,9 @@ class GreetingController {
       returnToGreetingBtn.addEventListener('click', () => {
         document.getElementById('gameScreen').classList.remove('active');
         document.getElementById('greetingScreen').classList.add('active');
+        if (window.diwaliGatePortal3D) {
+          window.diwaliGatePortal3D.start();
+        }
       });
     }
 
@@ -238,6 +285,9 @@ class GreetingController {
       const gmScreen = document.getElementById('gameScreen');
       if (gScreen) gScreen.classList.remove('active');
       if (gmScreen) gmScreen.classList.add('active');
+      if (window.diwaliGatePortal3D && typeof window.diwaliGatePortal3D.stop === 'function') {
+        window.diwaliGatePortal3D.stop();
+      }
       if (window.diwaliEngine && !window.diwaliEngine.isRunning) {
         window.diwaliEngine.start();
       }

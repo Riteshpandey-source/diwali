@@ -6,6 +6,7 @@
 
 const CameraState = {
   PLAYER_FOLLOW: 'PLAYER_FOLLOW',
+  ENTRANCE_INTRO: 'ENTRANCE_INTRO',
   ROCKET_TRACK: 'ROCKET_TRACK',
   BURST_HOLD: 'BURST_HOLD',
   CAMERA_RETURN: 'CAMERA_RETURN',
@@ -39,6 +40,15 @@ class DiwaliCinematicCamera {
     // Current interpolated vectors
     this.currentTarget = new THREE.Vector3(player.x, 1.8, player.z);
     this.currentPosition = new THREE.Vector3().copy(camera.position);
+
+    // Entrance Intro Cinematic State
+    this.hasPlayedEntranceIntro = false;
+    this.entranceIntroDuration = 5.0; // 5.0s total: Phase A (0.6s) -> Phase B1 (1.3s) -> Phase B2 Hold (2.0s) -> Phase C Return (1.1s)
+    this.introBannerTarget = new THREE.Vector3(-48.75, 8.6, 0.0);
+    this.introBannerCamPos = new THREE.Vector3(-63.5, 8.2, 0.0);
+    this.introStartCamPos = new THREE.Vector3();
+    this.introStartCamTarget = new THREE.Vector3();
+    this.onEntranceIntroComplete = null;
 
     // Durations
     this.burstHoldDuration = 2.4; // Seconds to view the firework burst in the sky
@@ -128,6 +138,66 @@ class DiwaliCinematicCamera {
     this.showcaseDuration = durationMs / 1000;
   }
 
+  triggerEntranceIntro(onComplete = null, force = false) {
+    if (!force && this.hasPlayedEntranceIntro) return false;
+    if (this.player.isReducedMotion) {
+      this.hasPlayedEntranceIntro = true;
+      if (typeof onComplete === 'function') onComplete();
+      return false;
+    }
+
+    this.hasPlayedEntranceIntro = true;
+    this.onEntranceIntroComplete = onComplete;
+
+    // Dynamically retrieve exact world coordinates of West Entrance Signboard if present
+    let resolvedSignPos = null;
+    if (window.diwaliWorld3D && window.diwaliWorld3D.societyArchitecture) {
+      const arch = window.diwaliWorld3D.societyArchitecture;
+      if (arch.entranceSignMeshWest) {
+        const signWorldPos = new THREE.Vector3();
+        arch.entranceSignMeshWest.getWorldPosition(signWorldPos);
+        if (!isNaN(signWorldPos.x) && signWorldPos.y > 0) {
+          resolvedSignPos = signWorldPos;
+        }
+      }
+    }
+
+    if (resolvedSignPos) {
+      this.introBannerTarget.copy(resolvedSignPos);
+      // Frame signboard horizontally and vertically with decorated gate arch and pillars
+      this.introBannerCamPos.set(resolvedSignPos.x - 14.75, resolvedSignPos.y - 0.4, resolvedSignPos.z);
+    } else {
+      this.introBannerTarget.set(-48.75, 8.6, 0.0);
+      this.introBannerCamPos.set(-63.5, 8.2, 0.0);
+    }
+
+    // Save starting camera position at gate spawn
+    const p = this.player;
+    const hDist = p.cameraDistance * Math.cos(p.cameraPitch);
+    const vDist = p.cameraDistance * Math.sin(p.cameraPitch) + (p.cameraHeight || 2.2);
+    this.introStartCamPos.set(
+      p.x + Math.sin(p.cameraYaw) * hDist,
+      Math.max(1.4, vDist + (p.y || 0)),
+      p.z + Math.cos(p.cameraYaw) * hDist
+    );
+    this.introStartCamTarget.set(p.x, 1.65 + (p.y || 0), p.z);
+
+    this.savedYaw = p.cameraYaw;
+    this.savedPitch = p.cameraPitch;
+    this.savedDistance = p.cameraDistance;
+    this.savedTarget.copy(this.introStartCamTarget);
+    this.savedPosition.copy(this.introStartCamPos);
+
+    this.currentPosition.copy(this.introStartCamPos);
+    this.currentTarget.copy(this.introStartCamTarget);
+    this.camera.position.copy(this.currentPosition);
+    this.camera.lookAt(this.currentTarget);
+
+    this.state = CameraState.ENTRANCE_INTRO;
+    this.stateTimer = 0;
+    return true;
+  }
+
   resetToPlayerFollow() {
     this.state = CameraState.PLAYER_FOLLOW;
     this.stateTimer = 0;
@@ -141,6 +211,10 @@ class DiwaliCinematicCamera {
     switch (this.state) {
       case CameraState.PLAYER_FOLLOW:
         this.updatePlayerFollow(delta);
+        break;
+
+      case CameraState.ENTRANCE_INTRO:
+        this.updateEntranceIntro(delta);
         break;
 
       case CameraState.ROCKET_TRACK:
@@ -174,15 +248,75 @@ class DiwaliCinematicCamera {
     }
   }
 
-  // 1. Standard 3rd-Person Follow
+  // 1. Standard 3rd-Person Follow & Theater Seated Camera
   updatePlayerFollow(delta) {
     const p = this.player;
+
+    // 1. THEATER CINEMA SEATED CAMERA MODE
+    // When the player sits on any theater bench, automatically frame the entire cinema screen!
+    if (p.isSitting && p.currentBench && p.currentBench.isTheaterBench) {
+      const screenX = p.currentBench.screenPos?.x || 35.0;
+      const screenY = p.currentBench.screenPos?.y || 4.4;
+      const screenZ = p.currentBench.screenPos?.z || -14.0;
+
+      let idealX, idealY, idealZ;
+      const idealTargetX = screenX;
+      const idealTargetY = screenY;
+      const idealTargetZ = screenZ;
+
+      const mode = p.theaterCamMode || 'cinema';
+
+      if (mode === 'shoulder') {
+        // Over-the-shoulder view: avatar in lower-left, perfectly framing the whole screen
+        if (p.group) p.group.visible = true;
+        idealX = p.x - 2.4;
+        idealY = 2.45;
+        idealZ = p.z + 1.5;
+      } else {
+        // Direct Cinema View: avatar hidden, zero obstruction, eye level, screen completely filling view!
+        if (p.group) p.group.visible = false;
+        idealX = p.x + 0.6;
+        idealY = 2.3;
+        idealZ = p.z;
+      }
+
+      const lerpSpeed = Math.min(1.0, 6.0 * delta);
+      this.currentPosition.x += (idealX - this.currentPosition.x) * lerpSpeed;
+      this.currentPosition.y += (idealY - this.currentPosition.y) * lerpSpeed;
+      this.currentPosition.z += (idealZ - this.currentPosition.z) * lerpSpeed;
+      this.camera.position.copy(this.currentPosition);
+
+      this.currentTarget.x += (idealTargetX - this.currentTarget.x) * lerpSpeed;
+      this.currentTarget.y += (idealTargetY - this.currentTarget.y) * lerpSpeed;
+      this.currentTarget.z += (idealTargetZ - this.currentTarget.z) * lerpSpeed;
+      this.camera.lookAt(this.currentTarget);
+
+      p.cameraPosition.copy(this.currentPosition);
+      p.cameraTarget.copy(this.currentTarget);
+      return;
+    }
+
+    // Restore avatar visibility when not sitting in cinema mode
+    if (p.group && !p.group.visible) {
+      p.group.visible = true;
+    }
+
+    // 2. PROXIMITY THEATER AUTO-PITCH
+    // When standing/walking near the stage screen, gracefully elevate look-at target so screen stays centered
+    let targetElevY = 1.65;
+    const stageDist = Math.hypot(p.x - 35.0, p.z - (-14.0));
+    if (stageDist < 22.0 && p.x < 35.0) {
+      const approachFactor = Math.max(0, 1.0 - stageDist / 22.0);
+      targetElevY = 1.65 + approachFactor * 2.3; // tilts gaze upward towards screen center (4.4m)
+    }
+
     const hDist = p.cameraDistance * Math.cos(p.cameraPitch);
     const vDist = p.cameraDistance * Math.sin(p.cameraPitch) + (p.cameraHeight || 2.2);
 
     const idealX = p.x + Math.sin(p.cameraYaw) * hDist;
     const idealZ = p.z + Math.cos(p.cameraYaw) * hDist;
-    const idealY = Math.max(1.4, vDist);
+    const playerY = p.y || 0;
+    const idealY = Math.max(1.4, vDist + playerY);
 
     const lerpFactor = Math.min(1.0, (p.cameraLerp || 0.095) * (delta / 0.016));
     this.currentPosition.x += (idealX - this.currentPosition.x) * lerpFactor;
@@ -190,11 +324,11 @@ class DiwaliCinematicCamera {
     this.currentPosition.z += (idealZ - this.currentPosition.z) * lerpFactor;
 
     // Keep camera above ground
-    this.currentPosition.y = Math.max(1.4, this.currentPosition.y);
+    this.currentPosition.y = Math.max(1.4 + playerY, this.currentPosition.y);
     this.camera.position.copy(this.currentPosition);
 
     this.currentTarget.x += (p.x - this.currentTarget.x) * lerpFactor;
-    this.currentTarget.y += (1.65 - this.currentTarget.y) * lerpFactor;
+    this.currentTarget.y += ((targetElevY + playerY) - this.currentTarget.y) * lerpFactor;
     this.currentTarget.z += (p.z - this.currentTarget.z) * lerpFactor;
 
     this.camera.lookAt(this.currentTarget);
@@ -405,14 +539,80 @@ class DiwaliCinematicCamera {
     this.camera.position.copy(this.currentPosition);
     this.camera.lookAt(this.currentTarget);
   }
+
+  // 8. Gokuldham Society Gate & Banner Automatic Cinematic Entrance Intro
+  updateEntranceIntro(delta) {
+    const p = this.player;
+    const total = this.entranceIntroDuration; // 5.0 seconds
+
+    // If player touches movement controls or triggers movement during intro,
+    // safely fast-forward to Phase C (smooth return) so user is never locked or disrupted
+    if (this.stateTimer > 0.4 && p.isMoving && this.stateTimer < 3.9) {
+      this.stateTimer = 3.9;
+    }
+
+    // Smootherstep (Hermite quintic: 6t^5 - 15t^4 + 10t^3) for zero starting/ending acceleration
+    const smooth = (min, max, val) => {
+      const x = Math.max(0, Math.min(1, (val - min) / (max - min)));
+      return x * x * x * (x * (x * 6 - 15) + 10);
+    };
+
+    // Calculate dynamic third-person gameplay camera position to seamlessly return to
+    const hDist = p.cameraDistance * Math.cos(p.cameraPitch);
+    const vDist = p.cameraDistance * Math.sin(p.cameraPitch) + (p.cameraHeight || 2.2);
+    const playCamX = p.x + Math.sin(p.cameraYaw) * hDist;
+    const playCamY = Math.max(1.4, vDist + (p.y || 0));
+    const playCamZ = p.z + Math.cos(p.cameraYaw) * hDist;
+    const playTarX = p.x;
+    const playTarY = 1.65 + (p.y || 0);
+    const playTarZ = p.z;
+
+    if (this.stateTimer < 0.6) {
+      // Phase A (0.0s - 0.6s): Show player at normal starting gate position
+      this.currentPosition.copy(this.introStartCamPos);
+      this.currentTarget.copy(this.introStartCamTarget);
+    } else if (this.stateTimer < 1.9) {
+      // Phase B1 (0.6s - 1.9s): Smooth cinematic tilt & elevation to frame the "GOKULDHAM SOCIETY" banner
+      const t = smooth(0.6, 1.9, this.stateTimer);
+      this.currentPosition.lerpVectors(this.introStartCamPos, this.introBannerCamPos, t);
+      this.currentTarget.lerpVectors(this.introStartCamTarget, this.introBannerTarget, t);
+    } else if (this.stateTimer < 3.9) {
+      // Phase B2 (1.9s - 3.9s): Hold banner composition for 2.0s with subtle breathing float
+      const holdTime = this.stateTimer - 1.9;
+      const subtleFloat = Math.sin(holdTime * 1.5) * 0.08;
+      this.currentPosition.copy(this.introBannerCamPos);
+      this.currentPosition.y += subtleFloat;
+      this.currentTarget.copy(this.introBannerTarget);
+    } else if (this.stateTimer < total) {
+      // Phase C (3.9s - 5.0s): Smooth ease-out transition back to 3rd-person gameplay camera
+      const t = smooth(3.9, total, this.stateTimer);
+      this.currentPosition.lerpVectors(this.introBannerCamPos, new THREE.Vector3(playCamX, playCamY, playCamZ), t);
+      this.currentTarget.lerpVectors(this.introBannerTarget, new THREE.Vector3(playTarX, playTarY, playTarZ), t);
+    } else {
+      // Completed intro: seamlessly restore third-person player follow
+      this.resetToPlayerFollow();
+      if (typeof this.onEntranceIntroComplete === 'function') {
+        const cb = this.onEntranceIntroComplete;
+        this.onEntranceIntroComplete = null;
+        cb();
+      }
+      return;
+    }
+
+    this.camera.position.copy(this.currentPosition);
+    this.camera.lookAt(this.currentTarget);
+    p.cameraPosition.copy(this.currentPosition);
+    p.cameraTarget.copy(this.currentTarget);
+  }
 }
 
 class DiwaliPlayer3D {
-  constructor(scene, camera, startX = 650, startY = 680) {
+  constructor(scene, camera, startX = 370, startY = 610) {
     this.scene = scene;
     this.camera = camera;
 
     // Spatial Position in 3D (scale: 0.1, center: 890, 610)
+    // Default: startX = 370, startY = 610 => x = -52.0, z = 0.0 (Gokuldham Society Gate entrance)
     this.scale = 0.1;
     this.centerX = 890;
     this.centerZ = 610;
@@ -424,12 +624,16 @@ class DiwaliPlayer3D {
     this.radius = 0.45; // 3D capsule collision radius (human scale)
     this.speed = 9.5; // meters per second (walking)
     this.sprintSpeed = 15.0; // meters per second (sprint)
-    this.rotation = 0; // Current heading angle (radians)
-    this.targetRotation = 0;
+    this.rotation = Math.PI / 2; // Facing East towards Gokuldham Society
+    this.targetRotation = Math.PI / 2;
 
     this.isMoving = false;
     this.isSprinting = false;
     this.walkCycle = 0;
+
+    // Seated state on benches
+    this.isSitting = false;
+    this.currentBench = null;
 
     // Customization Attributes
     this.name = 'You';
@@ -445,7 +649,7 @@ class DiwaliPlayer3D {
     this.cameraDistance = 6.2;
     this.cameraHeight = 2.3;
     this.cameraPitch = 0.15; // Low-to-mid elevation framing street, bazaar, temple & sky
-    this.cameraYaw = 0; // Azimuth orbit angle (radians)
+    this.cameraYaw = -Math.PI / 2; // Facing East through the gate
     this.cameraTarget = new THREE.Vector3();
     this.cameraPosition = new THREE.Vector3();
     this.cameraLerp = 0.095;
@@ -459,6 +663,7 @@ class DiwaliPlayer3D {
 
     // Build the 3D Character Mesh Hierarchy
     this.group = this.buildCharacterModel();
+    this.group.rotation.y = Math.PI / 2;
     this.scene.add(this.group);
 
     // Immediately position camera on frame 0
@@ -472,6 +677,48 @@ class DiwaliPlayer3D {
     this.camera.position.copy(this.cameraPosition);
     this.cameraTarget.set(this.x, 1.65, this.z);
     this.camera.lookAt(this.cameraTarget);
+  }
+
+  setPosition(x, y, z) {
+    this.x = x;
+    this.y = y !== undefined ? y : 0;
+    this.z = z;
+    if (this.group) {
+      this.group.position.set(this.x, this.y, this.z);
+    }
+  }
+
+  set2DPosition(x2d, y2d) {
+    this.x = (x2d - this.centerX) * this.scale;
+    this.z = (y2d - this.centerZ) * this.scale;
+    if (this.group) {
+      this.group.position.set(this.x, this.y, this.z);
+    }
+  }
+
+  respawnAtGate() {
+    this.x = -52.0;
+    this.y = 0;
+    this.z = 0.0;
+    this.rotation = Math.PI / 2;
+    this.targetRotation = Math.PI / 2;
+    this.cameraYaw = -Math.PI / 2;
+    if (this.group) {
+      this.group.position.set(this.x, 0, this.z);
+      this.group.rotation.y = Math.PI / 2;
+    }
+    if (this.camera) {
+      const hDist = this.cameraDistance * Math.cos(this.cameraPitch);
+      const vDist = this.cameraDistance * Math.sin(this.cameraPitch) + this.cameraHeight;
+      this.cameraPosition.set(
+        this.x + Math.sin(this.cameraYaw) * hDist,
+        Math.max(1.4, vDist),
+        this.z + Math.cos(this.cameraYaw) * hDist
+      );
+      this.camera.position.copy(this.cameraPosition);
+      this.cameraTarget.set(this.x, 1.65, this.z);
+      this.camera.lookAt(this.cameraTarget);
+    }
   }
 
   // Convert 3D position to legacy 2D coordinates for UI & server compatibility
@@ -651,36 +898,61 @@ class DiwaliPlayer3D {
     this.rightArmGroup.add(this.sparklerGroup);
     root.add(this.rightArmGroup);
 
-    // 4. Articulated Legs (White Dhoti / Churidar & Pointed Juttis)
-    const legGeo = new THREE.CylinderGeometry(0.13, 0.11, 0.95, 8);
-    legGeo.translate(0, -0.45, 0);
-
+    // 4. Articulated Legs (White Dhoti / Churidar & Pointed Juttis with Bending Knees)
     this.leftLegGroup = new THREE.Group();
     this.leftLegGroup.position.set(-0.24, 0.95, 0);
-    this.leftLeg = new THREE.Mesh(legGeo, this.dhotiMat);
-    this.leftLeg.castShadow = true;
-    this.leftLegGroup.add(this.leftLeg);
+
+    const thighGeo = new THREE.CylinderGeometry(0.13, 0.115, 0.48, 8);
+    thighGeo.translate(0, -0.24, 0);
+    this.leftThigh = new THREE.Mesh(thighGeo, this.dhotiMat);
+    this.leftThigh.castShadow = true;
+    this.leftLegGroup.add(this.leftThigh);
+
+    this.leftKneeGroup = new THREE.Group();
+    this.leftKneeGroup.position.set(0, -0.48, 0);
+
+    const calfGeo = new THREE.CylinderGeometry(0.115, 0.095, 0.48, 8);
+    calfGeo.translate(0, -0.24, 0);
+    this.leftCalf = new THREE.Mesh(calfGeo, this.dhotiMat);
+    this.leftCalf.castShadow = true;
+    this.leftKneeGroup.add(this.leftCalf);
+
+    const kneeJointL = new THREE.Mesh(new THREE.SphereGeometry(0.115, 8, 8), this.dhotiMat);
+    this.leftKneeGroup.add(kneeJointL);
 
     const leftShoe = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.16, 0.42), this.shoeMat);
-    leftShoe.position.set(0, -0.9, 0.1);
-    this.leftLegGroup.add(leftShoe);
+    leftShoe.position.set(0, -0.46, 0.1);
+    this.leftKneeGroup.add(leftShoe);
+
+    this.leftLegGroup.add(this.leftKneeGroup);
     root.add(this.leftLegGroup);
 
     this.rightLegGroup = new THREE.Group();
     this.rightLegGroup.position.set(0.24, 0.95, 0);
-    this.rightLeg = new THREE.Mesh(legGeo, this.dhotiMat);
-    this.rightLeg.castShadow = true;
-    this.rightLegGroup.add(this.rightLeg);
+
+    this.rightThigh = new THREE.Mesh(thighGeo, this.dhotiMat);
+    this.rightThigh.castShadow = true;
+    this.rightLegGroup.add(this.rightThigh);
+
+    this.rightKneeGroup = new THREE.Group();
+    this.rightKneeGroup.position.set(0, -0.48, 0);
+
+    this.rightCalf = new THREE.Mesh(calfGeo, this.dhotiMat);
+    this.rightCalf.castShadow = true;
+    this.rightKneeGroup.add(this.rightCalf);
+
+    const kneeJointR = new THREE.Mesh(new THREE.SphereGeometry(0.115, 8, 8), this.dhotiMat);
+    this.rightKneeGroup.add(kneeJointR);
 
     const rightShoe = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.16, 0.42), this.shoeMat);
-    rightShoe.position.set(0, -0.9, 0.1);
-    this.rightLegGroup.add(rightShoe);
+    rightShoe.position.set(0, -0.46, 0.1);
+    this.rightKneeGroup.add(rightShoe);
+
+    this.rightLegGroup.add(this.rightKneeGroup);
     root.add(this.rightLegGroup);
 
-    // 5. Overhead 3D Name Tag Sprite
-    this.nameSprite = this.createNameSprite(this.name);
-    this.nameSprite.position.set(0, 3.1, 0);
-    root.add(this.nameSprite);
+    // 5. Overhead 3D Name Tag Sprite (Removed to prevent blocking third-person camera & stage view)
+    this.nameSprite = null;
 
     return root;
   }
@@ -724,9 +996,7 @@ class DiwaliPlayer3D {
     this.name = newName;
     if (this.nameSprite) {
       this.group.remove(this.nameSprite);
-      this.nameSprite = this.createNameSprite(newName);
-      this.nameSprite.position.set(0, 3.1, 0);
-      this.group.add(this.nameSprite);
+      this.nameSprite = null;
     }
   }
 
@@ -741,10 +1011,147 @@ class DiwaliPlayer3D {
     }
   }
 
+  sitOnBench(benchData) {
+    if (!benchData) return;
+    this.isSitting = true;
+    this.currentBench = benchData;
+    this.isMoving = false;
+    this.walkCycle = 0;
+    this.theaterCamMode = 'cinema'; // Default to crystal clear direct cinema view
+
+    // Place character precisely at bench seat
+    this.x = benchData.seatX;
+    this.z = benchData.seatZ;
+    // Lower character slightly so thighs rest flush with bench seat slats (seatY is 0.82)
+    this.y = (benchData.seatY || 0.82) - 0.95;
+    this.rotation = benchData.rotY;
+    this.targetRotation = benchData.rotY;
+
+    // In theater, orient camera forward toward the cinema screen (+X) and hide avatar in cinema view
+    if (benchData.isTheaterBench) {
+      this.cameraYaw = -Math.PI / 2;
+      if (this.group) this.group.visible = false;
+      const camText = document.getElementById('stageCamViewText');
+      if (camText) camText.textContent = 'Cinema';
+    }
+
+    if (this.group) {
+      this.group.position.set(this.x, this.y, this.z);
+      this.group.rotation.y = this.rotation;
+    }
+
+    // Sitting Posture Articulation
+    // 1. Thighs forward 90 degrees
+    if (this.leftLegGroup) this.leftLegGroup.rotation.set(-Math.PI / 2, 0, 0);
+    if (this.rightLegGroup) this.rightLegGroup.rotation.set(-Math.PI / 2, 0, 0);
+
+    // 2. Knees bent 90 degrees downward so calves hang down naturally
+    if (this.leftKneeGroup) this.leftKneeGroup.rotation.set(Math.PI / 2, 0, 0);
+    if (this.rightKneeGroup) this.rightKneeGroup.rotation.set(Math.PI / 2, 0, 0);
+
+    // 3. Relaxed seated arms resting on lap/knees
+    if (this.leftArmGroup) this.leftArmGroup.rotation.set(-0.35, 0, 0.15);
+    if (this.rightArmGroup) this.rightArmGroup.rotation.set(-0.35, 0, -0.15);
+
+    // 4. Relaxed torso lean back against wooden backrest
+    if (this.torsoGroup) {
+      this.torsoGroup.position.y = 1.6;
+      this.torsoGroup.rotation.set(-0.06, 0, 0);
+    }
+  }
+
+  standUp() {
+    if (!this.isSitting) return;
+    this.isSitting = false;
+    this.currentBench = null;
+
+    // Reset vertical offset
+    this.y = 0;
+
+    // Step forward 1.2m from bench in facing direction
+    this.x += Math.sin(this.rotation) * 1.2;
+    this.z += Math.cos(this.rotation) * 1.2;
+
+    if (this.group) {
+      this.group.visible = true;
+      this.group.position.set(this.x, 0, this.z);
+      this.group.rotation.y = this.rotation;
+    }
+
+    // Reset limb rotations to upright stance
+    if (this.leftLegGroup) this.leftLegGroup.rotation.set(0, 0, 0);
+    if (this.rightLegGroup) this.rightLegGroup.rotation.set(0, 0, 0);
+    if (this.leftKneeGroup) this.leftKneeGroup.rotation.set(0, 0, 0);
+    if (this.rightKneeGroup) this.rightKneeGroup.rotation.set(0, 0, 0);
+    if (this.leftArmGroup) this.leftArmGroup.rotation.set(0, 0, 0);
+    if (this.rightArmGroup) this.rightArmGroup.rotation.set(0, 0, 0);
+    if (this.torsoGroup) {
+      this.torsoGroup.position.y = 1.7;
+      this.torsoGroup.rotation.set(0, 0, 0);
+    }
+  }
+
+  // Toggle Camera View Mode when in Theater / Seated
+  toggleTheaterCamView() {
+    this.theaterCamMode = this.theaterCamMode === 'cinema' ? 'shoulder' : 'cinema';
+    if (this.group) {
+      this.group.visible = this.theaterCamMode === 'shoulder';
+    }
+    const label = this.theaterCamMode === 'cinema' ? '🎬 Direct Cinema View' : '🪔 Seated Over-Shoulder View';
+    if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
+      window.diwaliEngine.showToastNotice(`🎥 Camera: ${label}`);
+    }
+    const camText = document.getElementById('stageCamViewText');
+    if (camText) camText.textContent = this.theaterCamMode === 'cinema' ? 'Cinema' : 'Seated';
+  }
+
   // -------------------------------------------------------------
   // MOVEMENT, ANIMATION & COLLISION UPDATE
   // -------------------------------------------------------------
   update(keys, joystickVector, world3D, delta = 0.016) {
+    keys = keys || {};
+    // If sitting on a bench, check for stand-up input or hold sitting pose
+    if (this.isSitting) {
+      const isW = !!(keys['KeyW'] || keys['ArrowUp'] || keys['w'] || keys['W']);
+      const isS = !!(keys['KeyS'] || keys['ArrowDown'] || keys['s'] || keys['S']);
+      const isA = !!(keys['KeyA'] || keys['ArrowLeft'] || keys['a'] || keys['A']);
+      const isD = !!(keys['KeyD'] || keys['ArrowRight'] || keys['d'] || keys['D']);
+      const hasJoy = joystickVector && (Math.abs(joystickVector.x) > 0.1 || Math.abs(joystickVector.y) > 0.1);
+
+      if (isW || isS || isA || isD || hasJoy) {
+        this.standUp();
+      } else {
+        // Enforce seated posture each frame while sitting
+        if (this.group) {
+          this.group.position.set(this.x, this.y, this.z);
+          this.group.rotation.y = this.rotation;
+        }
+        if (this.leftLegGroup) this.leftLegGroup.rotation.set(-Math.PI / 2, 0, 0);
+        if (this.rightLegGroup) this.rightLegGroup.rotation.set(-Math.PI / 2, 0, 0);
+        if (this.leftKneeGroup) this.leftKneeGroup.rotation.set(Math.PI / 2, 0, 0);
+        if (this.rightKneeGroup) this.rightKneeGroup.rotation.set(Math.PI / 2, 0, 0);
+        if (this.leftArmGroup) this.leftArmGroup.rotation.set(-0.35, 0, 0.15);
+        if (this.rightArmGroup) this.rightArmGroup.rotation.set(-0.35, 0, -0.15);
+        if (this.torsoGroup) {
+          this.torsoGroup.position.y = 1.6;
+          this.torsoGroup.rotation.set(-0.06, 0, 0);
+        }
+
+        // Sparkler flickering while seated
+        if (this.sparklerActive) {
+          const flicker = 1.8 + Math.random() * 0.8;
+          this.sparklerLight.intensity = flicker;
+          this.sparklerGroup.visible = true;
+        } else {
+          this.sparklerLight.intensity = 0;
+          this.sparklerGroup.visible = false;
+        }
+
+        this.updateCameraFollow(delta);
+        return;
+      }
+    }
+
     let forward = 0;
     let strafe = 0;
 
@@ -809,13 +1216,20 @@ class DiwaliPlayer3D {
     }
 
     // Smooth heading rotation interpolation
-    let rotDiff = this.targetRotation - this.rotation;
+    let rotDiff = (this.targetRotation - this.rotation) % (Math.PI * 2);
+    if (isNaN(rotDiff)) rotDiff = 0;
     while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
     while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
     this.rotation += rotDiff * 0.18;
 
+    // Smoothly adapt vertical elevation to terrain/temple stairs and plinth
+    if (world3D && typeof world3D.getElevation === 'function') {
+      const targetY = world3D.getElevation(this.x, this.z);
+      this.y += (targetY - this.y) * Math.min(1.0, 12.0 * delta);
+    }
+
     // Update root group transform
-    this.group.position.set(this.x, 0, this.z);
+    this.group.position.set(this.x, this.y, this.z);
     this.group.rotation.y = this.rotation;
 
     // Articulated Limb Swing Animations
@@ -823,6 +1237,8 @@ class DiwaliPlayer3D {
       const swing = Math.sin(this.walkCycle) * (this.isSprinting ? 0.75 : 0.55);
       this.leftLegGroup.rotation.x = swing;
       this.rightLegGroup.rotation.x = -swing;
+      if (this.leftKneeGroup) this.leftKneeGroup.rotation.x = swing < 0 ? -swing * 0.6 : 0;
+      if (this.rightKneeGroup) this.rightKneeGroup.rotation.x = swing > 0 ? swing * 0.6 : 0;
       this.leftArmGroup.rotation.x = -swing * 0.8;
       this.rightArmGroup.rotation.x = swing * 0.4; // Arm holding sparkler swings subtly
 
@@ -832,9 +1248,12 @@ class DiwaliPlayer3D {
       // Return smoothly to idle stance
       this.leftLegGroup.rotation.x *= 0.8;
       this.rightLegGroup.rotation.x *= 0.8;
+      if (this.leftKneeGroup) this.leftKneeGroup.rotation.x *= 0.8;
+      if (this.rightKneeGroup) this.rightKneeGroup.rotation.x *= 0.8;
       this.leftArmGroup.rotation.x *= 0.8;
       this.rightArmGroup.rotation.x *= 0.8;
       this.torsoGroup.position.y = 1.6;
+      this.torsoGroup.rotation.set(0, 0, 0);
     }
 
     // Sparkler tip flickering and dynamic light pulse

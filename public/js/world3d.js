@@ -182,6 +182,16 @@ class DiwaliWorld3D {
     // 9. Floating Paper Sky Lanterns (Kandils)
     root.add(this.buildSuspendedLanterns());
 
+    // 10. Gokul Kunj Society Architecture & Accessible Interiors
+    if (typeof DiwaliSocietyArchitecture3D !== 'undefined') {
+      this.societyArchitecture = new DiwaliSocietyArchitecture3D(this);
+    }
+
+    // 11. Society Ground TMKOC Happy Diwali Theater
+    if (typeof DiwaliSocietyTheater3D !== 'undefined') {
+      this.societyTheater = new DiwaliSocietyTheater3D(this);
+    }
+
     this.scene.add(root);
     return root;
   }
@@ -305,10 +315,14 @@ class DiwaliWorld3D {
     const halfW = w / 2;
     const halfD = d / 2;
 
-    // North, South, West, East perimeter walls
+    // North and South perimeter walls
     addWallSection(0, -halfD, w + wallThick, wallThick);
     addWallSection(0, halfD, w + wallThick, wallThick);
+
+    // West perimeter wall (fully closed solid boundary enclosure)
     addWallSection(-halfW, 0, wallThick, d + wallThick);
+
+    // East wall
     addWallSection(halfW, 0, wallThick, d + wallThick);
 
     // Ornate Gate Pillars with glowing festive lamps at corners and entrances
@@ -770,7 +784,7 @@ class DiwaliWorld3D {
     const colMat = this.materials.templeMarble;
 
     const colXPos = [mandapaX - mandapaW * 0.35, mandapaX, mandapaX + mandapaW * 0.35];
-    const colZPos = [-mandapaD * 0.42, -mandapaD * 0.2, 0, mandapaD * 0.2, mandapaD * 0.42];
+    const colZPos = [-mandapaD * 0.42, -mandapaD * 0.22, mandapaD * 0.22, mandapaD * 0.42];
 
     colXPos.forEach(cx => {
       colZPos.forEach(cz => {
@@ -876,16 +890,54 @@ class DiwaliWorld3D {
     group.add(templeLight);
     this.pointLights.push(templeLight);
 
-    // Register Temple Colliders (Keep sacred mandir building solid, steps/plaza open)
+    // Register Temple Colliders (Keep sacred inner sanctum and edges solid, steps & mandapa hall open)
+    // 1. Solid Inner Sanctum (Garbhagriha) Wall: from X = 73.5 to 86.5, Z = 0.0 to 16.0
     this.colliders.push({
-      tag: 'temple_mandir',
-      minX: posX - w / 2 + 1.2,
+      tag: 'temple_sanctum',
+      minX: sanctumX - sanctumW / 2,
+      maxX: posX + w / 2 + 0.5,
+      minZ: posZ - sanctumD / 2,
+      maxZ: posZ + sanctumD / 2
+    });
+
+    // 2. North Plinth Outer Wall/Drop-off edge:
+    this.colliders.push({
+      tag: 'temple_north_edge',
+      minX: posX - w / 2,
       maxX: posX + w / 2 + 0.5,
       minZ: posZ - d / 2 - 0.5,
+      maxZ: posZ - d / 2 + 0.6
+    });
+
+    // 3. South Plinth Outer Wall/Drop-off edge:
+    this.colliders.push({
+      tag: 'temple_south_edge',
+      minX: posX - w / 2,
+      maxX: posX + w / 2 + 0.5,
+      minZ: posZ + d / 2 - 0.6,
       maxZ: posZ + d / 2 + 0.5
     });
 
-    // Register Interactive Target for Temple Trivia & Puja
+    // 4. Balustrades flanking the steps:
+    this.colliders.push({
+      tag: 'temple_balustrade_north',
+      minX: posX - w / 2 - stepsCount * stepDepth - 0.2,
+      maxX: posX - w / 2 + 0.2,
+      minZ: posZ - stepW / 2 - 0.55,
+      maxZ: posZ - stepW / 2 + 0.05
+    });
+    this.colliders.push({
+      tag: 'temple_balustrade_south',
+      minX: posX - w / 2 - stepsCount * stepDepth - 0.2,
+      maxX: posX - w / 2 + 0.2,
+      minZ: posZ + stepW / 2 - 0.05,
+      maxZ: posZ + stepW / 2 + 0.55
+    });
+
+    // Build Sacred Diwali Puja Altar with Lakshmi, Ganesha, Saraswati & Kuber devotional artwork
+    this.buildDiwaliPujaAltar(group, posX, jagatiH, posZ);
+
+    // 1. Register Interactive Target for Temple Puja & Aarti (at entrance steps)
     this.interactiveTargets.push({
       id: templeData.id,
       name: templeData.name,
@@ -893,10 +945,451 @@ class DiwaliWorld3D {
       x: 1460, // 2D coords at bottom of temple steps
       z: 690,
       radius: 65,
-      prompt: 'Press [E] for Temple Aarti & Diwali Traditions Trivia'
+      prompt: 'Press [E] to Join Diwali Puja & Aarti'
     });
 
+    // 2. Register 3D Interactive Target directly in front of the Sacred Puja Altar
+    this.interactiveTargets.push({
+      id: 'temple_altar_puja',
+      name: 'Shree Mandir Sacred Altar',
+      type: 'temple_altar_puja',
+      x: 70.0,
+      z: posZ,
+      is3D: true,
+      radius: 5.5,
+      prompt: 'Press [E] to Join Diwali Puja & Aarti'
+    });
+
+    // 3. Register Dedicated Interactive Target for Diwali Traditions & Cultural Education
+    const standZ = posZ - 6.0;
+    const standX = 66.0;
+    this.interactiveTargets.push({
+      id: 'temple_traditions_guide',
+      name: 'Temple Diwali Traditions Guide',
+      type: 'temple_traditions_guide',
+      x: standX,
+      z: standZ,
+      is3D: true,
+      radius: 3.5,
+      prompt: 'Press [E] to Learn Sacred Diwali Traditions'
+    });
+
+    // Decorative 3D Information Lectern / Stand on Mandapa
+    const lecternGroup = new THREE.Group();
+    lecternGroup.position.set(standX, jagatiH, standZ);
+
+    const lBase = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.15, 0.8), this.materials.teakWood);
+    lBase.position.y = 0.075;
+    lecternGroup.add(lBase);
+
+    const lPillar = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 1.1, 8), this.materials.teakWood);
+    lPillar.position.y = 0.65;
+    lecternGroup.add(lPillar);
+
+    const lPlaque = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.65, 0.08), this.materials.brassPolished);
+    lPlaque.position.set(0, 1.25, 0);
+    lPlaque.rotation.x = -0.35;
+    lecternGroup.add(lPlaque);
+
+    const lDiya = this.createDiyaMesh(0, 1.35, 0.12, false);
+    lecternGroup.add(lDiya);
+
+    group.add(lecternGroup);
+
     return group;
+  }
+
+  // -------------------------------------------------------------
+  // SACRED DIWALI PUJA MANDIR ALTAR & DECORATIONS
+  // -------------------------------------------------------------
+  buildDiwaliPujaAltar(group, posX, jagatiH, posZ) {
+    const altarX = 73.4;
+    const altarZ = posZ;
+
+    // 1. Devotional Deities Artwork (Goddess Lakshmi, Lord Ganesha, Goddess Saraswati, Lord Kuber)
+    const artW = 5.4;
+    const artH = 3.0375; // 16:9 aspect ratio
+    const textureLoader = new THREE.TextureLoader();
+    const altarTex = textureLoader.load('assets/images/diwali_mandir_altar.jpg', (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      if (artMat) artMat.needsUpdate = true;
+    });
+    if (altarTex) {
+      altarTex.generateMipmaps = true;
+      altarTex.minFilter = THREE.LinearMipmapLinearFilter;
+    }
+
+    const artGeo = new THREE.PlaneGeometry(artW, artH);
+    const artMat = new THREE.MeshBasicMaterial({
+      map: altarTex,
+      side: THREE.DoubleSide
+    });
+    const artMesh = new THREE.Mesh(artGeo, artMat);
+    artMesh.name = 'MandirDeitiesArtwork';
+    artMesh.position.set(altarX - 0.22, jagatiH + 2.5, altarZ);
+    artMesh.rotation.y = -Math.PI / 2; // Face West towards Mandapa entrance
+    group.add(artMesh);
+
+    // 2. Ornate Carved Teakwood & Gold Shrine Frame (Prabhavali Arch)
+    // Backing panel (behind artwork)
+    const backPanel = new THREE.Mesh(
+      new THREE.BoxGeometry(0.08, artH + 0.6, artW + 0.7),
+      this.materials.teakWood
+    );
+    backPanel.position.set(altarX + 0.02, jagatiH + 2.5, altarZ);
+    group.add(backPanel);
+
+    // Outer Velvet Backdrop (firmly behind artwork)
+    const velvetBack = new THREE.Mesh(
+      new THREE.BoxGeometry(0.06, artH + 0.45, artW + 0.5),
+      this.materials.fabricCrimsonDrape
+    );
+    velvetBack.position.set(altarX - 0.05, jagatiH + 2.5, altarZ);
+    group.add(velvetBack);
+
+    // Carved Gold Outer Frame Moldings
+    const goldMat = this.materials.goldTrim;
+    const goldBrocadeMat = this.materials.goldBrocadeTrim;
+
+    // Top Frame
+    const topMolding = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.22, artW + 0.45), goldMat);
+    topMolding.position.set(altarX - 0.21, jagatiH + 2.5 + artH / 2 + 0.11, altarZ);
+    group.add(topMolding);
+
+    // Bottom Frame
+    const btmMolding = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.22, artW + 0.45), goldMat);
+    btmMolding.position.set(altarX - 0.21, jagatiH + 2.5 - artH / 2 - 0.11, altarZ);
+    group.add(btmMolding);
+
+    // Side Columns (Pilasters)
+    [-artW / 2 - 0.15, artW / 2 + 0.15].forEach(sz => {
+      const col = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.18, artH + 0.4, 12), this.materials.teakWood);
+      col.position.set(altarX - 0.21, jagatiH + 2.5, altarZ + sz);
+      group.add(col);
+
+      // Gold base and capital
+      const cap = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.22, 0.4), goldMat);
+      cap.position.set(altarX - 0.21, jagatiH + 2.5 + artH / 2 + 0.2, altarZ + sz);
+      group.add(cap);
+
+      const base = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.22, 0.4), goldMat);
+      base.position.set(altarX - 0.21, jagatiH + 2.5 - artH / 2 - 0.2, altarZ + sz);
+      group.add(base);
+
+      // Gold Kalash finials atop side columns
+      const finial = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.45, 10), this.materials.templeGoldKalash);
+      finial.position.set(altarX - 0.21, jagatiH + 2.5 + artH / 2 + 0.52, altarZ + sz);
+      group.add(finial);
+    });
+
+    // Ornate Crest / Temple Mandap Crown Arch
+    const crestGeo = new THREE.BoxGeometry(0.2, 0.6, artW * 0.75);
+    const crest = new THREE.Mesh(crestGeo, this.materials.teakWood);
+    crest.position.set(altarX - 0.21, jagatiH + 2.5 + artH / 2 + 0.48, altarZ);
+    group.add(crest);
+
+    const crestTrim = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.1, artW * 0.78), goldMat);
+    crestTrim.position.set(altarX - 0.21, jagatiH + 2.5 + artH / 2 + 0.78, altarZ);
+    group.add(crestTrim);
+
+    const centralKalash = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.7, 12), this.materials.templeGoldKalash);
+    centralKalash.position.set(altarX - 0.21, jagatiH + 2.5 + artH / 2 + 1.15, altarZ);
+    group.add(centralKalash);
+
+    // Dedicated Altar Illumination Point Light
+    const altarSpot = new THREE.PointLight(0xfff3d6, 3.5, 12, 1.2);
+    altarSpot.position.set(altarX - 1.8, jagatiH + 3.0, altarZ);
+    group.add(altarSpot);
+
+    // 3. Stepped Velvet Altar Platform (Chauki / Singhasan)
+    // Lower tier with gold border
+    const lowerTier = new THREE.Mesh(
+      new THREE.BoxGeometry(1.6, 0.42, artW + 0.8),
+      this.materials.fabricCrimsonDrape
+    );
+    lowerTier.position.set(altarX - 0.85, jagatiH + 0.21, altarZ);
+    group.add(lowerTier);
+
+    const lowerGoldTrim = new THREE.Mesh(
+      new THREE.BoxGeometry(1.64, 0.06, artW + 0.84),
+      goldBrocadeMat
+    );
+    lowerGoldTrim.position.set(altarX - 0.85, jagatiH + 0.43, altarZ);
+    group.add(lowerGoldTrim);
+
+    // Upper tier with gold border
+    const upperTier = new THREE.Mesh(
+      new THREE.BoxGeometry(1.0, 0.38, artW + 0.2),
+      this.materials.fabricCrimsonDrape
+    );
+    upperTier.position.set(altarX - 0.52, jagatiH + 0.62, altarZ);
+    group.add(upperTier);
+
+    const upperGoldTrim = new THREE.Mesh(
+      new THREE.BoxGeometry(1.04, 0.05, artW + 0.24),
+      goldBrocadeMat
+    );
+    upperGoldTrim.position.set(altarX - 0.52, jagatiH + 0.82, altarZ);
+    group.add(upperGoldTrim);
+
+    // 4. Central Sacred Brass Kalash (Purna Kumbha with Coconut & Mango Leaves)
+    const kalashGroup = new THREE.Group();
+    kalashGroup.position.set(altarX - 0.68, jagatiH + 0.85, altarZ);
+
+    const kBase = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.44, 0.1, 14), this.materials.brassPolished);
+    kalashGroup.add(kBase);
+
+    const kPot = new THREE.Mesh(new THREE.SphereGeometry(0.28, 14, 14), this.materials.brassPolished);
+    kPot.position.y = 0.28;
+    kalashGroup.add(kPot);
+
+    const kNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.24, 0.16, 14), this.materials.brassPolished);
+    kNeck.position.y = 0.5;
+    kalashGroup.add(kNeck);
+
+    // 5 Mango leaves ring
+    for (let l = 0; l < 5; l++) {
+      const lAngle = (l * Math.PI * 2) / 5;
+      const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.32, 4), this.materials.canopyGreen);
+      leaf.position.set(Math.cos(lAngle) * 0.16, 0.62, Math.sin(lAngle) * 0.16);
+      leaf.rotation.z = Math.cos(lAngle) * 0.45;
+      leaf.rotation.x = Math.sin(lAngle) * 0.45;
+      kalashGroup.add(leaf);
+    }
+
+    // Sacred Coconut
+    const coconut = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 10), this.materials.darkWood);
+    coconut.scale.set(0.85, 1.25, 0.85);
+    coconut.position.y = 0.72;
+    kalashGroup.add(coconut);
+
+    // Sacred Red Tilak on Coconut
+    const tilak = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.12, 0.04), this.materials.gulalPink);
+    tilak.position.set(0.14, 0.72, 0);
+    kalashGroup.add(tilak);
+
+    group.add(kalashGroup);
+
+    // 5. Left Aarti Puja Thali (Brass with ghee diya, kumkum, chandan, akshat, bell)
+    const thaliGroup = new THREE.Group();
+    thaliGroup.position.set(altarX - 0.98, jagatiH + 0.45, altarZ - 1.35);
+
+    const brassPlate = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.38, 0.04, 16), this.materials.brassPolished);
+    thaliGroup.add(brassPlate);
+
+    // Center Diya & Flame
+    const tDiya = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.08, 0.06, 10), this.materials.brassPolished);
+    tDiya.position.y = 0.05;
+    thaliGroup.add(tDiya);
+
+    const tFlame = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.14, 6), this.materials.lampGlow);
+    tFlame.position.y = 0.14;
+    thaliGroup.add(tFlame);
+
+    // Kumkum / Vermilion cup
+    const kumkum = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.06, 0.04, 8), this.materials.brassPolished);
+    kumkum.position.set(-0.2, 0.04, 0.12);
+    const kumkumPowder = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.06, 8), this.materials.gulalPink);
+    kumkumPowder.position.set(-0.2, 0.07, 0.12);
+    thaliGroup.add(kumkum);
+    thaliGroup.add(kumkumPowder);
+
+    // Chandan / Sandalwood cup
+    const chandan = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.06, 0.04, 8), this.materials.brassPolished);
+    chandan.position.set(-0.2, 0.04, -0.12);
+    const chandanPowder = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.06, 8), this.materials.fabricCreamDrape);
+    chandanPowder.position.set(-0.2, 0.07, -0.12);
+    thaliGroup.add(chandan);
+    thaliGroup.add(chandanPowder);
+
+    // Sacred Puja Bell
+    const bellMesh = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.22, 10), this.materials.brassPolished);
+    bellMesh.position.set(0.18, 0.12, 0);
+    thaliGroup.add(bellMesh);
+
+    group.add(thaliGroup);
+
+    // 6. Right Naivedya Offering Platter (Silver with Modaks, Ladoos, Kaju Katli & Fruits)
+    const offeringsGroup = new THREE.Group();
+    offeringsGroup.position.set(altarX - 0.98, jagatiH + 0.45, altarZ + 1.35);
+
+    const silverPlatter = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.4, 0.04, 16), this.materials.silverPlatter);
+    offeringsGroup.add(silverPlatter);
+
+    // Modaks and Golden Besan Ladoos
+    [
+      [-0.12, 0], [0.12, 0], [0, -0.12], [0, 0.12], [0, 0]
+    ].forEach((lp, li) => {
+      const ladoo = new THREE.Mesh(
+        new THREE.SphereGeometry(0.065, 8, 8),
+        li % 2 === 0 ? this.materials.mithaiLadoo : this.materials.mithaiJalebi
+      );
+      ladoo.position.set(lp[0], 0.08 + (li === 4 ? 0.05 : 0), lp[1]);
+      offeringsGroup.add(ladoo);
+    });
+
+    // Silver Kaju Katli diamonds
+    [-0.22, 0.22].forEach(kz => {
+      const kaju = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.03, 0.09), this.materials.mithaiKaju);
+      kaju.rotation.y = Math.PI / 4;
+      kaju.position.set(0.2, 0.05, kz);
+      offeringsGroup.add(kaju);
+    });
+
+    // Red Apple
+    const apple = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), this.materials.canopyRed);
+    apple.position.set(-0.24, 0.08, 0);
+    offeringsGroup.add(apple);
+
+    group.add(offeringsGroup);
+
+    // 7. Incense Holder (Agarbatti Stand) with glowing embers
+    const agarbattiGroup = new THREE.Group();
+    agarbattiGroup.position.set(altarX - 0.72, jagatiH + 0.85, altarZ + 0.85);
+
+    const aBase = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.14, 0.06, 8), this.materials.brassPolished);
+    agarbattiGroup.add(aBase);
+
+    [-0.15, 0, 0.15].forEach(ang => {
+      const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.35, 4), this.materials.darkWood);
+      stick.rotation.z = -0.25;
+      stick.rotation.y = ang;
+      stick.position.set(0, 0.18, 0);
+      agarbattiGroup.add(stick);
+
+      const ember = new THREE.Mesh(new THREE.SphereGeometry(0.02, 4, 4), new THREE.MeshBasicMaterial({ color: 0xff3300 }));
+      ember.position.set(-0.04, 0.34, 0);
+      agarbattiGroup.add(ember);
+    });
+
+    group.add(agarbattiGroup);
+
+    // 8. Flanking Tall Sacred Brass Samai Deepastambhas (Multi-tier traditional oil lamps)
+    [-3.25, 3.25].forEach(sz => {
+      const samai = this.createBrassSamai();
+      samai.position.set(altarX - 0.95, jagatiH, altarZ + sz);
+      samai.scale.set(1.4, 1.4, 1.4);
+      group.add(samai);
+
+      // Dedicated soft flame point light
+      const sLight = new THREE.PointLight(0xffa200, 1.6, 6);
+      sLight.position.set(altarX - 0.95, jagatiH + 2.3, altarZ + sz);
+      sLight.castShadow = false;
+      group.add(sLight);
+      this.pointLights.push(sLight);
+    });
+
+    // 9. Marigold Garlands & Floral Torans Framing the Shrine
+    const garlandPoints = 20;
+    for (let g = 0; g <= garlandPoints; g++) {
+      const t = g / garlandPoints;
+      const gz = altarZ - artW / 2 - 0.1 + t * (artW + 0.2);
+      // Parabolic swag curve
+      const swag = Math.sin(t * Math.PI) * 0.38;
+      const gy = jagatiH + 2.45 + artH / 2 + 0.18 - swag;
+
+      const marigold = new THREE.Mesh(
+        new THREE.SphereGeometry(0.085, 6, 6),
+        g % 2 === 0 ? this.materials.marigoldOrange : this.materials.marigoldYellow
+      );
+      marigold.position.set(altarX - 0.16, gy, gz);
+      group.add(marigold);
+    }
+
+    // Vertical marigold garlands hanging down side pilasters
+    [-artW / 2 - 0.15, artW / 2 + 0.15].forEach(vz => {
+      for (let v = 0; v < 14; v++) {
+        const vy = jagatiH + 1.2 + v * 0.2;
+        const vMarigold = new THREE.Mesh(
+          new THREE.SphereGeometry(0.075, 6, 6),
+          v % 2 === 0 ? this.materials.marigoldOrange : this.materials.marigoldYellow
+        );
+        vMarigold.position.set(altarX - 0.18, vy, altarZ + vz);
+        group.add(vMarigold);
+      }
+    });
+
+    // 10. Warm Golden Fairy Light String Draped Across Shrine Frame
+    for (let f = 0; f <= 16; f++) {
+      const ft = f / 16;
+      const fz = altarZ - artW / 2 + ft * artW;
+      const fswag = Math.sin(ft * Math.PI) * 0.22;
+      const fy = jagatiH + 2.45 + artH / 2 + 0.26 - fswag;
+
+      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.045, 6, 6), this.materials.lampGlow);
+      bulb.position.set(altarX - 0.18, fy, fz);
+      group.add(bulb);
+    }
+
+    // 11. Sacred Geometric Floor Rangoli in Front of Altar with Diyas & Petals
+    const rangoliX = altarX - 2.5; // x = 70.9
+    const rangoliRadius = 1.6;
+
+    // Base Rangoli Disc
+    const rBase = new THREE.Mesh(
+      new THREE.CylinderGeometry(rangoliRadius, rangoliRadius, 0.02, 32),
+      this.materials.fabricCrimsonDrape
+    );
+    rBase.position.set(rangoliX, jagatiH + 0.015, altarZ);
+    group.add(rBase);
+
+    // Inner concentric ring in gold
+    const rGold = new THREE.Mesh(
+      new THREE.RingGeometry(0.9, 1.05, 32),
+      new THREE.MeshStandardMaterial({ color: 0xfbbf24, side: THREE.DoubleSide })
+    );
+    rGold.rotation.x = -Math.PI / 2;
+    rGold.position.set(rangoliX, jagatiH + 0.025, altarZ);
+    group.add(rGold);
+
+    // Teal floral star ring
+    const rTeal = new THREE.Mesh(
+      new THREE.RingGeometry(0.5, 0.75, 32),
+      new THREE.MeshStandardMaterial({ color: 0x0d9488, side: THREE.DoubleSide })
+    );
+    rTeal.rotation.x = -Math.PI / 2;
+    rTeal.position.set(rangoliX, jagatiH + 0.026, altarZ);
+    group.add(rTeal);
+
+    // Saffron golden center medallion
+    const rCenter = new THREE.Mesh(
+      new THREE.CircleGeometry(0.38, 24),
+      new THREE.MeshStandardMaterial({ color: 0xf59e0b, side: THREE.DoubleSide })
+    );
+    rCenter.rotation.x = -Math.PI / 2;
+    rCenter.position.set(rangoliX, jagatiH + 0.027, altarZ);
+    group.add(rCenter);
+
+    // Ring of 8 Glowing Clay Diyas around Rangoli
+    for (let d = 0; d < 8; d++) {
+      const da = (d * Math.PI * 2) / 8;
+      const dx = rangoliX + Math.cos(da) * (rangoliRadius + 0.15);
+      const dz = altarZ + Math.sin(da) * (rangoliRadius + 0.15);
+      const rDiya = this.createDiyaMesh(dx, jagatiH + 0.02, dz, false);
+      group.add(rDiya);
+    }
+
+    // Scattered marigold & rose flower petal clusters around the rangoli
+    for (let p = 0; p < 16; p++) {
+      const pa = (p * Math.PI * 2) / 16 + (Math.random() - 0.5) * 0.2;
+      const pDist = rangoliRadius * (0.8 + Math.random() * 0.45);
+      const px = rangoliX + Math.cos(pa) * pDist;
+      const pz = altarZ + Math.sin(pa) * pDist;
+
+      const petal = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.06, 0.06, 0.015, 6),
+        p % 3 === 0 ? this.materials.gulalPink : (p % 2 === 0 ? this.materials.marigoldOrange : this.materials.marigoldYellow)
+      );
+      petal.position.set(px, jagatiH + 0.022, pz);
+      group.add(petal);
+    }
+
+    // 12. Divine Radiant Altar Aura Light (Illuminates Deities & Priest with Heavenly Glow)
+    const altarAuraLight = new THREE.PointLight(0xffb703, 3.4, 14);
+    altarAuraLight.position.set(altarX - 1.2, jagatiH + 2.7, altarZ);
+    altarAuraLight.castShadow = false;
+    group.add(altarAuraLight);
+    this.pointLights.push(altarAuraLight);
   }
 
   // -------------------------------------------------------------
@@ -917,7 +1410,7 @@ class DiwaliWorld3D {
 
     // Position stall on West side of Grand Celebration Avenue, rotated to face East (+X) into the street
     const stallX = 34.0;
-    const stallZ = isShop ? 9.0 : -15.0;
+    const stallZ = isShop ? 9.0 : 25.0;
     group.position.set(stallX, 0, stallZ);
     group.rotation.y = Math.PI / 2; // Front counter faces East (+X)
 
@@ -1213,8 +1706,8 @@ class DiwaliWorld3D {
       tag: `stall_${stallData.id}`,
       minX: 26.0,
       maxX: 37.8,
-      minZ: isShop ? 1.0 : -22.0,
-      maxZ: isShop ? 17.0 : -8.0
+      minZ: isShop ? 1.0 : 17.0,
+      maxZ: isShop ? 17.0 : 33.0
     });
 
     // 14. Register Interactive Target for Shopping or Rangoli Minigame
@@ -1223,7 +1716,7 @@ class DiwaliWorld3D {
       name: stallData.name,
       type: isShop ? 'shop' : 'minigame_rangoli',
       x: 1330, // 2D coords right at the counter
-      z: isShop ? 700 : 460,
+      z: isShop ? 700 : 860,
       radius: 65,
       prompt: isShop ? 'Press [E] to Browse Diwali Bazaar Shop' : 'Press [E] to Play Rangoli Artisan Minigame'
     });
@@ -2107,6 +2600,11 @@ class DiwaliWorld3D {
         item.embersGeo.attributes.position.needsUpdate = true;
       }
     }
+
+    // 3. Update Society Ground TMKOC Theater
+    if (this.societyTheater && typeof this.societyTheater.update === 'function') {
+      this.societyTheater.update(0.016, time);
+    }
   }
 
   // Update house lights dynamically when toggled by Decorator modal or Maha Deepotsav
@@ -2116,6 +2614,33 @@ class DiwaliWorld3D {
       item.group.visible = isOn;
       item.on = isOn;
     }
+  }
+
+  // Get ground elevation at (x, z) for realistic stairs climbing and raised temple plinths
+  getElevation(x, z) {
+    const posX = 74.0;
+    const posZ = 8.0;
+    const w = 24.0;
+    const d = 28.0;
+    const jagatiH = 1.6;
+    const stepsCount = 7;
+    const stepDepth = 0.85;
+    const stepsStart = posX - w / 2; // 62.0
+    const stepsEnd = stepsStart - stepsCount * stepDepth; // 56.05
+    const stepHalfW = 6.0;
+
+    // Flight of temple entrance steps (Sopana)
+    if (x >= stepsEnd && x < stepsStart && z >= posZ - stepHalfW && z <= posZ + stepHalfW) {
+      const progress = (x - stepsEnd) / (stepsStart - stepsEnd);
+      return Math.max(0, Math.min(jagatiH, progress * jagatiH));
+    }
+
+    // Elevated temple marble plinth (Jagati)
+    if (x >= stepsStart && x <= posX + w / 2 && z >= posZ - d / 2 && z <= posZ + d / 2) {
+      return jagatiH;
+    }
+
+    return 0;
   }
 
   // Check collision against all 3D building and wall bounding boxes
@@ -2133,63 +2658,98 @@ class DiwaliWorld3D {
     return false;
   }
 
-  // Resolve player movement with wall sliding and automatic depenetration unsticking
+  // Resolve player movement with continuous collision substepping, wall sliding and automatic depenetration
   resolveMovement(curX, curZ, dx, dz, radius = 0.45) {
-    let newX = curX;
-    let newZ = curZ;
+    const totalDist = Math.hypot(dx, dz);
+    if (isNaN(totalDist) || !isFinite(totalDist) || totalDist < 0.0001) return { x: curX, z: curZ };
 
-    // 1. Direct free movement
-    if (!this.checkCollision(curX + dx, curZ + dz, radius)) {
-      return { x: curX + dx, z: curZ + dz };
-    }
+    const maxSubStep = 0.25; // Substep resolution prevents tunneling through thin walls
+    const steps = Math.min(8, Math.max(1, Math.ceil(totalDist / maxSubStep)));
+    const stepDx = dx / steps;
+    const stepDz = dz / steps;
 
-    // 2. Wall sliding along X axis
-    if (Math.abs(dx) > 0.0001 && !this.checkCollision(curX + dx, curZ, radius)) {
-      newX = curX + dx;
-    }
+    let posX = curX;
+    let posZ = curZ;
 
-    // 3. Wall sliding along Z axis
-    if (Math.abs(dz) > 0.0001) {
-      if (!this.checkCollision(newX, curZ + dz, radius)) {
-        newZ = curZ + dz;
-      } else if (!this.checkCollision(curX, curZ + dz, radius)) {
-        newZ = curZ + dz;
+    for (let s = 0; s < steps; s++) {
+      let nextX = posX + stepDx;
+      let nextZ = posZ + stepDz;
+
+      // 1. Direct free movement for substep
+      if (!this.checkCollision(nextX, nextZ, radius)) {
+        posX = nextX;
+        posZ = nextZ;
+      } else {
+        // 2. Wall sliding along X axis
+        let movedX = false;
+        if (Math.abs(stepDx) > 0.0001 && !this.checkCollision(nextX, posZ, radius)) {
+          posX = nextX;
+          movedX = true;
+        }
+
+        // 3. Wall sliding along Z axis
+        if (Math.abs(stepDz) > 0.0001) {
+          if (!this.checkCollision(posX, nextZ, radius)) {
+            posZ = nextZ;
+          } else if (!movedX && !this.checkCollision(posX, nextZ, radius)) {
+            posZ = nextZ;
+          }
+        }
+      }
+
+      // 4. Depenetration: Push player outside if overlapping any collider boundary
+      for (let c of this.colliders) {
+        if (
+          posX + radius > c.minX &&
+          posX - radius < c.maxX &&
+          posZ + radius > c.minZ &&
+          posZ - radius < c.maxZ
+        ) {
+          const oLeft = (posX + radius) - c.minX;
+          const oRight = c.maxX - (posX - radius);
+          const oBottom = (posZ + radius) - c.minZ;
+          const oTop = c.maxZ - (posZ - radius);
+
+          const minO = Math.min(oLeft, oRight, oBottom, oTop);
+          if (minO === oLeft) posX = c.minX - radius - 0.01;
+          else if (minO === oRight) posX = c.maxX + radius + 0.01;
+          else if (minO === oBottom) posZ = c.minZ - radius - 0.01;
+          else if (minO === oTop) posZ = c.maxZ + radius + 0.01;
+        }
       }
     }
 
-    // 4. Depenetration: Push player outside if overlapping any collider boundary
-    for (let c of this.colliders) {
-      if (
-        newX + radius > c.minX &&
-        newX - radius < c.maxX &&
-        newZ + radius > c.minZ &&
-        newZ - radius < c.maxZ
-      ) {
-        const oLeft = (newX + radius) - c.minX;
-        const oRight = c.maxX - (newX - radius);
-        const oBottom = (newZ + radius) - c.minZ;
-        const oTop = c.maxZ - (newZ - radius);
-
-        const minO = Math.min(oLeft, oRight, oBottom, oTop);
-        if (minO === oLeft) newX = c.minX - radius - 0.02;
-        else if (minO === oRight) newX = c.maxX + radius + 0.02;
-        else if (minO === oBottom) newZ = c.minZ - radius - 0.02;
-        else if (minO === oTop) newZ = c.maxZ + radius + 0.02;
-      }
-    }
-
-    return { x: newX, z: newZ };
+    return { x: posX, z: posZ };
   }
 
-  // Find nearest interactive target (converted to 2D coordinates for compatibility)
-  getInteractiveTarget(player2DX, player2DY) {
+  // Find nearest interactive target (supporting both 2D and 3D coordinates)
+  getInteractiveTarget(player2DX, player2DY, player3DX, player3DZ) {
+    if (player3DX === undefined) {
+      player3DX = (player2DX - this.centerX) * this.scale;
+    }
+    if (player3DZ === undefined) {
+      player3DZ = (player2DY - this.centerZ) * this.scale;
+    }
+
+    let closest = null;
+    let closestDistRatio = 1.0;
+
     for (let target of this.interactiveTargets) {
-      const dist = Math.hypot(player2DX - target.x, player2DY - target.z);
+      // Auto-detect 3D vs 2D target (3D targets have small coordinate values like -80..+80 and small radius < 15)
+      const is3DTarget = target.is3D || (Math.abs(target.x) < 120 && target.radius < 20);
+      const px = is3DTarget ? player3DX : player2DX;
+      const pz = is3DTarget ? player3DZ : player2DY;
+      const dist = Math.hypot(px - target.x, pz - target.z);
+
       if (dist <= target.radius) {
-        return target;
+        const ratio = dist / target.radius;
+        if (ratio < closestDistRatio) {
+          closestDistRatio = ratio;
+          closest = target;
+        }
       }
     }
-    return null;
+    return closest;
   }
 }
 

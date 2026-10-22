@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Shubh Deepawali - Playable Diwali Virtual World & Festive Greetings</title>
   <meta name="description" content="Experience a complete, premium, playable Diwali Virtual World! Explore a vibrant festive Indian colony, decorate houses, light diyas, ignite virtual fireworks, play mini-games, and celebrate with friends in real-time.">
   <meta name="theme-color" content="#0d0b1e">
@@ -132,23 +132,123 @@
         </div>
       </section>
 
-      <!-- GRAND CTA: ENTER PLAYABLE VIRTUAL WORLD -->
-      <section class="world-entry-banner">
-        <div class="entry-card-glow"></div>
-        <div class="entry-card-content">
-          <div class="entry-badge">🎆 NEW IMMERSIVE EXPERIENCE</div>
-          <h2>Step Inside the Diwali Virtual Colony</h2>
-          <p>Walk through a beautifully lit Indian neighborhood at night! Decorate houses with fairy lights, visit the festive bazaar, launch realistic fireworks, earn virtual coins in mini-games, and celebrate with friends in real-time!</p>
-          <button id="enterWorldBtn" class="btn btn-grand-cta">
-            <span class="cta-sparkle">✨</span>
-            <span class="cta-text">ENTER VIRTUAL WORLD</span>
-            <span class="cta-arrow">➔</span>
-          </button>
-          <div class="controls-hint">
-            <span>💻 Keyboard: WASD / Arrows to Move</span>
-            <span>📱 Mobile: On-Screen Touch Joystick</span>
-            <span>🌐 Real-time Multiplayer Available</span>
+      <!-- ========================================================= -->
+      <!-- GRAND GOKULDHAM SOCIETY ENTRANCE GATE PORTAL              -->
+      <!-- ========================================================= -->
+      <section id="gokuldhamGatePortal" class="gokuldham-gate-portal-card" title="Click on the Gate to enter Gokuldham Society">
+        <div class="portal-ambient-glow"></div>
+
+        <!-- Archway Crest with Sanskrit Inscription -->
+        <div class="gate-arch-crest">
+          <div class="crest-kalash">🪔</div>
+          <div class="crest-sanskrit">॥ श्री गणेशाय नमः ॥ शुभ दीपोत्सवः ॥</div>
+        </div>
+
+        <!-- The Iconic Signboard: GOKULDHAM SOCIETY -->
+        <div class="gate-signboard-wrapper">
+          <div class="gate-signboard">
+            <div class="signboard-filigree left"></div>
+            <div class="signboard-text-block">
+              <span class="signboard-hindi">गोकुलधाम को-ऑपरेटिव हाउसिंग सोसायटी</span>
+              <h2 class="signboard-main-text">GOKULDHAM SOCIETY</h2>
+              <span class="signboard-sub">POWAI, MUMBAI • ESTD. 2008 • SHUBH DEEPAWALI 2026</span>
+            </div>
+            <div class="signboard-filigree right"></div>
           </div>
+          <!-- Dense Marigold Toran Drapes across Signboard -->
+          <div class="gate-marigold-toran">
+            <span class="marigold-flow left">🌼🌸🌼🌸🌼🌸</span>
+            <span class="marigold-center">🪔 🌺 🪔</span>
+            <span class="marigold-flow right">🌸🌼🌸🌼🌸🌼</span>
+          </div>
+        </div>
+
+        <!-- 3D Interactive Gate Archway Viewport & Architecture -->
+        <div class="gate-portal-body">
+          <!-- Left Architectural Pillar -->
+          <div class="gate-pillar left-pillar">
+            <div class="pillar-cap"></div>
+            <div class="pillar-lantern-bracket">
+              <div class="hanging-kandil animated-kandil">
+                <div class="kandil-glow"></div>
+                <div class="kandil-icon">🏮</div>
+                <div class="kandil-ribbons"></div>
+              </div>
+            </div>
+            <div class="pillar-shaft"></div>
+            <div class="pillar-base">
+              <div class="pillar-rangoli"></div>
+              <div class="pillar-diyas">
+                <span class="flame-diya">🪔</span>
+                <span class="flame-diya">🪔</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Central Walkway Archway with Live 3D Gate Viewport Canvas -->
+          <div class="gate-walkway-frame">
+            <canvas id="gatePortalCanvas" class="gate-canvas-3d"></canvas>
+
+            <!-- Cascading Golden Fairy Lights Curtain -->
+            <div class="fairy-lights-curtain">
+              <div class="light-dot" style="left:8%;animation-delay:0.1s"></div>
+              <div class="light-dot" style="left:18%;animation-delay:0.4s"></div>
+              <div class="light-dot" style="left:28%;animation-delay:0.2s"></div>
+              <div class="light-dot" style="left:38%;animation-delay:0.6s"></div>
+              <div class="light-dot" style="left:48%;animation-delay:0.3s"></div>
+              <div class="light-dot" style="left:58%;animation-delay:0.5s"></div>
+              <div class="light-dot" style="left:68%;animation-delay:0.2s"></div>
+              <div class="light-dot" style="left:78%;animation-delay:0.7s"></div>
+              <div class="light-dot" style="left:88%;animation-delay:0.4s"></div>
+            </div>
+
+            <!-- Interactive Click-to-Enter Overlay -->
+            <div class="gate-enter-overlay">
+              <div class="gate-invitation-badge">🎆 LIVING 3D CELEBRATION</div>
+              <h3 class="gate-callout-title">Step Inside Gokuldham Society</h3>
+              <p class="gate-callout-desc">Walk through the grand entrance into the vibrant courtyard, meet Jethalal, Daya, Bhide, Babita & friends, burst fireworks, and celebrate Diwali together!</p>
+
+              <button id="enterWorldBtn" class="btn btn-grand-cta gate-cta-btn">
+                <span class="cta-sparkle">✨</span>
+                <span class="cta-text">ENTER GOKULDHAM SOCIETY</span>
+                <span class="cta-arrow">➔</span>
+              </button>
+
+              <div class="gate-click-hint">
+                <span class="hint-pulse">👈</span>
+                <span>Click anywhere on the gate or button to enter</span>
+                <span class="hint-pulse">👉</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Architectural Pillar -->
+          <div class="gate-pillar right-pillar">
+            <div class="pillar-cap"></div>
+            <div class="pillar-lantern-bracket">
+              <div class="hanging-kandil animated-kandil">
+                <div class="kandil-glow"></div>
+                <div class="kandil-icon">🏮</div>
+                <div class="kandil-ribbons"></div>
+              </div>
+            </div>
+            <div class="pillar-shaft"></div>
+            <div class="pillar-base">
+              <div class="pillar-rangoli"></div>
+              <div class="pillar-diyas">
+                <span class="flame-diya">🪔</span>
+                <span class="flame-diya">🪔</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls Hint -->
+        <div class="controls-hint gate-footer-controls">
+          <span>💻 Keyboard: WASD / Arrows to Walk</span>
+          <span>📱 Mobile: Touch Joystick</span>
+          <span>💬 Press [E] to talk with Society Residents</span>
+          <span>🌐 Real-time Multiplayer</span>
         </div>
       </section>
     </div>
@@ -211,6 +311,11 @@
           <button id="settingsModalBtn" class="hud-btn icon-only" title="Settings & Graphics">
             <span>⚙️</span>
           </button>
+
+          <button id="mobileMenuToggleBtn" class="hud-btn mobile-only-btn" title="Open Gokuldham Menu" aria-label="Open Gokuldham Menu">
+            <span class="icon">☰</span>
+            <span class="label">Menu</span>
+          </button>
         </div>
       </header>
 
@@ -222,6 +327,77 @@
         </div>
         <div class="tracker-status">Tap to View Objectives ➔</div>
       </div>
+
+      <!-- Mandir Aarti Devotional Music Player Card (Entrance & Temple HUD) -->
+      <aside id="aartiMusicCard" class="aarti-music-card" aria-label="Diwali Mandir Aarti Devotional Player">
+        <div class="aarti-card-inner">
+          <!-- Card Header with Diya and Minimize toggle -->
+          <div class="aarti-card-header">
+            <div class="aarti-header-title-group">
+              <span class="aarti-diya-icon" aria-hidden="true">🪔</span>
+              <div class="aarti-header-texts">
+                <h4 class="aarti-title">Mandir Aarti</h4>
+                <p class="aarti-tagline">“Listen to the Diwali Aarti”</p>
+              </div>
+            </div>
+            <button id="aartiMinimizeBtn" class="aarti-btn-icon" title="Minimize / Expand Aarti Card" aria-label="Minimize Aarti Card">
+              <span id="aartiMinimizeIcon">−</span>
+            </button>
+          </div>
+
+          <!-- Card Content Body -->
+          <div id="aartiCardBody" class="aarti-card-body">
+            <div class="aarti-track-details">
+              <div class="aarti-track-title">ॐ जय लक्ष्मी माता</div>
+              <div class="aarti-artist">Anuradha Paudwal • T-Series</div>
+              <div class="aarti-status-row">
+                <span id="aartiStatusDot" class="status-dot stopped"></span>
+                <span id="aartiStatusText" class="aarti-status-text">Ready to Play</span>
+              </div>
+            </div>
+
+            <!-- Playback Controls -->
+            <div class="aarti-controls-row">
+              <button id="aartiPlayBtn" class="aarti-btn aarti-btn-primary" title="Play Devotional Aarti">
+                <span id="aartiPlayIcon">▶</span>
+                <span id="aartiPlayText">Play Aarti</span>
+              </button>
+              <button id="aartiStopBtn" class="aarti-btn aarti-btn-secondary" title="Stop Aarti">
+                <span>⏹ Stop</span>
+              </button>
+            </div>
+
+            <!-- Volume Slider & Mute -->
+            <div class="aarti-volume-row">
+              <button id="aartiMuteBtn" class="aarti-btn-icon" title="Mute / Unmute Aarti">
+                <span id="aartiVolumeIcon">🔊</span>
+              </button>
+              <input id="aartiVolumeSlider" type="range" min="0" max="100" value="75" class="aarti-slider" title="Aarti Volume" aria-label="Aarti Volume Slider">
+              <span id="aartiVolumeValue" class="aarti-volume-label">75%</span>
+            </div>
+
+            <!-- YouTube Official Link & Fallback Action -->
+            <div class="aarti-actions-row">
+              <a id="aartiYtDirectLink" href="https://youtu.be/SyqgAt-T0iQ" target="_blank" rel="noopener noreferrer" class="aarti-link-btn" title="Open and listen directly on official YouTube">
+                <span>🎧 Listen on YouTube ↗</span>
+              </a>
+            </div>
+
+            <!-- Embedded Player Host (Hidden or Compact) -->
+            <div id="aartiPlayerHost" class="aarti-player-host hidden">
+              <div id="aartiYtFrameWrapper"></div>
+              <audio id="aartiLocalAudio" preload="none"></audio>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Minimized Floating Badge when user collapses the card -->
+      <button id="aartiFloatingBadge" class="aarti-floating-badge hidden" title="Open Diwali Mandir Aarti Player">
+        <span class="badge-diya">🪔</span>
+        <span class="badge-label">Aarti</span>
+        <span id="aartiBadgePlayIndicator" class="badge-indicator"></span>
+      </button>
 
       <!-- Mini-map / Radar (Top-Right) -->
       <div id="miniMapContainer" class="minimap-box">
@@ -319,16 +495,142 @@
           </div>
         </div>
         <div class="mobile-action-buttons">
-          <button id="mobileSprintBtn" class="mobile-btn sprint-btn" title="Sprint">
-            <span>🏃</span>
-          </button>
-          <button id="mobileInteractBtn" class="mobile-btn interact-btn" title="Interact">
-            <span>✋</span>
-            <span class="sub">Interact</span>
+          <button id="mobileInventoryToggleBtn" class="mobile-btn inventory-btn" title="Select Firework Cracker">
+            <span id="mobileActiveItemIcon">✨</span>
+            <span class="sub" id="mobileActiveItemName">Sparkler</span>
           </button>
           <button id="mobileUseItemBtn" class="mobile-btn use-item-btn" title="Use / Place Item">
             <span>💥</span>
             <span class="sub">Ignite</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Quick Menu Drawer (Drawer overlay on phones) -->
+      <div id="mobileNavDrawer" class="mobile-nav-drawer hidden" aria-hidden="true">
+        <div class="mobile-drawer-backdrop" id="mobileNavBackdrop"></div>
+        <div class="mobile-drawer-sheet">
+          <div class="mobile-drawer-header">
+            <div class="drawer-title-group">
+              <span class="drawer-diya">🪔</span>
+              <span class="drawer-title">Gokuldham Menu</span>
+            </div>
+            <button id="mobileNavCloseBtn" class="drawer-close-btn" aria-label="Close Menu">✕</button>
+          </div>
+          <div class="mobile-drawer-body">
+            <div class="drawer-grid">
+              <button id="drawerShopBtn" class="drawer-tile" data-action="shop">
+                <span class="tile-icon">🛒</span>
+                <span class="tile-label">Bazaar Shop</span>
+              </button>
+              <button id="drawerMissionBtn" class="drawer-tile" data-action="missions">
+                <span class="tile-icon">📜</span>
+                <span class="tile-label">Diwali Mission</span>
+              </button>
+              <button id="drawerGamesBtn" class="drawer-tile" data-action="games">
+                <span class="tile-icon">🎯</span>
+                <span class="tile-label">Mini-Games</span>
+              </button>
+              <button id="drawerEmotesBtn" class="drawer-tile" data-action="emotes">
+                <span class="tile-icon">🙏</span>
+                <span class="tile-label">Emotes</span>
+              </button>
+              <button id="drawerSkyShowBtn" class="drawer-tile" data-action="skyshow">
+                <span class="tile-icon">🎆</span>
+                <span class="tile-label">Fireworks Show</span>
+              </button>
+              <button id="drawerMultiplayerBtn" class="drawer-tile" data-action="multiplayer">
+                <span class="tile-icon">👥</span>
+                <span class="tile-label">Friends & Rooms</span>
+              </button>
+              <button id="drawerAartiBtn" class="drawer-tile" data-action="aarti">
+                <span class="tile-icon">🪔</span>
+                <span class="tile-label">Mandir Aarti</span>
+              </button>
+              <button id="drawerSettingsBtn" class="drawer-tile" data-action="settings">
+                <span class="tile-icon">⚙️</span>
+                <span class="tile-label">Settings</span>
+              </button>
+              <button id="drawerGreetingBtn" class="drawer-tile" data-action="greeting">
+                <span class="tile-icon">💌</span>
+                <span class="tile-label">Greeting Card</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compact Location Badge (Top-Left under header, visible in Society Ground) -->
+      <div id="theaterLocationBadge" class="theater-location-badge hidden">
+        <span class="loc-pin">📍</span>
+        <span class="loc-text">Society Ground</span>
+      </div>
+
+      <!-- Persistent Active HTML5 Video Decoder for 3D Cinema Screen -->
+      <div id="stageVideoHost" class="stage-video-host">
+        <video
+          id="theaterNativeVideo"
+          class="theater-native-video"
+          src="assets/videos/tmkoc_ep53_full.mp4"
+          poster="assets/images/tmkoc_diwali_stage.jpg"
+          playsinline
+          preload="auto"
+          crossorigin="anonymous">
+        </video>
+      </div>
+
+      <!-- 3D Society Theater Stage On-Screen Quick Controller (Push / Resume) -->
+      <div id="stageQuickControls" class="stage-quick-controls hidden">
+        <div class="stage-controls-glass">
+          <div class="stage-controls-badge">
+            <span class="badge-dot">●</span>
+            <span class="badge-title">TMKOC STAGE CINEMA</span>
+          </div>
+
+          <!-- Push / Resume (Pause / Play) Primary Toggle -->
+          <button id="stagePlayPauseBtn" class="stage-btn stage-btn-primary" title="Pause or Resume Video [Space / E]">
+            <span id="stagePlayPauseIcon" class="stage-btn-icon">⏸️</span>
+            <span id="stagePlayPauseText" class="stage-btn-text">PAUSE</span>
+          </button>
+
+          <!-- 10s Rewind & Forward -->
+          <button id="stageSkipBackBtn" class="stage-btn stage-btn-secondary" title="Rewind 10 Seconds [J or ←]">
+            <span>⏪ 10s</span>
+          </button>
+          <button id="stageSkipFwdBtn" class="stage-btn stage-btn-secondary" title="Skip 10 Seconds [L or →]">
+            <span>10s ⏩</span>
+          </button>
+
+          <!-- Audio Sound / Mute Toggle -->
+          <button id="stageMuteToggleBtn" class="stage-btn stage-btn-secondary" title="Sound / Mute [M]">
+            <span id="stageMuteIcon">🔊</span>
+            <span id="stageMuteText">Sound</span>
+          </button>
+
+          <!-- Progress Scrubber Slider & Time Display -->
+          <div class="stage-scrubber-wrap">
+            <input type="range" id="stageSeekSlider" min="0" max="1455" value="0" step="1" aria-label="Seek Episode">
+            <span id="stageTimeText" class="stage-time-display">00:00 / 24:15</span>
+          </div>
+
+          <!-- Quick Episode Switcher Pills -->
+          <div class="stage-ep-pills">
+            <button class="stage-pill active" data-ep="ep53" title="Iconic Diwali Comedy (Ep 53)">Ep 53</button>
+            <button class="stage-pill" data-ep="ep2598" title="Popatlal Ke Patakhe">Ep 2598</button>
+            <button class="stage-pill" data-ep="ep247" title="Classic Gokuldham Diwali">Ep 247</button>
+            <button class="stage-pill" data-ep="ep3604" title="Deepotsav & Rangoli">Ep 3604</button>
+            <button class="stage-pill" data-ep="ep4231" title="Mahasabha Fireworks">Ep 4231</button>
+          </div>
+
+          <!-- Camera View Switcher (Cinema / Seated / Free) -->
+          <button id="stageCamViewBtn" class="stage-btn stage-btn-secondary" title="Switch Camera View [V]">
+            <span>🎥</span>
+            <span id="stageCamViewText">Cinema</span>
+          </button>
+
+          <!-- Fullscreen Cinema Modal Button -->
+          <button id="stageEnlargeBtn" class="stage-btn stage-btn-icon" title="Enlarge Cinema Modal">
+            <span>⛶</span>
           </button>
         </div>
       </div>
@@ -783,6 +1085,144 @@
     </div>
   </div>
 
+  <!-- 9. TMKOC HAPPY DIWALI THEATER CINEMA MODAL -->
+  <div id="theaterPlayerModal" class="modal-backdrop hidden">
+    <div class="modal-dialog theater-player-dialog">
+      <div class="modal-header theater-modal-header">
+        <div class="modal-title-group">
+          <span class="title-icon">🎬</span>
+          <div>
+            <h2 id="theaterModalTitle">TMKOC • Happy Diwali Special</h2>
+            <span class="modal-subtitle" id="theaterModalSubtitle">Gokuldham Society Grand Diwali Mela Theater</span>
+          </div>
+        </div>
+        <div class="theater-header-actions">
+          <button id="theaterModalYtBtn" class="btn btn-micro btn-gold" title="Open Official Sony SAB Episode on YouTube">
+            <span>▶ Watch on YouTube HD</span>
+          </button>
+          <button id="toggleSourceConfigBtn" class="btn btn-micro btn-secondary" title="Configure Custom Video URL or Iframe">
+            <span>⚙️ Custom URL</span>
+          </button>
+          <button id="closeTheaterModalBtn" class="modal-close-btn">&times;</button>
+        </div>
+      </div>
+
+      <!-- Episode Switcher Tabs -->
+      <div class="theater-episode-tabs">
+        <button class="ep-tab active" data-ep="ep53">
+          <span class="ep-num">Ep 53</span>
+          <span class="ep-title">Diwali Laxmi Pujan</span>
+        </button>
+        <button class="ep-tab" data-ep="ep2598">
+          <span class="ep-num">Ep 2598</span>
+          <span class="ep-title">Popatlal Ke Patakhe</span>
+        </button>
+        <button class="ep-tab" data-ep="ep247">
+          <span class="ep-num">Ep 247</span>
+          <span class="ep-title">Classic Gokuldham Diwali</span>
+        </button>
+        <button class="ep-tab" data-ep="ep3604">
+          <span class="ep-num">Ep 3604</span>
+          <span class="ep-title">Deepotsav & Rangoli</span>
+        </button>
+        <button class="ep-tab" data-ep="ep4231">
+          <span class="ep-num">Ep 4231</span>
+          <span class="ep-title">Mahasabha Fireworks</span>
+        </button>
+      </div>
+
+      <!-- Collapsible Video Source Configuration Bar -->
+      <div id="theaterSourceConfigPanel" class="theater-source-config-bar hidden">
+        <label for="customSourceInput">Custom YouTube Video URL or Video ID:</label>
+        <div class="source-input-group">
+          <input type="text" id="customSourceInput" placeholder="Paste YouTube link (e.g. https://www.youtube.com/watch?v=...)">
+          <button id="saveSourceBtn" class="btn btn-primary btn-sm">Load Video</button>
+        </div>
+        <span id="theaterNoticeToast" class="theater-config-toast hidden"></span>
+      </div>
+
+      <div class="modal-body theater-modal-body">
+        <!-- Responsive 16:9 Cinema Video Container -->
+        <div class="theater-video-wrapper" id="theaterVideoWrapper">
+          <!-- Big Center Play/Pause Overlay Button -->
+          <div id="theaterPlayOverlay" class="theater-play-overlay">
+            <button id="theaterBigPlayBtn" class="big-play-btn" aria-label="Play Video">
+              <span class="play-icon">▶</span>
+            </button>
+            <span class="play-hint">Click to Play TMKOC Diwali Episode</span>
+          </div>
+
+          <!-- On-screen Skip Flash Indicator -->
+          <div id="theaterSkipIndicator" class="theater-skip-indicator hidden">
+            <span id="theaterSkipText">+10s ⏩</span>
+          </div>
+
+          <!-- YouTube Iframe (hidden unless custom embed is active) -->
+          <iframe
+            id="theaterIframe"
+            class="theater-iframe hidden"
+            src=""
+            title="Taarak Mehta Ka Ooltah Chashmah Happy Diwali Special"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+          </iframe>
+        </div>
+
+        <!-- Cinema Player Controls Bar -->
+        <div class="theater-controls-bar">
+          <div class="controls-left">
+            <button id="modalPlayPauseBtn" class="ctrl-btn" title="Play/Pause [Space]">
+              <span class="ctrl-icon">⏸</span>
+            </button>
+            <button id="modalSkipBackBtn" class="ctrl-btn skip-btn" title="Rewind 10 Seconds [J or ←]">
+              <span class="ctrl-icon">⏪</span>
+              <span class="skip-label">10s</span>
+            </button>
+            <button id="modalSkipForwardBtn" class="ctrl-btn skip-btn" title="Skip Forward 10 Seconds [L or →]">
+              <span class="skip-label">10s</span>
+              <span class="ctrl-icon">⏩</span>
+            </button>
+            <button id="modalMuteBtn" class="ctrl-btn" title="Mute/Unmute Audio [M]">
+              <span class="ctrl-icon">🔊</span>
+            </button>
+            <span id="modalTimeDisplay" class="time-display">00:00 / 24:15</span>
+          </div>
+
+          <!-- Interactive Seek Scrubber -->
+          <div class="controls-scrubber">
+            <input type="range" id="modalSeekSlider" min="0" max="1455" value="0" step="1" aria-label="Seek Video">
+          </div>
+
+          <div class="controls-right">
+            <span class="badge-quality">Full Episode</span>
+            <button id="modalFullscreenBtn" class="ctrl-btn" title="Toggle Fullscreen">
+              <span class="ctrl-icon">⛶</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Direct Guaranteed YouTube Official SAB Link CTA -->
+        <a id="directOfficialYtLink" href="https://youtu.be/-j9CKPlPhnU?si=9e1NO_5_1LzRv2zY" target="_blank" rel="noopener noreferrer" class="btn-direct-yt-banner">
+          <div class="yt-banner-icon">▶</div>
+          <div class="yt-banner-content">
+            <strong id="ytBannerTitle">Watch Ep 53 on Official Sony SAB YouTube</strong>
+            <small>Guaranteed unrestricted playback • Full 24-minute festive comedy • Opens in new tab</small>
+          </div>
+          <div class="yt-banner-badge">Official ↗</div>
+        </a>
+
+        <!-- Theater Meta Info -->
+        <div class="theater-info-bar">
+          <div class="theater-meta">
+            <span class="badge-festive">🎆 TMKOC Diwali Special</span>
+            <span class="meta-desc" id="theaterEpisodeDesc">Jethalal, Daya, Champaklal, and the entire Gokuldham society celebrate their very first iconic Diwali celebration with Laxmi Pujan, festive sweets, and family laughter.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Audio Context Activation Notice / Toast -->
   <div id="audioNotice" class="audio-notice hidden">
     <span>🔊 Click anywhere to enable festive music & firework sounds</span>
@@ -794,10 +1234,14 @@
 
   <!-- 2. Audio & Greeting Systems -->
   <script src="js/audio.js"></script>
+  <script src="js/aartiController.js"></script>
   <script src="js/greeting.js"></script>
+  <script src="js/gatePortal3d.js"></script>
 
   <!-- 3. World & 3D Indian Architecture -->
   <script src="js/world.js"></script>
+  <script src="js/societyArchitecture3d.js"></script>
+  <script src="js/societyTheater3d.js"></script>
   <script src="js/world3d.js"></script>
 
   <!-- 4. Player & 3D Character Controller -->
@@ -812,12 +1256,15 @@
   <script src="js/decorations.js"></script>
   <script src="js/shop.js"></script>
   <script src="js/minigames.js"></script>
+  <script src="js/theaterModal.js"></script>
   <script src="js/multiplayer.js"></script>
   <script src="js/multiplayer3d.js"></script>
   <script src="js/mission.js"></script>
 
-  <!-- 7. Living 3D Colony NPC Systems -->
+  <!-- 7. Living 3D Colony NPC & Gokul Kunj Society Systems -->
   <script src="js/navigation3d.js"></script>
+  <script src="js/societyCharacters.js"></script>
+  <script src="js/societyInteractions.js"></script>
   <script src="js/npc3d.js"></script>
   <script src="js/familyActivities3d.js"></script>
   <script src="js/templeActivities3d.js"></script>
@@ -826,6 +1273,7 @@
 
   <!-- 8. Master 3D WebGL Engine -->
   <script src="js/engine3d.js"></script>
+  <script src="js/mobileHud.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

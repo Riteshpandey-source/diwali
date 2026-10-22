@@ -40,6 +40,9 @@ class DiwaliEngine3D {
 
     // 3D Mission Coins in the world
     this.missionCoinMeshes = [];
+
+    // Session Entrance Cinematic Intro flag
+    this._hasPlayedEntranceIntro = false;
   }
 
   init() {
@@ -91,6 +94,18 @@ class DiwaliEngine3D {
     this.renderer.toneMappingExposure = 1.35;
     this.renderer.setClearColor(0x111c2e, 1.0);
 
+    // WebGL context loss recovery
+    this.canvas.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault();
+      console.warn('[DiwaliEngine3D] WebGL context lost! Graphics will safely pause.');
+      this.isContextLost = true;
+    }, false);
+
+    this.canvas.addEventListener('webglcontextrestored', () => {
+      console.log('[DiwaliEngine3D] WebGL context restored! Resuming display.');
+      this.isContextLost = false;
+    }, false);
+
     // Ensure canvas CSS fills viewport completely
     this.canvas.style.position = 'absolute';
     this.canvas.style.top = '0';
@@ -108,10 +123,10 @@ class DiwaliEngine3D {
     this.world3D.buildColony(worldData);
     window.diwaliWorld3D = this.world3D;
 
-    // 6. Build 3D Player Character
-    let startX = window.diwaliPlayer ? window.diwaliPlayer.x : 650;
-    let startY = window.diwaliPlayer ? window.diwaliPlayer.y : 680;
-    let initialYaw = 0;
+    // 6. Build 3D Player Character (Default spawn in front of Gokuldham Society Gate facing East)
+    let startX = 370; // 3D: x = -52.0, z = 0.0 (Directly at Gokuldham Society Gate entrance)
+    let startY = 610;
+    let initialYaw = -Math.PI / 2; // Facing East through the gate into the courtyard
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const spawn = urlParams.get('spawn');
@@ -124,14 +139,23 @@ class DiwaliEngine3D {
         startY = 1085; // In front of Rangoli & Utsav Kendra stall facing North
         initialYaw = 0;
       } else if (spawn === 'temple') {
+        startX = 1350;
+        startY = 690;
+        initialYaw = 0;
+      } else if (spawn === 'chowk') {
         startX = 650;
-        startY = 240;
+        startY = 680;
         initialYaw = 0;
       }
     } catch (e) {}
 
     this.player3D = new DiwaliPlayer3D(this.scene, this.camera, startX, startY);
-    if (initialYaw !== 0) this.player3D.cameraYaw = initialYaw;
+    this.player3D.cameraYaw = initialYaw;
+    this.player3D.rotation = Math.PI / 2;
+    this.player3D.targetRotation = Math.PI / 2;
+    if (this.player3D.group) {
+      this.player3D.group.rotation.y = Math.PI / 2;
+    }
     window.diwaliPlayer3D = this.player3D;
 
     // 7. Build 3D Fireworks Simulation
@@ -146,6 +170,18 @@ class DiwaliEngine3D {
     if (typeof DiwaliNPCManager3D !== 'undefined') {
       this.npcManager3D = new DiwaliNPCManager3D(this.scene, this.world3D, this.fireworks3D);
       window.diwaliNPCManager3D = this.npcManager3D;
+    }
+
+    // 9b. Build Gokul Kunj Society Interactions, Noticeboard & Dialogues
+    if (typeof SocietyInteractions3D !== 'undefined') {
+      this.societyInteractions = new SocietyInteractions3D(this);
+      window.diwaliSocietyInteractions = this.societyInteractions;
+    }
+
+    // 9c. Build Society Ground TMKOC Theater Modal Controller
+    if (typeof DiwaliTheaterModal !== 'undefined') {
+      this.theaterModal = new DiwaliTheaterModal();
+      window.diwaliTheaterModal = this.theaterModal;
     }
 
     // 10. Build 3D Mission Coin Pickups
@@ -538,21 +574,39 @@ class DiwaliEngine3D {
       mobileUseItemBtn.addEventListener('click', () => this.handleUseItem());
     }
 
-    // Mouse drag camera orbit controls
+    // Direct tap/click on interaction prompt for seamless mobile & desktop interaction
+    const promptEl = document.getElementById('interactionPrompt');
+    if (promptEl) {
+      promptEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.handleInteraction();
+      });
+      promptEl.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handleInteraction();
+      });
+    }
+
+    // Mouse drag camera orbit controls & click-to-ignite firework
     let isDraggingCamera = false;
     let lastMouseX = 0;
     let lastMouseY = 0;
+    let mouseTotalDrag = 0;
 
     this.canvas.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
       isDraggingCamera = true;
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
+      mouseTotalDrag = 0;
     });
 
     window.addEventListener('mousemove', (e) => {
       if (isDraggingCamera && this.player3D) {
         const deltaX = e.clientX - lastMouseX;
         const deltaY = e.clientY - lastMouseY;
+        mouseTotalDrag += Math.hypot(deltaX, deltaY);
         lastMouseX = e.clientX;
         lastMouseY = e.clientY;
 
@@ -562,6 +616,10 @@ class DiwaliEngine3D {
     });
 
     window.addEventListener('mouseup', () => {
+      if (isDraggingCamera && mouseTotalDrag < 6) {
+        // Left click on 3D scene directly ignites the selected firework!
+        this.handleUseItem();
+      }
       isDraggingCamera = false;
     });
 
@@ -615,10 +673,47 @@ class DiwaliEngine3D {
   }
 
   handleInteraction() {
+    // If player is already sitting, pressing [E] or Space stands up!
+    if (this.player3D && this.player3D.isSitting) {
+      this.player3D.standUp();
+      this.showToastNotice('Stood up from courtyard bench');
+      return;
+    }
+
     if (!this.currentInteractive) return;
     const target = this.currentInteractive;
 
-    if (target.type === 'house') {
+    if (target.type === 'society_bench') {
+      if (this.player3D) {
+        this.player3D.sitOnBench(target.data);
+        this.showToastNotice('Seated on bench. Press [E] or [W/A/S/D] to stand up.');
+      }
+      return;
+    } else if (target.type === 'society_theater_entrance') {
+      if (this.player3D) {
+        this.player3D.sitOnBench({
+          seatX: 25.5,
+          seatZ: -14.0,
+          seatY: 0.82,
+          rotY: 0,
+          isTheaterBench: true,
+          rowIndex: 0,
+          screenPos: { x: 35.0, y: 4.4, z: -14.0 }
+        });
+        this.showToastNotice('🎬 Welcome to Gokuldham Theater! Enjoying TMKOC Diwali Special.');
+        const theater = this.theaterModal || window.diwaliTheaterModal;
+        if (theater && theater.video && theater.video.paused) {
+          theater.video.play().catch(() => {});
+        }
+      }
+      return;
+    } else if (target.type === 'society_theater') {
+      const theater = this.theaterModal || window.diwaliTheaterModal;
+      if (theater) {
+        theater.togglePlayPause();
+      }
+      return;
+    } else if (target.type === 'house') {
       if (window.colonyDecoration) {
         window.colonyDecoration.openDecoratorModal(target.data);
       }
@@ -630,14 +725,29 @@ class DiwaliEngine3D {
       if (window.diwaliShop) {
         window.diwaliShop.openShopModal();
       }
-    } else if (target.type === 'temple') {
+    } else if (target.type === 'temple_altar_puja' || target.type === 'temple') {
+      const now = Date.now();
       if (this.npcManager3D) {
-        this.npcManager3D.triggerTempleAarti();
+        this.npcManager3D.triggerTempleAarti('player');
       }
-      if (window.diwaliMiniGames) {
-        window.diwaliMiniGames.openGamesModal();
-        window.diwaliMiniGames.launchTriviaQuiz();
+      if (window.diwaliAartiController) {
+        window.diwaliAartiController.onTempleAartiStarted('player');
       }
+      if (!this._lastPujaRewardTime || now - this._lastPujaRewardTime > 12000) {
+        this._lastPujaRewardTime = now;
+        if (window.diwaliShop) {
+          window.diwaliShop.addCoins(25, 'Diwali Puja Blessing');
+        }
+        this.showToastNotice('🪔 ॐ श्री महालक्ष्म्यै नमः! Sacred Deepawali Lakshmi-Ganesha Aarti performed! (+25 Coins)');
+      } else {
+        this.showToastNotice('🪔 You offered sacred flowers and prayers before Goddess Lakshmi & Lord Ganesha.');
+      }
+      return;
+    } else if (target.type === 'temple_traditions_guide' || target.type === 'diwali_education') {
+      if (this.npcManager3D) {
+        this.npcManager3D.openEducationModal();
+      }
+      return;
     } else if (target.type === 'minigame_rangoli') {
       if (window.diwaliMiniGames) {
         window.diwaliMiniGames.openGamesModal();
@@ -650,6 +760,22 @@ class DiwaliEngine3D {
       }
       if (window.colonyDecoration) {
         window.colonyDecoration.triggerMahaDeepotsav('You');
+      }
+    } else if (target.type === 'society_npc') {
+      if (this.societyInteractions) {
+        this.societyInteractions.openDialogueForCharacter(target.data.characterId);
+      }
+    } else if (target.type === 'society_noticeboard') {
+      if (this.societyInteractions) {
+        this.societyInteractions.openNoticeboard();
+      }
+    } else if (target.type === 'community_hall_door' || target.type === 'apartment_door') {
+      if (this.world3D && this.world3D.societyArchitecture) {
+        this.world3D.societyArchitecture.enterInterior(target.data.targetInterior, this.player3D);
+      }
+    } else if (target.type === 'interior_exit') {
+      if (this.world3D && this.world3D.societyArchitecture) {
+        this.world3D.societyArchitecture.exitInterior(this.player3D);
       }
     }
   }
@@ -664,6 +790,14 @@ class DiwaliEngine3D {
     if (this.isRunning) return;
     this.isRunning = true;
     this.init();
+    if (this.player3D) {
+      this.player3D.respawnAtGate();
+      // Automatically trigger entrance gate banner cinematic intro once per session
+      if (!this._hasPlayedEntranceIntro && this.player3D.cameraController) {
+        this._hasPlayedEntranceIntro = true;
+        this.player3D.cameraController.triggerEntranceIntro();
+      }
+    }
     this.clock.start();
     requestAnimationFrame((t) => this.loop(t));
   }
@@ -671,14 +805,22 @@ class DiwaliEngine3D {
   loop(timestamp) {
     if (!this.isRunning) return;
 
-    const delta = Math.min(this.clock.getDelta(), 0.1);
-    const elapsedTime = this.clock.getElapsedTime();
-    this.fps = Math.round(1 / Math.max(0.001, delta));
+    // 1. Schedule next frame FIRST so transient errors never permanently freeze the game loop
+    this.animFrameId = requestAnimationFrame((t) => this.loop(t));
 
-    this.update(delta, elapsedTime);
-    this.render();
+    try {
+      let rawDelta = this.clock.getDelta();
+      // Guard against NaN, negative, or tab-switch freeze deltas
+      if (isNaN(rawDelta) || !isFinite(rawDelta) || rawDelta <= 0) rawDelta = 0.016;
+      const delta = Math.min(rawDelta, 0.1);
+      const elapsedTime = this.clock.getElapsedTime();
+      this.fps = Math.round(1 / Math.max(0.001, delta));
 
-    requestAnimationFrame((t) => this.loop(t));
+      this.update(delta, elapsedTime);
+      this.render();
+    } catch (loopErr) {
+      console.error('[DiwaliEngine3D] Error in animation frame:', loopErr);
+    }
   }
 
   update(delta, elapsedTime) {
@@ -695,9 +837,32 @@ class DiwaliEngine3D {
         window.diwaliMission.checkCoinPickups(px, py, 25);
       }
 
-      // Check Nearby Interactive Target
-      this.currentInteractive = this.world3D.getInteractiveTarget(px, py);
+      // Check Nearby Interactive Target (supporting both 2D and 3D targets)
+      this.currentInteractive = this.world3D.getInteractiveTarget(px, py, this.player3D.x, this.player3D.z);
       this.updateInteractionPrompt();
+
+      // Update Society Ground Theater proximity for location badge & bottom banner
+      if (this.theaterModal) {
+        this.theaterModal.updateProximity(this.player3D.x, this.player3D.z);
+      } else if (window.diwaliTheaterModal) {
+        window.diwaliTheaterModal.updateProximity(this.player3D.x, this.player3D.z);
+      }
+
+      // Compact hint to explore the theater when approaching the eastern promenade
+      const nowMs = performance.now();
+      if (!this._lastTheaterHintTime || nowMs - this._lastTheaterHintTime > 45000) {
+        const px3d = this.player3D.x;
+        const pz3d = this.player3D.z;
+        if (px3d >= -18 && px3d <= 4 && pz3d >= -24 && pz3d <= -4 && !this.player3D.isSitting) {
+          this._lastTheaterHintTime = nowMs;
+          this.showToastNotice('🎬 Explore the Theater — Community Cinema on East Promenade');
+        }
+      }
+
+      // Update Mandir Aarti Controller proximity (Entrance Gate & Temple)
+      if (window.diwaliAartiController) {
+        window.diwaliAartiController.updateProximity(this.player3D.x, this.player3D.z);
+      }
 
       // Broadcast Movement to Multiplayer Room
       if (window.diwaliMultiplayer && window.diwaliMultiplayer.isConnected) {
@@ -731,8 +896,11 @@ class DiwaliEngine3D {
       c.mesh.rotation.y += 2.4 * delta;
       c.group.position.y = 1.2 + Math.sin(elapsedTime * 3.5 + c.mesh.id) * 0.2;
 
-      // Hide coin if already collected in mission
-      if (window.diwaliMission && window.diwaliMission.state.coinsCollected.includes(c.id)) {
+      // Hide coin if already collected in mission (safe array check)
+      const collected = (window.diwaliMission && window.diwaliMission.state && Array.isArray(window.diwaliMission.state.coinsCollected))
+        ? window.diwaliMission.state.coinsCollected
+        : [];
+      if (collected.includes(c.id)) {
         c.group.visible = false;
       } else {
         c.group.visible = true;
@@ -750,9 +918,32 @@ class DiwaliEngine3D {
     const msg = document.getElementById('promptMessage');
     const keyBadge = document.getElementById('promptKeyBadge');
 
-    if (this.currentInteractive) {
-      if (msg) msg.textContent = this.currentInteractive.prompt;
+    if (this.player3D && this.player3D.isSitting) {
+      if (prompt) {
+        if (this.player3D.currentBench && this.player3D.currentBench.isTheaterBench) {
+          prompt.classList.add('theater-seated-prompt');
+          if (msg) msg.textContent = '▶️ [Space / Button] Play/Pause Video • [E] Stand Up';
+        } else {
+          prompt.classList.remove('theater-seated-prompt');
+          if (msg) msg.textContent = 'Press [E] or [W/A/S/D] to Stand Up';
+        }
+      }
       if (keyBadge) keyBadge.textContent = 'E';
+      if (prompt) prompt.classList.remove('hidden');
+      return;
+    } else {
+      if (prompt) prompt.classList.remove('theater-seated-prompt');
+    }
+
+    if (this.currentInteractive) {
+      if (this.currentInteractive.type === 'society_theater_entrance') {
+        const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 768);
+        if (msg) msg.textContent = isTouch ? '🎬 Tap to Enter Theater & Watch Show' : '🎬 Press [E] to Enter Theater & Watch Show';
+        if (keyBadge) keyBadge.textContent = isTouch ? 'TAP' : 'E';
+      } else {
+        if (msg) msg.textContent = this.currentInteractive.prompt;
+        if (keyBadge) keyBadge.textContent = 'E';
+      }
       if (prompt) prompt.classList.remove('hidden');
     } else {
       if (prompt) prompt.classList.add('hidden');
@@ -760,7 +951,7 @@ class DiwaliEngine3D {
   }
 
   render() {
-    if (!this.renderer || !this.scene || !this.camera) return;
+    if (!this.renderer || !this.scene || !this.camera || this.isContextLost) return;
 
     // Render 3D Scene
     this.renderer.render(this.scene, this.camera);
@@ -771,6 +962,11 @@ class DiwaliEngine3D {
 
   // Trigger overhead dialogue speech bubble for NPCs
   triggerNpcSpeech(npc, text, duration = 4.0) {
+    // If player is in theater or watching cinema, suppress all NPC speech bubbles
+    if (window.diwaliTheaterModal?.isNearTheater || (this.player3D?.isSitting && this.player3D.currentBench?.isTheaterBench)) {
+      return;
+    }
+
     const bubblesLayer = document.getElementById('emoteBubblesLayer');
     if (!bubblesLayer || !this.camera) return;
 

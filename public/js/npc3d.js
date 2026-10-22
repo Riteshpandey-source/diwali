@@ -67,7 +67,7 @@ class DiwaliNPC3D {
     // Build 3D Mesh
     this.group = new THREE.Group();
     this.group.name = `NPC_${this.id}`;
-    this.group.position.set(this.x, 0, this.z);
+    this.group.position.set(this.x, this.y, this.z);
     this.group.rotation.y = this.rotation;
     this.group.scale.set(this.charScale, this.charScale, this.charScale);
 
@@ -358,6 +358,14 @@ class DiwaliNPC3D {
       flame.scale.set(0.6, 1.8, 0.6);
       flame.position.y = 0.12;
       lampGroup.add(flame);
+      this.aartiFlame = flame;
+
+      // Dynamic golden Aarti flame light illuminating surroundings
+      const aartiLight = new THREE.PointLight(0xffa500, 2.2, 8, 1.2);
+      aartiLight.position.set(0, 0.22, 0);
+      aartiLight.castShadow = false;
+      lampGroup.add(aartiLight);
+      this.aartiLight = aartiLight;
 
       this.rightArmGroup.add(lampGroup);
       this.currentPropMesh = lampGroup;
@@ -500,12 +508,19 @@ class DiwaliNPC3D {
     }
 
     // 2. Smooth Heading Rotation Interpolation
-    let rotDiff = this.targetRotation - this.rotation;
+    let rotDiff = (this.targetRotation - this.rotation) % (Math.PI * 2);
+    if (isNaN(rotDiff)) rotDiff = 0;
     while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
     while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
     this.rotation += rotDiff * 0.16;
 
-    this.group.position.set(this.x, 0, this.z);
+    // Smoothly adapt vertical elevation to terrain/temple stairs and plinth
+    if (nav && nav.world3D && typeof nav.world3D.getElevation === 'function') {
+      const targetY = nav.world3D.getElevation(this.x, this.z);
+      this.y += (targetY - this.y) * Math.min(1.0, 10.0 * delta);
+    }
+
+    this.group.position.set(this.x, this.y, this.z);
     this.group.rotation.y = this.rotation;
 
     // 3. Update Procedural Joint Skeletal Animations
@@ -759,8 +774,17 @@ class DiwaliNPC3D {
         const aartiCycle = t * 2.8;
         this.rightArmGroup.rotation.x = -0.65 + Math.sin(aartiCycle) * 0.22;
         this.rightArmGroup.rotation.y = Math.cos(aartiCycle) * 0.28;
-        this.leftArmGroup.rotation.x = -0.3;
-        this.headGroup.rotation.x = 0.1;
+        this.leftArmGroup.rotation.x = -0.55 + Math.sin(aartiCycle) * 0.12;
+        this.leftArmGroup.rotation.z = 0.25;
+        this.headGroup.rotation.x = 0.12 + Math.sin(t * 1.5) * 0.04;
+
+        // Dynamic Aarti flame & light flicker
+        if (this.aartiLight) {
+          this.aartiLight.intensity = 2.0 + Math.random() * 0.9;
+        }
+        if (this.aartiFlame) {
+          this.aartiFlame.scale.set(0.6 + Math.random() * 0.15, 1.8 + Math.random() * 0.35, 0.6 + Math.random() * 0.15);
+        }
       } else if (this.state === NPCState.LIGHTING_DIYA || this.state === NPCState.USING_VIRTUAL_FIREWORKS) {
         // Bending down to ignite diya / virtual firework
         this.torsoGroup.position.y = 1.15;

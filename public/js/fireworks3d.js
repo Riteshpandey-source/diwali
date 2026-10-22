@@ -93,23 +93,49 @@ class DiwaliFireworks3D {
   // -------------------------------------------------------------
   // 1. ANAR (GOLDEN FOUNTAIN CRACKER)
   // -------------------------------------------------------------
-  placeAnar(x2d, y2d, isLocal = true) {
-    const pos = this.to3D(x2d, y2d);
+  placeAnar(x, z, isLocal = true) {
+    let px, pz;
+    // Auto-detect coordinate space (2D vs 3D)
+    if (Math.abs(x) > 150 || Math.abs(z) > 150) {
+      const p3d = this.to3D(x, z);
+      px = p3d.x;
+      pz = p3d.z;
+    } else {
+      px = x;
+      pz = z;
+    }
+
     const group = new THREE.Group();
-    group.position.set(pos.x, 0, pos.z);
+    group.position.set(px, 0, pz);
 
     // Terracotta Cone Body
     const coneGeo = new THREE.ConeGeometry(0.35, 0.6, 8);
     const coneMat = new THREE.MeshStandardMaterial({ color: 0x9a3412, roughness: 0.7 });
     const cone = new THREE.Mesh(coneGeo, coneMat);
     cone.position.y = 0.3;
+    cone.receiveShadow = true;
     group.add(cone);
 
-    // Trigger Shared FX Flash for fountain illumination
-    this.triggerFxFlash(pos.x, 0.8, pos.z, 0xffaa00, 3.2, 5.5);
+    // Glowing Burning Nozzle Tip
+    const tipMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      emissive: 0xf59e0b,
+      emissiveIntensity: 4.5
+    });
+    const tip = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.14, 8), tipMat);
+    tip.position.y = 0.62;
+    group.add(tip);
+
+    // Dynamic Fountain Glow PointLight
+    const anarLight = new THREE.PointLight(0xf59e0b, 3.5, 14.0);
+    anarLight.position.set(0, 0.8, 0);
+    group.add(anarLight);
+
+    // Shared FX Flash
+    this.triggerFxFlash(px, 0.8, pz, 0xffaa00, 3.5, 5.5);
 
     // Fountain Particle System
-    const particleCount = this.isReducedMotion ? 90 : 180;
+    const particleCount = this.isReducedMotion ? 120 : 220;
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const velocities = [];
@@ -121,9 +147,9 @@ class DiwaliFireworks3D {
       positions[i * 3 + 2] = 0;
 
       // Vertical eruption cone
-      const speed = 4.0 + Math.random() * 5.5;
+      const speed = 4.2 + Math.random() * 6.5;
       const angle = Math.random() * Math.PI * 2;
-      const spread = (Math.random() * 0.35);
+      const spread = (Math.random() * 0.38);
 
       velocities.push({
         vx: Math.cos(angle) * spread * speed,
@@ -133,16 +159,27 @@ class DiwaliFireworks3D {
         maxLife: 1.2
       });
 
-      colors[i * 3] = 1.0;
-      colors[i * 3 + 1] = Math.random() > 0.3 ? 0.85 : 0.4;
-      colors[i * 3 + 2] = 0.1;
+      const colorRoll = Math.random();
+      if (colorRoll > 0.7) {
+        colors[i * 3] = 1.0;
+        colors[i * 3 + 1] = 0.95;
+        colors[i * 3 + 2] = 0.6; // White-hot sparkling tip
+      } else if (colorRoll > 0.3) {
+        colors[i * 3] = 1.0;
+        colors[i * 3 + 1] = 0.75;
+        colors[i * 3 + 2] = 0.1; // Radiant golden spark
+      } else {
+        colors[i * 3] = 1.0;
+        colors[i * 3 + 1] = 0.4;
+        colors[i * 3 + 2] = 0.05; // Deep saffron amber
+      }
     }
 
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
     const pMat = new THREE.PointsMaterial({
-      size: 0.45,
+      size: 0.48,
       map: this.sparkTex,
       vertexColors: true,
       transparent: true,
@@ -156,6 +193,8 @@ class DiwaliFireworks3D {
 
     const fountain = {
       group,
+      light: anarLight,
+      tipMat,
       geo,
       velocities,
       positions,
@@ -171,6 +210,11 @@ class DiwaliFireworks3D {
     if (isLocal !== false && window.diwaliPlayer3D && window.diwaliPlayer3D.cameraController) {
       window.diwaliPlayer3D.cameraController.triggerAnarCinematic(fountain);
     }
+
+    // Multiplayer sync
+    if (isLocal && window.diwaliMultiplayer && typeof window.diwaliMultiplayer.broadcastFirework === 'function') {
+      window.diwaliMultiplayer.broadcastFirework('anar', px, pz);
+    }
   }
 
   // Compatibility alias for NPC / external caller invocations
@@ -179,22 +223,110 @@ class DiwaliFireworks3D {
   }
 
   // -------------------------------------------------------------
+  // -------------------------------------------------------------
   // 2. CHAKRI (GROUND SPINNER)
   // -------------------------------------------------------------
-  placeChakri(x2d, y2d) {
-    const pos = this.to3D(x2d, y2d);
-    const group = new THREE.Group();
-    group.position.set(pos.x, 0.05, pos.z);
+  createChakriTexture() {
+    if (typeof document === 'undefined') return new THREE.Texture();
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
 
-    // Terracotta spinning disc
-    const discGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.08, 12);
-    const discMat = new THREE.MeshStandardMaterial({ color: 0x9a3412 });
-    const disc = new THREE.Mesh(discGeo, discMat);
+    // Rich maroon / green festive background
+    ctx.fillStyle = '#78350f';
+    ctx.beginPath();
+    ctx.arc(64, 64, 64, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Concentric rings
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(64, 64, 56, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Spiral arms
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 3;
+    for (let a = 0; a < 4; a++) {
+      ctx.beginPath();
+      const startAngle = a * (Math.PI / 2);
+      for (let r = 8; r < 54; r += 2) {
+        const theta = startAngle + r * 0.12;
+        const x = 64 + Math.cos(theta) * r;
+        const y = 64 + Math.sin(theta) * r;
+        if (r === 8) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // Golden center hub
+    ctx.fillStyle = '#fef08a';
+    ctx.beginPath();
+    ctx.arc(64, 64, 12, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.arc(64, 64, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    const tex = new THREE.CanvasTexture(canvas);
+    return tex;
+  }
+
+  placeChakri(x, z, isLocal = true) {
+    let px, pz;
+    // Auto-detect coordinate space (2D vs 3D)
+    if (Math.abs(x) > 150 || Math.abs(z) > 150) {
+      const p3d = this.to3D(x, z);
+      px = p3d.x;
+      pz = p3d.z;
+    } else {
+      px = x;
+      pz = z;
+    }
+
+    const group = new THREE.Group();
+    group.position.set(px, 0.04, pz);
+
+    // Terracotta and decorated foil spinning disc
+    if (!this.cachedChakriTex) {
+      this.cachedChakriTex = this.createChakriTexture();
+    }
+
+    const discGeo = new THREE.CylinderGeometry(0.36, 0.38, 0.06, 16);
+    const discMatSide = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.6 });
+    const discMatTop = new THREE.MeshStandardMaterial({
+      map: this.cachedChakriTex,
+      roughness: 0.35,
+      metalness: 0.2
+    });
+    const disc = new THREE.Mesh(discGeo, [discMatSide, discMatTop, discMatSide]);
+    disc.receiveShadow = true;
     group.add(disc);
 
-    this.triggerFxFlash(pos.x, 0.4, pos.z, 0xff6600, 2.5, 3.5);
+    // Burning glowing center core
+    const coreMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      emissive: 0xf59e0b,
+      emissiveIntensity: 3.5
+    });
+    const core = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.12, 8), coreMat);
+    core.position.y = 0.06;
+    group.add(core);
 
-    const count = this.isReducedMotion ? 60 : 120;
+    // Dynamic ground illumination point light
+    const chakriLight = new THREE.PointLight(0xf59e0b, 2.5, 8.0);
+    chakriLight.position.set(0, 0.25, 0);
+    group.add(chakriLight);
+
+    this.triggerFxFlash(px, 0.3, pz, 0xff7700, 2.8, 4.8);
+
+    // 4-armed Pinwheel Spiral Sparks
+    const count = this.isReducedMotion ? 90 : 180;
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
@@ -202,26 +334,42 @@ class DiwaliFireworks3D {
 
     for (let i = 0; i < count; i++) {
       positions[i * 3] = 0;
-      positions[i * 3 + 1] = 0.1;
+      positions[i * 3 + 1] = 0.06;
       positions[i * 3 + 2] = 0;
 
+      const arm = i % 4;
+      const baseAngle = arm * (Math.PI / 2) + (Math.random() - 0.5) * 0.25;
+
       velocities.push({
-        angle: (i / count) * Math.PI * 4,
-        speed: 2.5 + Math.random() * 3.5,
-        life: Math.random() * 0.6 + 0.2,
+        baseAngle,
+        speed: 3.5 + Math.random() * 4.5,
+        life: Math.random() * 0.45 + 0.15,
+        maxLife: 0.5,
         dist: 0
       });
 
-      colors[i * 3] = 1.0;
-      colors[i * 3 + 1] = Math.random() * 0.7 + 0.3;
-      colors[i * 3 + 2] = 0.1;
+      // Warm golden to fiery orange sparks
+      const colorRoll = Math.random();
+      if (colorRoll > 0.75) {
+        colors[i * 3] = 1.0;
+        colors[i * 3 + 1] = 0.98;
+        colors[i * 3 + 2] = 0.65; // Sparkle white-gold
+      } else if (colorRoll > 0.35) {
+        colors[i * 3] = 1.0;
+        colors[i * 3 + 1] = 0.65;
+        colors[i * 3 + 2] = 0.1; // Golden amber
+      } else {
+        colors[i * 3] = 1.0;
+        colors[i * 3 + 1] = 0.35;
+        colors[i * 3 + 2] = 0.05; // Fiery saffron red
+      }
     }
 
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
     const pMat = new THREE.PointsMaterial({
-      size: 0.35,
+      size: 0.42,
       map: this.sparkTex,
       vertexColors: true,
       transparent: true,
@@ -235,16 +383,26 @@ class DiwaliFireworks3D {
 
     this.activeSpinners.push({
       group,
-      light,
+      light: chakriLight,
+      disc,
+      core,
+      coreMat,
       geo,
+      pMat,
       velocities,
       positions,
-      spinSpeed: 18.0,
-      duration: 4.5,
+      spinSpeed: 24.0,
+      maxSpinSpeed: 42.0,
+      duration: 4.8,
       age: 0
     });
 
-    this.playSafeAudio('playChakriSpin', 4500);
+    this.playSafeAudio('playChakriSpin', 4800);
+
+    // Multiplayer broadcast
+    if (isLocal && window.diwaliMultiplayer && typeof window.diwaliMultiplayer.broadcastFirework === 'function') {
+      window.diwaliMultiplayer.broadcastFirework('chakri', px, pz);
+    }
   }
 
   // -------------------------------------------------------------
@@ -459,6 +617,18 @@ class DiwaliFireworks3D {
   // 5. CLAY DIYA PLACEMENT
   // -------------------------------------------------------------
   placeDiya(x2d, y2d) {
+    // Cap placed diyas pool at 40 to prevent unbounded mesh and material accumulation
+    if (this.placedDiyas.length >= 40) {
+      const oldest = this.placedDiyas.shift();
+      if (oldest && oldest.group) {
+        this.scene.remove(oldest.group);
+        oldest.group.traverse((obj) => {
+          if (obj.geometry) obj.geometry.dispose();
+          if (obj.material) obj.material.dispose();
+        });
+      }
+    }
+
     const pos = this.to3D(x2d, y2d);
     const group = new THREE.Group();
     group.position.set(pos.x, 0.05, pos.z);
@@ -521,6 +691,13 @@ class DiwaliFireworks3D {
         continue;
       }
 
+      if (f.light) {
+        f.light.intensity = 2.8 + Math.random() * 2.2;
+      }
+      if (f.tipMat) {
+        f.tipMat.emissiveIntensity = 3.5 + Math.random() * 2.5;
+      }
+
       const posAttr = f.geo.attributes.position;
       const count = f.velocities.length;
 
@@ -560,11 +737,29 @@ class DiwaliFireworks3D {
       if (c.age >= c.duration) {
         this.scene.remove(c.group);
         c.geo.dispose();
+        if (c.pMat) c.pMat.dispose();
         this.activeSpinners.splice(i, 1);
         continue;
       }
 
-      c.group.rotation.y += c.spinSpeed * delta;
+      // Smooth spin acceleration and deceleration
+      const progress = c.age / c.duration;
+      const speedMult = 1.0 + Math.sin(progress * Math.PI) * 0.8;
+      const currentSpeed = (c.spinSpeed || 24.0) * speedMult;
+      c.group.rotation.y += currentSpeed * delta;
+
+      // Realistic subtle ground jitter
+      c.group.position.x += (Math.random() - 0.5) * 0.006;
+      c.group.position.z += (Math.random() - 0.5) * 0.006;
+
+      // Dynamic light and core flicker
+      if (c.light) {
+        c.light.intensity = 2.2 + Math.random() * 1.6;
+      }
+      if (c.coreMat) {
+        c.coreMat.emissiveIntensity = 3.0 + Math.random() * 2.5;
+      }
+
       const posAttr = c.geo.attributes.position;
       const count = c.velocities.length;
 
@@ -574,15 +769,17 @@ class DiwaliFireworks3D {
 
         if (v.life <= 0) {
           posAttr.array[j * 3] = 0;
-          posAttr.array[j * 3 + 1] = 0.1;
+          posAttr.array[j * 3 + 1] = 0.06;
           posAttr.array[j * 3 + 2] = 0;
-          v.life = Math.random() * 0.6 + 0.2;
+          v.life = Math.random() * 0.45 + 0.15;
           v.dist = 0;
         } else {
           v.dist += v.speed * delta;
-          const a = v.angle + c.group.rotation.y;
+          const baseA = v.baseAngle !== undefined ? v.baseAngle : (v.angle || 0);
+          // Archimedean expanding spiral formula
+          const a = baseA + c.group.rotation.y - v.dist * 0.75;
           posAttr.array[j * 3] = Math.cos(a) * v.dist;
-          posAttr.array[j * 3 + 1] = 0.1 + Math.sin(v.dist * 3) * 0.15;
+          posAttr.array[j * 3 + 1] = 0.06 + Math.sin(v.dist * 3.5) * 0.08 + Math.random() * 0.04;
           posAttr.array[j * 3 + 2] = Math.sin(a) * v.dist;
         }
       }
@@ -593,10 +790,15 @@ class DiwaliFireworks3D {
     // 3. Update Sky Rockets
     for (let i = this.activeRockets.length - 1; i >= 0; i--) {
       const r = this.activeRockets[i];
+      r.age = (r.age || 0) + delta;
       r.group.position.y += r.vy * delta;
 
-      if (r.group.position.y >= r.burstHeight) {
+      if (r.group.position.y >= r.burstHeight || r.age > 4.5) {
         this.scene.remove(r.group);
+        r.group.traverse((obj) => {
+          if (obj.geometry) obj.geometry.dispose();
+          if (obj.material) obj.material.dispose();
+        });
         this.activeRockets.splice(i, 1);
         try {
           this.explodeRocketBurst(

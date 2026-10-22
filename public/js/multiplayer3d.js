@@ -212,7 +212,8 @@ class DiwaliMultiplayer3D {
       avatar.root.position.set(avatar.currentX, 0, avatar.currentZ);
 
       // Rotation interpolation
-      let rotDiff = avatar.targetRotation - avatar.rotation;
+      let rotDiff = (avatar.targetRotation - avatar.rotation) % (Math.PI * 2);
+      if (isNaN(rotDiff)) rotDiff = 0;
       while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
       while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
       avatar.rotation += rotDiff * 0.18;

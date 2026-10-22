@@ -224,10 +224,15 @@ class DiwaliEngine {
       if (window.diwaliShop) {
         window.diwaliShop.openShopModal();
       }
-    } else if (target.type === 'temple') {
-      if (window.diwaliMiniGames) {
-        window.diwaliMiniGames.openGamesModal();
-        window.diwaliMiniGames.launchTriviaQuiz();
+    } else if (target.type === 'temple' || target.type === 'temple_altar_puja') {
+      if (window.festiveAudio && typeof window.festiveAudio.playTempleBell === 'function') {
+        window.festiveAudio.playTempleBell();
+      }
+      if (window.diwaliShop) {
+        window.diwaliShop.addCoins(25, 'Diwali Temple Blessing');
+      }
+      if (this.showToast) {
+        this.showToast('🪔 ॐ श्री महालक्ष्म्यै नमः! Sacred Deepawali Aarti offered! (+25 Coins)');
       }
     } else if (target.type === 'minigame_rangoli') {
       if (window.diwaliMiniGames) {

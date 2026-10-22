@@ -3,7 +3,7 @@
 // ========================================================
 
 class DiwaliPlayer {
-  constructor(x = 650, y = 680) {
+  constructor(x = 370, y = 610) {
     this.x = x;
     this.y = y;
     this.radius = 16;
@@ -11,7 +11,7 @@ class DiwaliPlayer {
     this.sprintSpeed = 5.8;
     this.vx = 0;
     this.vy = 0;
-    this.facing = 'down';
+    this.facing = 'right';
     this.isMoving = false;
     this.isSprinting = false;
 

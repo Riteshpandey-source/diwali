@@ -16,6 +16,8 @@ const MIME_TYPES = {
   '.jpeg': 'image/jpeg',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
   '.mp3': 'audio/mpeg',
   '.wav': 'audio/wav',
   '.ogg': 'audio/ogg',
@@ -65,31 +67,54 @@ const server = http.createServer((req, res) => {
           res.end('404 Not Found');
           return;
         }
-        serveFile(filePath, res);
+        serveFile(filePath, req, res, fallbackStats);
       });
       return;
     }
-    serveFile(filePath, res);
+    serveFile(filePath, req, res, stats);
   });
 });
 
-function serveFile(filePath, res) {
+function serveFile(filePath, req, res, stats) {
   const ext = path.extname(filePath).toLowerCase();
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-  
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      res.writeHead(500, { 'Content-Type': 'text/plain' });
-      res.end('500 Internal Server Error');
-      return;
+  const total = stats.size;
+  const range = req.headers.range;
+
+  // Support HTTP 206 Partial Content for video/audio seek & streaming
+  if (range) {
+    const parts = range.replace(/bytes=/, "").split("-");
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : total - 1;
+
+    if (start >= total || end >= total) {
+      res.writeHead(416, {
+        'Content-Range': `bytes */${total}`,
+        'Access-Control-Allow-Origin': '*'
+      });
+      return res.end();
     }
+
+    const chunksize = (end - start) + 1;
+    const file = fs.createReadStream(filePath, { start, end });
+    res.writeHead(206, {
+      'Content-Range': `bytes ${start}-${end}/${total}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': chunksize,
+      'Content-Type': contentType,
+      'Access-Control-Allow-Origin': '*'
+    });
+    file.pipe(res);
+  } else {
     res.writeHead(200, {
+      'Content-Length': total,
+      'Accept-Ranges': 'bytes',
       'Content-Type': contentType,
       'Cache-Control': 'no-cache',
       'Access-Control-Allow-Origin': '*'
     });
-    res.end(content);
-  });
+    fs.createReadStream(filePath).pipe(res);
+  }
 }
 
 // WebSocket Multiplayer Hub

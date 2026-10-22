@@ -1,0 +1,277 @@
+[
+  {
+    "category": "Startup & Server",
+    "name": "API Status Endpoint Health",
+    "status": "PASS",
+    "details": "Uptime: 52548.1s, Active Rooms: 0",
+    "error": null
+  },
+  {
+    "category": "Startup & Server",
+    "name": "Index HTML Delivery",
+    "status": "PASS",
+    "details": "Received 56623 bytes",
+    "error": null
+  },
+  {
+    "category": "Security",
+    "name": "Path Traversal Prevention (/../server.js)",
+    "status": "PASS",
+    "details": "Protected with status: 200",
+    "error": null
+  },
+  {
+    "category": "Theater & Streaming",
+    "name": "Episode 53 HTTP 206 Range Streaming",
+    "status": "PASS",
+    "details": "Content-Range: bytes 0-1024/34902420",
+    "error": null
+  },
+  {
+    "category": "Asset Integrity",
+    "name": "All HTML Script Dependencies Present",
+    "status": "PASS",
+    "details": "All 31 scripts returned HTTP 200 OK",
+    "error": null
+  },
+  {
+    "category": "Multiplayer",
+    "name": "WebSocket Client A Handshake & Welcome",
+    "status": "PASS",
+    "details": "Assigned ID: player_ozhg4f2, Room: audit-room-1792658662718",
+    "error": null
+  },
+  {
+    "category": "Multiplayer",
+    "name": "WebSocket Client B Join & Room Synchronization",
+    "status": "PASS",
+    "details": "Existing peers in room: 1",
+    "error": null
+  },
+  {
+    "category": "Multiplayer",
+    "name": "Peer Join Notification",
+    "status": "PASS",
+    "details": "Peer joined: Tester_Bob",
+    "error": null
+  },
+  {
+    "category": "Multiplayer",
+    "name": "Realtime Movement Broadcast",
+    "status": "PASS",
+    "details": "Received movement for: player_2o6o2hk at (820, 710)",
+    "error": null
+  },
+  {
+    "category": "Multiplayer",
+    "name": "Shared Firework Event Broadcast",
+    "status": "PASS",
+    "details": "Received fwType: anar from player_ozhg4f2",
+    "error": null
+  },
+  {
+    "category": "Multiplayer",
+    "name": "Room Isolation Security",
+    "status": "PASS",
+    "details": "Messages strictly isolated between rooms",
+    "error": null
+  },
+  {
+    "category": "Security & Robustness",
+    "name": "Server Resilience to Malformed WebSocket Payloads",
+    "status": "PASS",
+    "details": "Server handled invalid inputs without crashing",
+    "error": null
+  },
+  {
+    "category": "Shop & Economy",
+    "name": "Shop Catalog Item Count & Definitions",
+    "status": "PASS",
+    "details": "10 distinct virtual festive items defined",
+    "error": null
+  },
+  {
+    "category": "Shop & Economy",
+    "name": "Valid Purchase & Coin Deduction",
+    "status": "PASS",
+    "details": "Coins: 150 -> 105, Inventory: +1 Sky Rocket",
+    "error": null
+  },
+  {
+    "category": "Shop & Economy",
+    "name": "Insufficient Balance Rejection",
+    "status": "PASS",
+    "details": "Purchase correctly denied without negative balance",
+    "error": null
+  },
+  {
+    "category": "Shop & Economy",
+    "name": "Item Usage & Inventory Decrement",
+    "status": "PASS",
+    "details": "Rocket used and deducted from inventory",
+    "error": null
+  },
+  {
+    "category": "Shop & Economy",
+    "name": "Depleted Item Usage Guard",
+    "status": "PASS",
+    "details": "Prevented using depleted items",
+    "error": null
+  },
+  {
+    "category": "Navigation & World Math",
+    "name": "2D to 3D Coordinate Projection",
+    "status": "PASS",
+    "details": "Gate 2D(410, 610) -> 3D(-48, 0)",
+    "error": null
+  },
+  {
+    "category": "Navigation & World Math",
+    "name": "Perimeter Collision Physics Detection",
+    "status": "PASS",
+    "details": "Inside free, wall boundary obstructed",
+    "error": null
+  },
+  {
+    "category": "Navigation & World Math",
+    "name": "Player Wall Depenetration & Anti-Tunneling Clamping",
+    "status": "PASS",
+    "details": "Player blocked at x=88.00 (never penetrates wall)",
+    "error": null
+  },
+  {
+    "category": "Mission & Mini-games",
+    "name": "All 6 Primary Mission Objectives & State Tracking",
+    "status": "PASS",
+    "details": "Exploration, Coins, Decoration, Shopping, Challenges & Finale tracking verified",
+    "error": null
+  },
+  {
+    "category": "Mission & Mini-games",
+    "name": "Duplicate Reward Exploit Prevention",
+    "status": "PASS",
+    "details": "this.state.rewardClaimed guard prevents duplicate reward claims on re-trigger",
+    "error": null
+  },
+  {
+    "category": "Theater & Cinema",
+    "name": "Episode 53 Primary Configuration & File Presence",
+    "status": "PASS",
+    "details": "Ep 53 active #1, YouTube ID -j9CKPlPhnU, MP4 present (197MB)",
+    "error": null
+  },
+  {
+    "category": "Theater & Cinema",
+    "name": "Push / Resume (Pause/Play) Control Logic",
+    "status": "PASS",
+    "details": "Direct togglePlayPause with 3D texture rebind",
+    "error": null
+  },
+  {
+    "category": "Theater & Cinema",
+    "name": "Stage Signboard Inscription (No Ram Leela)",
+    "status": "PASS",
+    "details": "Signboard cleanly displays TMKOC without Ram Leela text",
+    "error": null
+  },
+  {
+    "category": "Apartments & Interiors",
+    "name": "Interior Visibility Culling (No Floating Rooms Outside Boundary)",
+    "status": "PASS",
+    "details": "Hidden by default, shown strictly when player enters",
+    "error": null
+  },
+  {
+    "category": "Player & Avatar",
+    "name": "Player Overhead \"You\" Tag Removal",
+    "status": "PASS",
+    "details": "Local player overhead badge removed to prevent screen blocking",
+    "error": null
+  },
+  {
+    "category": "Player & Camera",
+    "name": "Direct Cinema Seating Framing (No Avatar Head Blocking Screen)",
+    "status": "PASS",
+    "details": "Avatar hidden & camera positioned for unobstructed screen view",
+    "error": null
+  },
+  {
+    "category": "Temple & Education",
+    "name": "Bilingual Cultural Education Kiosk Integrity",
+    "status": "PASS",
+    "details": "Hindi & English content with interactive storyteller NPC verified",
+    "error": null
+  },
+  {
+    "category": "Temple & NPC Placement",
+    "name": "Temple Plinth Elevation & Sanctum Wall Non-Overlap",
+    "status": "PASS",
+    "details": "Priest & Devotees elevated at y=1.6 on Jagati plinth; sanctum & steps open & non-colliding",
+    "error": null
+  },
+  {
+    "category": "Engine Stability",
+    "name": "Anti-Freeze Resilience, Try-Catch Loop & Memory Pooling",
+    "status": "PASS",
+    "details": "Unbroken frame queue, delta clamping, context loss recovery, and memory pools verified",
+    "error": null
+  },
+  {
+    "category": "Diwali Puja Mandir",
+    "name": "Altar Artwork, Shrine Architecture, Interactive Ceremony & NPC Puja Gathering",
+    "status": "PASS",
+    "details": "16:9 Lakshmi-Ganesha altar, brass samais, Kalash, interactive puja [E], aarti lamp and NPC gathering verified",
+    "error": null
+  },
+  {
+    "category": "Temple Interaction",
+    "name": "Correct E-Key Aarti Prompt & Separation from Quiz Modal",
+    "status": "PASS",
+    "details": "Prompt is \"Press [E] to Join Diwali Puja & Aarti\", temple starts 3D puja only, quiz is separate and optional",
+    "error": null
+  },
+  {
+    "category": "Cinematic Intro",
+    "name": "Gate Banner Cinematic Intro, World Coordinates & Single-Session Guard",
+    "status": "PASS",
+    "details": "CameraState.ENTRANCE_INTRO, real banner coords (-48.75, 8.6, 0), gate spawn (-52, 0, 0), 2s banner hold & smooth return verified",
+    "error": null
+  },
+  {
+    "category": "Devotional Aarti Music",
+    "name": "Mandir Aarti HUD Card, YouTube ID SyqgAt-T0iQ, User Playback & Temple Sync",
+    "status": "PASS",
+    "details": "Card in HUD, SyqgAt-T0iQ configured, user-controlled playback, volume slider, YouTube fallback link & temple sync verified",
+    "error": null
+  },
+  {
+    "category": "Fireworks 3D",
+    "name": "All 5 Firework Effect Types & Particle Cleanup",
+    "status": "PASS",
+    "details": "Sparks, Rockets, Anar, Chakri, Sky Lantern & auto-cleanup verified"
+  },
+  {
+    "category": "NPC & AI",
+    "name": "Autonomous Navigation, Families, Temple Puja & Distance LOD",
+    "status": "PASS",
+    "details": "3-Tier distance LOD, waypoint graph, family routines & temple devotees verified"
+  },
+  {
+    "category": "Audio System",
+    "name": "Web Audio API Synth, Temple Bells & Gesture Resume",
+    "status": "PASS",
+    "details": "Custom synthesized festive sitar, temple bells, fireworks audio & unlock guards verified"
+  },
+  {
+    "category": "DOM & UI Integrity",
+    "name": "Critical Interactive HUD & Modal IDs Present",
+    "status": "PASS",
+    "details": "All 53 critical DOM element IDs matched in index.html"
+  },
+  {
+    "category": "Responsive & Mobile",
+    "name": "Viewport Meta & CSS Responsive Breakpoints",
+    "status": "PASS",
+    "details": "Standard responsive meta and comprehensive media query breakpoints verified"
+  }
+]

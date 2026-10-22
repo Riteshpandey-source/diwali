@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node -e \"console.log('Testing Diwali Server...'); require('http'); console.log('All syntax checks passed!');\""
+    "test": "node tests/e2e_full_audit.js && node tests/deep_feature_audit.js && node tests/test_mobile_responsive.js"
   },
   "keywords": [
     "diwali",
