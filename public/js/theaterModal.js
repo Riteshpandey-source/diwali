@@ -114,6 +114,7 @@ class DiwaliTheaterModal {
 
     this.initVideoEventListeners();
     this.initControlsListeners();
+    this.initYouTubePlayer();
 
     // Auto-bind to 3D theater screen if ready
     setTimeout(() => {
@@ -121,6 +122,79 @@ class DiwaliTheaterModal {
         window.diwaliWorld3D.societyTheater.bindVideoTexture(this.video);
       }
     }, 600);
+  }
+
+  // Initialize YouTube Iframe API for Real-Time Seek & Controls Sync
+  initYouTubePlayer() {
+    if (this.ytPlayer) return;
+
+    const createPlayer = () => {
+      if (!window.YT || !window.YT.Player) return;
+      try {
+        this.ytPlayer = new window.YT.Player('theaterIframe', {
+          events: {
+            onReady: (event) => {
+              this.isYtReady = true;
+              if (this.isOpen) {
+                try { event.target.playVideo(); } catch (_) {}
+              }
+            },
+            onStateChange: (event) => {
+              // 1 = PLAYING, 2 = PAUSED
+              if (event.data === 1) {
+                this.isIframePaused = false;
+                if (this.playPauseBtn) this.playPauseBtn.innerHTML = '<span class="ctrl-icon">⏸</span>';
+                if (this.stagePlayPauseIcon) this.stagePlayPauseIcon.textContent = '⏸️';
+                if (this.stagePlayPauseText) this.stagePlayPauseText.textContent = 'PAUSE';
+                if (this.stagePlayPauseBtn) this.stagePlayPauseBtn.classList.remove('paused');
+              } else if (event.data === 2) {
+                this.isIframePaused = true;
+                if (this.playPauseBtn) this.playPauseBtn.innerHTML = '<span class="ctrl-icon">▶</span>';
+                if (this.stagePlayPauseIcon) this.stagePlayPauseIcon.textContent = '▶️';
+                if (this.stagePlayPauseText) this.stagePlayPauseText.textContent = 'RESUME';
+                if (this.stagePlayPauseBtn) this.stagePlayPauseBtn.classList.add('paused');
+              }
+            }
+          }
+        });
+      } catch (err) {
+        console.warn('YT Player init failed:', err);
+      }
+    };
+
+    if (window.YT && window.YT.Player) {
+      createPlayer();
+    } else {
+      const prevCallback = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        if (typeof prevCallback === 'function') prevCallback();
+        createPlayer();
+      };
+      if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(tag);
+      }
+    }
+
+    // Polling interval to keep scrub slider and time display 100% in sync with YouTube
+    if (!this.ytTimeInterval) {
+      this.ytTimeInterval = setInterval(() => {
+        if (this.isOpen && this.ytPlayer && typeof this.ytPlayer.getCurrentTime === 'function') {
+          try {
+            const cur = this.ytPlayer.getCurrentTime() || 0;
+            const dur = (typeof this.ytPlayer.getDuration === 'function' && this.ytPlayer.getDuration() > 0)
+              ? this.ytPlayer.getDuration()
+              : (this.currentEp?.durationSec || 1455);
+            if (!this.isUserSeeking) {
+              if (this.seekSlider) this.seekSlider.value = cur;
+              if (this.stageSeekSlider) this.stageSeekSlider.value = cur;
+            }
+            this.updateTimeDisplay(cur, dur);
+          } catch (_) {}
+        }
+      }, 500);
+    }
   }
 
   initVideoEventListeners() {
@@ -261,9 +335,13 @@ class DiwaliTheaterModal {
 
       const onSeekInput = (e) => {
         const val = parseFloat(e.target.value);
-        if (this.video && Number.isFinite(val)) {
-          this.video.currentTime = val;
-          this.updateTimeDisplay(val, this.video.duration || 1200);
+        if (Number.isFinite(val)) {
+          if (this.isOpen && this.ytPlayer && typeof this.ytPlayer.seekTo === 'function') {
+            try { this.ytPlayer.seekTo(val, true); } catch (_) {}
+          } else if (this.video) {
+            this.video.currentTime = val;
+          }
+          this.updateTimeDisplay(val, this.currentEp?.durationSec || 1455);
         }
       };
 
@@ -346,9 +424,13 @@ class DiwaliTheaterModal {
     if (this.stageSeekSlider) {
       const onStageSeek = (e) => {
         const val = parseFloat(e.target.value);
-        if (this.video && Number.isFinite(val)) {
-          this.video.currentTime = val;
-          this.updateTimeDisplay(val, this.video.duration || 1200);
+        if (Number.isFinite(val)) {
+          if (this.isOpen && this.ytPlayer && typeof this.ytPlayer.seekTo === 'function') {
+            try { this.ytPlayer.seekTo(val, true); } catch (_) {}
+          } else if (this.video) {
+            this.video.currentTime = val;
+          }
+          this.updateTimeDisplay(val, this.currentEp?.durationSec || 1455);
         }
       };
       this.stageSeekSlider.addEventListener('mousedown', () => { this.isUserSeeking = true; });
@@ -479,18 +561,47 @@ class DiwaliTheaterModal {
 
   // Seek relative seconds (Skip 10s forward or backward)
   seekRelative(deltaSec) {
-    if (!this.video) return;
-    const dur = this.video.duration || 1200;
-    const current = this.video.currentTime || 0;
-    const newTime = Math.max(0, Math.min(dur, current + deltaSec));
-    this.video.currentTime = newTime;
-    this.updateTimeDisplay(newTime, dur);
+    let dur = this.currentEp?.durationSec || 1455;
+    let newTime = 0;
 
-    if (this.seekSlider) {
-      this.seekSlider.value = newTime;
+    // 1. If YouTube player is active in modal, seek YouTube directly!
+    if (this.isOpen && this.ytPlayer && typeof this.ytPlayer.seekTo === 'function') {
+      try {
+        const cur = (typeof this.ytPlayer.getCurrentTime === 'function') ? this.ytPlayer.getCurrentTime() : 0;
+        dur = (typeof this.ytPlayer.getDuration === 'function' && this.ytPlayer.getDuration() > 0) ? this.ytPlayer.getDuration() : dur;
+        newTime = Math.max(0, Math.min(dur, cur + deltaSec));
+        this.ytPlayer.seekTo(newTime, true);
+        this.updateTimeDisplay(newTime, dur);
+        if (this.seekSlider) this.seekSlider.value = newTime;
+        if (this.stageSeekSlider) this.stageSeekSlider.value = newTime;
+      } catch (err) {
+        console.warn('YT seek error:', err);
+      }
+    } else if (this.isOpen && this.iframe && this.iframe.contentWindow) {
+      try {
+        this.estimatedTime = Math.max(0, Math.min(dur, (this.estimatedTime || 0) + deltaSec));
+        newTime = this.estimatedTime;
+        this.iframe.contentWindow.postMessage(JSON.stringify({
+          event: 'command',
+          func: 'seekTo',
+          args: [newTime, true]
+        }), '*');
+        this.updateTimeDisplay(newTime, dur);
+      } catch (_) {}
     }
 
-    // Show instant on-screen skip flash badge
+    // 2. Also seek in local video if playing on stage
+    if (this.video && !this.isOpen) {
+      const vidDur = this.video.duration || 120;
+      const vidCur = this.video.currentTime || 0;
+      newTime = Math.max(0, Math.min(vidDur, vidCur + deltaSec));
+      this.video.currentTime = newTime;
+      this.updateTimeDisplay(newTime, dur);
+      if (this.seekSlider) this.seekSlider.value = newTime;
+      if (this.stageSeekSlider) this.stageSeekSlider.value = newTime;
+    }
+
+    // 3. Show instant on-screen skip flash badge
     if (this.skipIndicator && this.skipText) {
       this.skipText.textContent = deltaSec > 0 ? `+${Math.abs(deltaSec)}s ⏩` : `⏪ -${Math.abs(deltaSec)}s`;
       this.skipIndicator.classList.remove('hidden');
