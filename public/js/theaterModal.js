@@ -80,6 +80,8 @@ class DiwaliTheaterModal {
     this.video = document.getElementById('theaterNativeVideo');
     if (this.video) {
       this.video.loop = true;
+      this.video.muted = false;
+      this.video.volume = 1.0;
     }
     this.iframe = document.getElementById('theaterIframe');
     this.playOverlay = document.getElementById('theaterPlayOverlay');
@@ -536,14 +538,31 @@ class DiwaliTheaterModal {
     if (!this.video) return;
 
     if (this.video.paused) {
+      // Ensure sound is enabled and unmuted on explicit user play
+      this.video.muted = false;
+      this.video.volume = 1.0;
+      if (this.stageMuteIcon) this.stageMuteIcon.textContent = '🔊';
+      if (this.stageMuteText) this.stageMuteText.textContent = 'Sound';
+      if (this.muteBtn) this.muteBtn.innerHTML = '<span class="ctrl-icon">🔊</span>';
+
       const playPromise = this.video.play();
       if (playPromise !== undefined) {
         playPromise.catch((err) => {
-          console.warn('Playback error / autoplay blocked:', err);
+          console.warn('Playback error / autoplay blocked, attempting muted fallback:', err);
+          // If browser requires muted initial play, start muted and unmute immediately
+          this.video.muted = true;
+          this.video.play().then(() => {
+            setTimeout(() => {
+              this.video.muted = false;
+              this.video.volume = 1.0;
+              if (this.stageMuteIcon) this.stageMuteIcon.textContent = '🔊';
+              if (this.stageMuteText) this.stageMuteText.textContent = 'Sound';
+            }, 150);
+          }).catch(() => {});
         });
       }
       if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
-        window.diwaliEngine.showToastNotice('▶️ Video Resumed • Playing on Stage');
+        window.diwaliEngine.showToastNotice('▶️ Video Resumed • Sound Playing on Stage');
       }
     } else {
       this.video.pause();
@@ -558,6 +577,12 @@ class DiwaliTheaterModal {
     if (!this.video) return;
 
     this.video.muted = !this.video.muted;
+    if (this.video.muted) {
+      this.video.volume = 0;
+    } else {
+      this.video.volume = 1.0;
+    }
+
     if (this.muteBtn) {
       this.muteBtn.innerHTML = this.video.muted
         ? '<span class="ctrl-icon">🔇</span>'
@@ -570,7 +595,7 @@ class DiwaliTheaterModal {
       this.stageMuteText.textContent = this.video.muted ? 'Muted' : 'Sound';
     }
     if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
-      window.diwaliEngine.showToastNotice(this.video.muted ? '🔇 Audio Muted' : '🔊 Audio Unmuted');
+      window.diwaliEngine.showToastNotice(this.video.muted ? '🔇 Audio Muted' : '🔊 Audio Active');
     }
   }
 
