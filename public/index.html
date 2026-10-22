@@ -7,10 +7,18 @@
   <meta name="description" content="Experience a complete, premium, playable Diwali Virtual World! Explore a vibrant festive Indian colony, decorate houses, light diyas, ignite virtual fireworks, play mini-games, and celebrate with friends in real-time.">
   <meta name="theme-color" content="#0d0b1e">
 
+  <!-- Favicon & App Icons -->
+  <link rel="icon" type="image/png" href="favicon.png?v=2.6">
+  <link rel="shortcut icon" href="favicon.ico?v=2.6">
+  <link rel="apple-touch-icon" href="assets/images/diwali_logo.png?v=2.6">
+
   <!-- OpenGraph / Social Meta -->
   <meta property="og:title" content="Shubh Deepawali - Virtual Festival Celebration">
   <meta property="og:description" content="Celebrate Diwali in an interactive 3D virtual colony with fireworks, decorations, and multiplayer!">
   <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/images/diwali_logo.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="assets/images/diwali_logo.png">
 
   <!-- Google Fonts (Cinzel, Playfair Display, Plus Jakarta Sans, Tiro Devanagari) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,6 +38,9 @@
 
     <div class="greeting-container">
       <header class="greeting-header">
+        <div class="greeting-logo-wrapper">
+          <img src="assets/images/diwali_logo.png" alt="Shubh Deepawali Logo" class="greeting-hero-logo">
+        </div>
         <div class="sanskrit-banner">
           <span class="om-symbol">ॐ</span>
           <p class="shloka-text">ॐ असतो मा सद्गमय। तमसो मा ज्योतिर्गमय। मृत्योर्माऽमृतं गमय॥</p>
@@ -267,6 +278,11 @@
       <!-- Top HUD Header -->
       <header class="hud-top-bar">
         <div class="hud-left-group">
+          <div class="hud-brand-mark" title="Shubh Deepawali 3D Virtual World">
+            <img src="assets/images/diwali_logo.png" alt="Diwali Logo" class="hud-mini-logo">
+            <span class="hud-brand-name">DIWALI 3D</span>
+          </div>
+
           <button id="returnToGreetingBtn" class="hud-btn" title="Return to Greeting Card">
             <span class="icon">📜</span>
             <span class="label">Greeting Card</span>
@@ -512,7 +528,7 @@
         <div class="mobile-drawer-sheet">
           <div class="mobile-drawer-header">
             <div class="drawer-title-group">
-              <span class="drawer-diya">🪔</span>
+              <img src="assets/images/diwali_logo.png" alt="Diwali Logo" class="drawer-logo-img">
               <span class="drawer-title">Gokuldham Menu</span>
             </div>
             <button id="mobileNavCloseBtn" class="drawer-close-btn" aria-label="Close Menu">✕</button>
