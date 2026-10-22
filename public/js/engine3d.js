@@ -917,18 +917,21 @@ class DiwaliEngine3D {
     const prompt = document.getElementById('interactionPrompt');
     const msg = document.getElementById('promptMessage');
     const keyBadge = document.getElementById('promptKeyBadge');
+    const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 768);
 
     if (this.player3D && this.player3D.isSitting) {
       if (prompt) {
         if (this.player3D.currentBench && this.player3D.currentBench.isTheaterBench) {
           prompt.classList.add('theater-seated-prompt');
-          if (msg) msg.textContent = '▶️ [Space / Button] Play/Pause Video • [E] Stand Up';
+          if (msg) msg.textContent = isTouch
+            ? '▶️ Tap Screen to Play/Pause • Tap Here to Stand Up'
+            : '▶️ [Space / Button] Play/Pause Video • [E] Stand Up';
         } else {
           prompt.classList.remove('theater-seated-prompt');
-          if (msg) msg.textContent = 'Press [E] or [W/A/S/D] to Stand Up';
+          if (msg) msg.textContent = isTouch ? '👆 Tap Here to Stand Up' : 'Press [E] or [W/A/S/D] to Stand Up';
         }
       }
-      if (keyBadge) keyBadge.textContent = 'E';
+      if (keyBadge) keyBadge.textContent = isTouch ? 'TAP' : 'E';
       if (prompt) prompt.classList.remove('hidden');
       return;
     } else {
@@ -937,12 +940,18 @@ class DiwaliEngine3D {
 
     if (this.currentInteractive) {
       if (this.currentInteractive.type === 'society_theater_entrance') {
-        const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 768);
         if (msg) msg.textContent = isTouch ? '🎬 Tap to Enter Theater & Watch Show' : '🎬 Press [E] to Enter Theater & Watch Show';
         if (keyBadge) keyBadge.textContent = isTouch ? 'TAP' : 'E';
       } else {
-        if (msg) msg.textContent = this.currentInteractive.prompt;
-        if (keyBadge) keyBadge.textContent = 'E';
+        if (isTouch) {
+          const rawPrompt = this.currentInteractive.prompt || '';
+          const touchPrompt = rawPrompt.replace(/Press\s*\[E\]\s*to/i, 'Tap to');
+          if (msg) msg.textContent = touchPrompt;
+          if (keyBadge) keyBadge.textContent = 'TAP';
+        } else {
+          if (msg) msg.textContent = this.currentInteractive.prompt;
+          if (keyBadge) keyBadge.textContent = 'E';
+        }
       }
       if (prompt) prompt.classList.remove('hidden');
     } else {

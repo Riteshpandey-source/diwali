@@ -1277,10 +1277,17 @@ html, body {
   gap: 12px;
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8), var(--gold-glow);
   backdrop-filter: blur(16px);
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
   animation: promptBounce 1.6s infinite ease-in-out;
-  transition: opacity var(--transition-fast), visibility var(--transition-fast);
+  transition: opacity var(--transition-fast), visibility var(--transition-fast), transform var(--transition-fast);
   z-index: 25;
+}
+
+.interaction-prompt:active {
+  transform: translateX(-50%) scale(0.96);
 }
 
 .interaction-prompt.hidden {
@@ -1575,9 +1582,20 @@ html, body {
 }
 
 .mobile-btn.interact-btn {
-  width: 54px;
-  height: 54px;
-  font-size: 18px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+  border: 2px solid #fde68a;
+  color: #fff;
+  width: 56px;
+  height: 56px;
+  font-size: 20px;
+  box-shadow: 0 8px 26px rgba(217, 119, 6, 0.6), 0 0 18px rgba(245, 158, 11, 0.5);
+}
+
+.mobile-btn.interact-btn .sub {
+  color: #fff;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
 }
 
 .mobile-btn.use-item-btn {
@@ -4707,6 +4725,10 @@ html, body {
     height: auto !important;
     max-height: 44px !important;
     z-index: 42;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    -webkit-tap-highlight-color: transparent !important;
   }
 
   #interactionPrompt.theater-seated-prompt {
