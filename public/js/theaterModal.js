@@ -17,30 +17,30 @@ class DiwaliTheaterModal {
         desc: 'Jethalal, Daya, Champaklal, and the entire Gokuldham society celebrate their very first iconic Diwali celebration with Laxmi Pujan, festive sweets, and family laughter.',
         videoSrc: 'assets/videos/tmkoc_ep53_full.mp4',
         durationSec: 1456,
-        ytUrl: 'https://youtu.be/-j9CKPlPhnU?si=g9whV2dUIMn8NNMi',
+        ytUrl: 'https://youtu.be/-j9CKPlPhnU?si=zY8XdtEpkIEVAvjD',
         ytId: '-j9CKPlPhnU'
       },
       ep2598: {
         id: 'ep2598',
         num: 'Ep 2598 (Full Episode)',
-        title: 'TMKOC • Ep 2598: Popatlal Ke Patakhe',
-        subtitle: 'Gokuldham Society Grand Diwali Mela & Fireworks (Full Episode)',
-        desc: 'Popatlal brings fireworks to Gokuldham society while Jethalal, Champaklal, and the Tapu Sena prepare for the grand Diwali celebration.',
+        title: 'TMKOC • Ep 2598: Bhai Dooj & Popatlal Ke Patakhe',
+        subtitle: 'Bhai Dooj Full Movie • Gokuldham Society Grand Diwali (Full Episode)',
+        desc: 'Popatlal brings fireworks to Gokuldham society while Jethalal, Champaklal, and the Tapu Sena celebrate Diwali and Bhai Dooj with the entire society.',
         videoSrc: 'assets/videos/tmkoc_ep2598_full.mp4',
-        durationSec: 1178,
-        ytUrl: 'https://www.youtube.com/watch?v=7_bDxQEkpN8',
-        ytId: '7_bDxQEkpN8'
+        durationSec: 1788,
+        ytUrl: 'https://youtu.be/u-KvFuXWiwE?si=LUUdEIXgW4IdRei0',
+        ytId: 'u-KvFuXWiwE'
       },
       ep247: {
         id: 'ep247',
         num: 'Ep 247 (Full Episode)',
         title: 'TMKOC • Ep 247: Classic Gokuldham Diwali',
-        subtitle: 'Festive Kavi Sammelan, Sweets & Laughter (Full Episode)',
+        subtitle: 'Babita Ka Naya Phone & Society Celebration (Full Episode)',
         desc: 'Taarak Mehta recites festive Diwali poetry while Jethalal relishes fresh hot jalebi fafda and the society distributes sweets.',
         videoSrc: 'assets/videos/tmkoc_ep247_full.mp4',
-        durationSec: 1325,
-        ytUrl: 'https://www.youtube.com/watch?v=kES8Q1psYCI',
-        ytId: 'kES8Q1psYCI'
+        durationSec: 1302,
+        ytUrl: 'https://youtu.be/ZCC6fnxA8RY?si=GcL-IpnLAMn-Z6Og',
+        ytId: 'ZCC6fnxA8RY'
       },
       ep3604: {
         id: 'ep3604',
@@ -56,12 +56,12 @@ class DiwaliTheaterModal {
       ep4231: {
         id: 'ep4231',
         num: 'Ep 4231 (Full Episode)',
-        title: 'TMKOC • Ep 4231: Mahasabha Diwali',
+        title: 'TMKOC • Ep 4231: Diwali Ki Taiyyari',
         subtitle: 'Grand Society Garba & Dazzling Sky Fireworks (Full Episode)',
         desc: 'All Gokuldham families gather in traditional festive attire for late-night garba, chakri, and magnificent sky shots.',
         videoSrc: 'assets/videos/tmkoc_ep4231_full.mp4',
         durationSec: 1190,
-        ytUrl: 'https://www.youtube.com/watch?v=2FuThuwrqeg',
+        ytUrl: 'https://youtu.be/2FuThuwrqeg?si=iSErQOa2HTPNJyB5',
         ytId: '2FuThuwrqeg'
       }
     };
