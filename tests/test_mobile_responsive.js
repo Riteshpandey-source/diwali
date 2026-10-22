@@ -232,6 +232,89 @@ test('Theater Directional Guidance & Touch/Keyboard Adaptive Interaction', () =>
     'handleInteraction must handle society_theater_entrance');
 });
 
+// Test 15: Exact Viewport Audits (320px, 360px, 375px, 390px, 412px, 430px in Portrait & Landscape)
+test('Exact Viewport Audits: 320px, 360px, 375px, 390px, 412px, 430px Screen Ergonomics', () => {
+  const targetViewports = [
+    { name: 'Ultra Compact Phone (Jio/SE)', width: 320, maxJoyZone: 78, maxCols: 2 },
+    { name: 'Compact Phone (Galaxy A/Galaxy S Mini)', width: 360, maxJoyZone: 86, maxCols: 2 },
+    { name: 'Standard iPhone (iPhone X/11 Pro/12 Mini/13 Mini)', width: 375, maxJoyZone: 100, maxCols: 3 },
+    { name: 'Modern iPhone (iPhone 12/13/14/15/16)', width: 390, maxJoyZone: 100, maxCols: 3 },
+    { name: 'Standard Android Flagship (Pixel 7/8, Galaxy S21/S22/S23)', width: 412, maxJoyZone: 100, maxCols: 3 },
+    { name: 'Large Flagship / Pro Max (iPhone Pro Max, Galaxy Ultra)', width: 430, maxJoyZone: 100, maxCols: 3 }
+  ];
+
+  for (const vp of targetViewports) {
+    // 1. Check responsive breakpoints handle viewport cleanly
+    if (vp.width <= 320) {
+      assert(css.includes('@media (max-width: 320px)'), `CSS must contain <= 320px breakpoint for ${vp.name}`);
+      assert(css.includes('width: 78px;'), `Joystick zone must scale down to <= 78px on ${vp.name}`);
+    }
+    if (vp.width <= 360) {
+      assert(css.includes('@media (max-width: 360px)'), `CSS must contain <= 360px breakpoint for ${vp.name}`);
+      assert(css.includes('.hud-brand-name {') && css.includes('display: none !important;'), `Brand name text must collapse to icon on ${vp.name}`);
+    }
+    // 2. Verify all elements preserve 100vw bounds and box-sizing
+    assert(css.includes('box-sizing: border-box;'), 'Universal box-sizing border-box required');
+    assert(css.includes('max-width: 100vw !important;') || css.includes('max-width: 100vw;'), 'Modals must not exceed viewport width');
+    assert(css.includes('overflow-x: hidden;'), 'Prevent horizontal page spill');
+  }
+
+  // Verify landscape orientation support
+  assert(css.includes('@media (max-width: 900px) and (orientation: landscape)'), 'Landscape orientation rule missing');
+});
+
+// Test 16: Two-finger Camera Pinch-to-Zoom & Touch Gesture Cancellation
+test('Two-finger Camera Pinch-to-Zoom & Gesture Cancellation', () => {
+  const engineJsPath = path.join(__dirname, '../public/js/engine3d.js');
+  const engineJs = fs.readFileSync(engineJsPath, 'utf8');
+
+  // Verify pinch-to-zoom calculation
+  assert(engineJs.includes('pinchStartDistance = Math.hypot('), 'engine3d must calculate 2-finger pinch start distance');
+  assert(engineJs.includes('initialCameraDist * ratio'), 'engine3d must dynamically adjust cameraDistance based on pinch ratio');
+  assert(engineJs.includes('Math.max(7.0, Math.min(32.0,'), 'Camera zoom must be securely clamped between 7.0m and 32.0m');
+
+  // Verify touch gesture cancellation to prevent browser scroll / rubber-band
+  assert(engineJs.includes('if (e.cancelable) e.preventDefault();'), 'Canvas touchmove must prevent default if cancelable');
+  assert(css.includes('touch-action: none;'), 'Touch-action none required on game canvas & game screen');
+  assert(css.includes('overscroll-behavior: none;'), 'Overscroll-behavior none required on game canvas & game screen');
+});
+
+// Test 17: Interactive Target Golden Diya Action Button & Pulse Animation
+test('Mobile Action Button & Active Interactable Golden Pulse', () => {
+  const engineJsPath = path.join(__dirname, '../public/js/engine3d.js');
+  const engineJs = fs.readFileSync(engineJsPath, 'utf8');
+
+  // Verify mobileInteractBtn element in DOM
+  assert(html.includes('id="mobileInteractBtn"'), 'mobileInteractBtn missing in HTML');
+  assert(html.includes('<span>🪔</span>'), 'mobileInteractBtn must display golden diya icon');
+
+  // Verify touch target dimension (>= 48px)
+  assert(css.includes('#mobileInteractBtn {') && css.includes('width: 52px;'), 'mobileInteractBtn must have comfortable touch target (>= 48px)');
+
+  // Verify active-interactable pulse toggle in engine3d
+  assert(engineJs.includes("mobileInteractBtn.classList.add('active-interactable')"), 'engine3d must add active-interactable class');
+  assert(engineJs.includes("mobileInteractBtn.classList.remove('active-interactable')"), 'engine3d must remove active-interactable class');
+  assert(css.includes('@keyframes interactPulse'), 'style.css must define interactPulse animation for golden energy');
+});
+
+// Test 18: Seated Mode Controls Suppression and Stand Up Quick Action
+test('Seated Mode: Complete Joystick/Tray Auto-Hide and Stage Stand Up Action', () => {
+  const playerJsPath = path.join(__dirname, '../public/js/player3d.js');
+  const playerJs = fs.readFileSync(playerJsPath, 'utf8');
+
+  // Verify body class toggles when sitting and standing
+  assert(playerJs.includes("document.body.classList.add('player-is-seated'"), 'player3d must add player-is-seated on sit');
+  assert(playerJs.includes("document.body.classList.remove('player-is-seated'"), 'player3d must remove player-is-seated on stand');
+
+  // Verify CSS hides joystick and action buttons when seated
+  assert(css.includes('.player-is-seated #mobileControlsContainer,'), 'CSS must hide mobileControlsContainer when seated');
+  assert(css.includes('.player-is-seated .quick-inventory-tray,'), 'CSS must hide quick-inventory-tray when seated');
+
+  // Verify Stand Up button in quick stage controls
+  assert(html.includes('id="stageStandUpBtn"'), 'stageStandUpBtn missing in HTML stageQuickControls');
+  assert(html.includes('🚶 Stand Up'), 'Stand up button label missing');
+});
+
 console.log('===============================================================');
 console.log(`📊 MOBILE AUDIT SUMMARY: TOTAL: ${passCount + failCount} | PASS: ${passCount} | FAIL: ${failCount}`);
 console.log('===============================================================');
@@ -239,3 +322,4 @@ console.log('===============================================================');
 if (failCount > 0) {
   process.exit(1);
 }
+

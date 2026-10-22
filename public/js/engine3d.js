@@ -630,23 +630,46 @@ class DiwaliEngine3D {
       }
     }, { passive: true });
 
-    // Touch swipe camera orbit (on main canvas)
+    // Touch swipe camera orbit & 2-finger pinch-to-zoom (on main canvas)
     let cameraTouchId = null;
     let lastTouchX = 0;
     let lastTouchY = 0;
+    let pinchStartDistance = null;
+    let initialCameraDist = 18.0;
 
     this.canvas.addEventListener('touchstart', (e) => {
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const t = e.changedTouches[i];
-        if (cameraTouchId === null) {
-          cameraTouchId = t.identifier;
-          lastTouchX = t.clientX;
-          lastTouchY = t.clientY;
+      if (e.touches.length === 2 && this.player3D) {
+        // Two-finger pinch zoom start
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        pinchStartDistance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+        initialCameraDist = this.player3D.cameraDistance;
+        cameraTouchId = null; // stop single touch orbit while pinching
+      } else if (e.touches.length === 1) {
+        pinchStartDistance = null;
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const t = e.changedTouches[i];
+          if (cameraTouchId === null) {
+            cameraTouchId = t.identifier;
+            lastTouchX = t.clientX;
+            lastTouchY = t.clientY;
+          }
         }
       }
-    }, { passive: true });
+    }, { passive: false });
 
     this.canvas.addEventListener('touchmove', (e) => {
+      if (e.cancelable) e.preventDefault();
+
+      if (e.touches.length === 2 && pinchStartDistance && this.player3D) {
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        const currentDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+        const ratio = pinchStartDistance / Math.max(1, currentDist);
+        this.player3D.cameraDistance = Math.max(7.0, Math.min(32.0, initialCameraDist * ratio));
+        return;
+      }
+
       for (let i = 0; i < e.changedTouches.length; i++) {
         const t = e.changedTouches[i];
         if (t.identifier === cameraTouchId && this.player3D) {
@@ -659,9 +682,12 @@ class DiwaliEngine3D {
           this.player3D.cameraPitch = Math.max(0.12, Math.min(1.25, this.player3D.cameraPitch + deltaY * 0.005));
         }
       }
-    }, { passive: true });
+    }, { passive: false });
 
     const resetCameraTouch = (e) => {
+      if (e.touches.length < 2) {
+        pinchStartDistance = null;
+      }
       for (let i = 0; i < e.changedTouches.length; i++) {
         if (e.changedTouches[i].identifier === cameraTouchId) {
           cameraTouchId = null;
@@ -934,6 +960,16 @@ class DiwaliEngine3D {
       return;
     } else {
       if (prompt) prompt.classList.remove('theater-seated-prompt');
+    }
+
+    const mobileInteractBtn = document.getElementById('mobileInteractBtn');
+    const hasActiveInteractable = Boolean(this.currentInteractive || (this.player3D && this.player3D.isSitting && (!this.player3D.currentBench || !this.player3D.currentBench.isTheaterBench)));
+    if (mobileInteractBtn) {
+      if (hasActiveInteractable) {
+        mobileInteractBtn.classList.add('active-interactable');
+      } else {
+        mobileInteractBtn.classList.remove('active-interactable');
+      }
     }
 
     if (this.currentInteractive) {

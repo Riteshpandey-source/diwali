@@ -72,6 +72,25 @@ html, body {
   z-index: 10;
 }
 
+#gameScreen {
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+#gameCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* ======================================================== */
 /* 1. GREETING SCREEN                                       */
 /* ======================================================== */
@@ -1596,6 +1615,17 @@ html, body {
   font-size: 9px;
   font-weight: 900;
   letter-spacing: 0.5px;
+}
+
+.mobile-btn.interact-btn.active-interactable {
+  border-color: #fef08a !important;
+  box-shadow: 0 0 22px rgba(245, 158, 11, 0.95), 0 0 35px rgba(234, 88, 12, 0.6) !important;
+  animation: interactPulse 1.1s infinite alternate cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes interactPulse {
+  0% { transform: scale(1); filter: brightness(1); }
+  100% { transform: scale(1.09); filter: brightness(1.25); }
 }
 
 .mobile-btn.use-item-btn {
@@ -4421,21 +4451,54 @@ html, body {
   }
 
   #returnToGreetingBtn {
-    width: 38px;
-    height: 38px;
-    padding: 0;
-    justify-content: center;
-    border-radius: 10px;
+    display: none !important;
   }
 
-  #returnToGreetingBtn span.label {
-    display: none;
+  .hud-brand-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    border-radius: 18px;
+    padding: 3px 8px;
+    backdrop-filter: blur(8px);
+  }
+
+  .hud-mini-logo {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .hud-brand-name {
+    font-family: var(--font-serif);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    color: #fde047;
   }
 
   .coin-display {
-    padding: 4px 10px;
-    font-size: 12.5px;
+    padding: 3px 8px;
+    font-size: 12px;
     border-radius: 14px;
+    gap: 5px;
+  }
+
+  .coin-icon {
+    font-size: 14px;
+  }
+
+  .coin-amount {
+    font-size: 13px;
+  }
+
+  #quickEarnCoinsBtn {
+    width: 16px;
+    height: 16px;
+    font-size: 11px;
   }
 
   .colony-mode-badge {
@@ -4717,9 +4780,20 @@ html, body {
     z-index: 40;
   }
 
+  #mobileInteractBtn {
+    width: 52px;
+    height: 52px;
+    min-width: 48px;
+    min-height: 48px;
+    font-size: 19px;
+    border-radius: 50%;
+  }
+
   #mobileUseItemBtn {
     width: 58px;
     height: 58px;
+    min-width: 48px;
+    min-height: 48px;
     font-size: 20px;
     border-radius: 50%;
   }
@@ -4727,6 +4801,8 @@ html, body {
   #mobileInventoryToggleBtn {
     width: 48px;
     height: 48px;
+    min-width: 48px;
+    min-height: 48px;
     font-size: 16px;
     border-radius: 50%;
     background: rgba(30, 27, 75, 0.9);
@@ -4906,7 +4982,7 @@ html, body {
     max-height: 88vh;
   }
 
-  .modal-card, .modal-dialog, .society-dialogue-card, .theater-player-dialog {
+  .modal-card, .modal-dialog, .society-dialogue-card, .society-noticeboard-card, .theater-player-dialog {
     width: 100vw !important;
     max-width: 100vw !important;
     max-height: 88vh;
@@ -4940,6 +5016,11 @@ html, body {
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-y;
   }
+
+  .modal-footer {
+    padding: 10px 16px !important;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+  }
 }
 
 /* Medium Phones Breakpoint: <= 480px */
@@ -4960,6 +5041,10 @@ html, body {
 
 /* Extra Compact Phones: <= 360px */
 @media (max-width: 360px) {
+  .hud-brand-name {
+    display: none !important;
+  }
+
   .drawer-grid {
     grid-template-columns: repeat(2, 1fr);
   }
