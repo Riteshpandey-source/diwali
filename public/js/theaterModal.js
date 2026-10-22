@@ -505,97 +505,91 @@ class DiwaliTheaterModal {
 
   // Toggle Video Play / Pause (Push / Resume)
   togglePlayPause() {
-    // If modal is open with active YouTube iframe, toggle YouTube playback
-    if (this.isOpen && this.iframe && !this.iframe.classList.contains('hidden') && this.iframe.contentWindow) {
-      if (this.isIframePaused) {
-        try {
-          this.iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
-        } catch (_) {}
-        this.isIframePaused = false;
-        if (this.playPauseBtn) this.playPauseBtn.innerHTML = '<span class="ctrl-icon">⏸</span>';
-        if (this.stagePlayPauseIcon) this.stagePlayPauseIcon.textContent = '⏸️';
-        if (this.stagePlayPauseText) this.stagePlayPauseText.textContent = 'PAUSE';
-        if (this.stagePlayPauseBtn) this.stagePlayPauseBtn.classList.remove('paused');
-        if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
-          window.diwaliEngine.showToastNotice('▶️ Full Episode Resumed');
-        }
-      } else {
-        try {
-          this.iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo' }), '*');
-        } catch (_) {}
-        this.isIframePaused = true;
-        if (this.playPauseBtn) this.playPauseBtn.innerHTML = '<span class="ctrl-icon">▶</span>';
-        if (this.stagePlayPauseIcon) this.stagePlayPauseIcon.textContent = '▶️';
-        if (this.stagePlayPauseText) this.stagePlayPauseText.textContent = 'RESUME';
-        if (this.stagePlayPauseBtn) this.stagePlayPauseBtn.classList.add('paused');
-        if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
-          window.diwaliEngine.showToastNotice('⏸️ Full Episode Paused');
-        }
+    const isCurrentlyPlaying = (this.video && !this.video.paused) || (!this.isIframePaused && this.iframe && this.iframe.src && !this.iframe.src.includes('about:blank'));
+
+    if (isCurrentlyPlaying) {
+      // Pause both 3D stage video and YouTube audio
+      if (this.video) this.video.pause();
+      if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
+        try { this.ytPlayer.pauseVideo(); } catch (_) {}
+      } else if (this.iframe && this.iframe.contentWindow) {
+        try { this.iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo' }), '*'); } catch (_) {}
       }
-      return;
-    }
-
-    if (!this.video) return;
-
-    if (this.video.paused) {
-      // Ensure sound is enabled and unmuted on explicit user play
-      this.video.muted = false;
-      this.video.volume = 1.0;
-      if (this.stageMuteIcon) this.stageMuteIcon.textContent = '🔊';
-      if (this.stageMuteText) this.stageMuteText.textContent = 'Sound';
-      if (this.muteBtn) this.muteBtn.innerHTML = '<span class="ctrl-icon">🔊</span>';
-
-      const playPromise = this.video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.warn('Playback error / autoplay blocked, attempting muted fallback:', err);
-          // If browser requires muted initial play, start muted and unmute immediately
-          this.video.muted = true;
-          this.video.play().then(() => {
-            setTimeout(() => {
-              this.video.muted = false;
-              this.video.volume = 1.0;
-              if (this.stageMuteIcon) this.stageMuteIcon.textContent = '🔊';
-              if (this.stageMuteText) this.stageMuteText.textContent = 'Sound';
-            }, 150);
-          }).catch(() => {});
-        });
-      }
+      this.isIframePaused = true;
+      if (this.playPauseBtn) this.playPauseBtn.innerHTML = '<span class="ctrl-icon">▶</span>';
+      if (this.stagePlayPauseIcon) this.stagePlayPauseIcon.textContent = '▶️';
+      if (this.stagePlayPauseText) this.stagePlayPauseText.textContent = 'RESUME';
+      if (this.stagePlayPauseBtn) this.stagePlayPauseBtn.classList.add('paused');
+      if (this.playOverlay && this.isOpen) this.playOverlay.classList.remove('hidden');
       if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
-        window.diwaliEngine.showToastNotice('▶️ Video Resumed • Sound Playing on Stage');
+        window.diwaliEngine.showToastNotice('⏸️ TMKOC Video & Audio Paused');
       }
     } else {
-      this.video.pause();
+      // Resume / Play both 3D stage video and YouTube audio
+      if (this.video) {
+        this.video.muted = false;
+        this.video.volume = 1.0;
+        this.video.play().catch(() => {});
+      }
+
+      // Ensure YouTube iframe is loaded with active episode so audio plays
+      if (this.iframe && (!this.iframe.src || this.iframe.src === 'about:blank' || !this.iframe.src.includes(this.currentEp.ytId))) {
+        const curTime = Math.floor(this.video?.currentTime || 0);
+        const startParam = curTime > 2 ? `&start=${curTime}` : '';
+        this.iframe.src = `https://www.youtube-nocookie.com/embed/${this.currentEp.ytId}?autoplay=1&enablejsapi=1&rel=0${startParam}`;
+        this.iframe.classList.remove('hidden');
+      } else {
+        if (this.ytPlayer && typeof this.ytPlayer.playVideo === 'function') {
+          try { this.ytPlayer.playVideo(); } catch (_) {}
+        } else if (this.iframe && this.iframe.contentWindow) {
+          try { this.iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*'); } catch (_) {}
+        }
+      }
+
+      this.isIframePaused = false;
+      if (this.playPauseBtn) this.playPauseBtn.innerHTML = '<span class="ctrl-icon">⏸</span>';
+      if (this.stagePlayPauseIcon) this.stagePlayPauseIcon.textContent = '⏸️';
+      if (this.stagePlayPauseText) this.stagePlayPauseText.textContent = 'PAUSE';
+      if (this.stagePlayPauseBtn) this.stagePlayPauseBtn.classList.remove('paused');
+      if (this.playOverlay) this.playOverlay.classList.add('hidden');
       if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
-        window.diwaliEngine.showToastNotice('⏸️ Video Paused (Push) • Click Screen or Press Space to Resume');
+        window.diwaliEngine.showToastNotice('▶️ TMKOC Video & Audio Playing');
       }
     }
   }
 
   // Toggle Mute / Unmute
   toggleMute() {
-    if (!this.video) return;
+    this.isMuted = !this.isMuted;
+    if (this.video) {
+      this.video.muted = this.isMuted;
+    }
 
-    this.video.muted = !this.video.muted;
-    if (this.video.muted) {
-      this.video.volume = 0;
-    } else {
-      this.video.volume = 1.0;
+    if (this.ytPlayer && typeof this.ytPlayer.mute === 'function') {
+      try {
+        if (this.isMuted) this.ytPlayer.mute();
+        else { this.ytPlayer.unMute(); this.ytPlayer.setVolume(100); }
+      } catch (_) {}
+    } else if (this.iframe && this.iframe.contentWindow) {
+      try {
+        const func = this.isMuted ? 'mute' : 'unMute';
+        this.iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func }), '*');
+      } catch (_) {}
     }
 
     if (this.muteBtn) {
-      this.muteBtn.innerHTML = this.video.muted
+      this.muteBtn.innerHTML = this.isMuted
         ? '<span class="ctrl-icon">🔇</span>'
         : '<span class="ctrl-icon">🔊</span>';
     }
     if (this.stageMuteIcon) {
-      this.stageMuteIcon.textContent = this.video.muted ? '🔇' : '🔊';
+      this.stageMuteIcon.textContent = this.isMuted ? '🔇' : '🔊';
     }
     if (this.stageMuteText) {
-      this.stageMuteText.textContent = this.video.muted ? 'Muted' : 'Sound';
+      this.stageMuteText.textContent = this.isMuted ? 'Muted' : 'Sound';
     }
     if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
-      window.diwaliEngine.showToastNotice(this.video.muted ? '🔇 Audio Muted' : '🔊 Audio Active');
+      window.diwaliEngine.showToastNotice(this.isMuted ? '🔇 Audio Muted' : '🔊 Audio Active');
     }
   }
 
@@ -800,7 +794,7 @@ class DiwaliTheaterModal {
     }
   }
 
-  // Close Modal (Stop YouTube audio & resume 3D stage projection)
+  // Close Modal (Keep YouTube audio playing on 3D stage & resume 3D stage projection)
   closeTheaterModal() {
     this.isOpen = false;
     if (this.modal) {
@@ -811,12 +805,6 @@ class DiwaliTheaterModal {
     let ytCurTime = 0;
     if (this.ytPlayer && typeof this.ytPlayer.getCurrentTime === 'function') {
       try { ytCurTime = this.ytPlayer.getCurrentTime() || 0; } catch (_) {}
-    }
-
-    // Stop YouTube iframe audio immediately on modal close
-    if (this.iframe) {
-      this.iframe.src = '';
-      this.iframe.classList.add('hidden');
     }
 
     // Return video element to persistent host so it continues active GPU decoding
@@ -830,10 +818,7 @@ class DiwaliTheaterModal {
       if (ytCurTime > 0) {
         try { this.video.currentTime = ytCurTime; } catch (_) {}
       }
-      const playPromise = this.video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {});
-      }
+      this.video.play().catch(() => {});
       if (window.diwaliWorld3D?.societyTheater?.bindVideoTexture) {
         window.diwaliWorld3D.societyTheater.bindVideoTexture(this.video);
       }
@@ -933,6 +918,15 @@ class DiwaliTheaterModal {
       if (inRange) {
         const bubblesLayer = document.getElementById('emoteBubblesLayer');
         if (bubblesLayer) bubblesLayer.innerHTML = '';
+        // Unmute YouTube audio if not user muted
+        if (!this.isOpen && !this.isMuted && this.ytPlayer && typeof this.ytPlayer.unMute === 'function') {
+          try { this.ytPlayer.unMute(); this.ytPlayer.setVolume(100); } catch (_) {}
+        }
+      } else {
+        // When leaving theater, mute YouTube background audio so it doesn't leak into Mandir / Colony
+        if (!this.isOpen && this.ytPlayer && typeof this.ytPlayer.mute === 'function') {
+          try { this.ytPlayer.mute(); } catch (_) {}
+        }
       }
     } else if (isPlayerSittingInTheater && this.stageQuickControls && this.stageQuickControls.classList.contains('hidden')) {
       this.stageQuickControls.classList.remove('hidden');

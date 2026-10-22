@@ -3502,6 +3502,14 @@ html, body {
   transform: scale(1.08);
 }
 
+/* Persistent YouTube audio preservation: Keep modal rendered off-screen when hidden */
+#theaterPlayerModal.hidden {
+  display: flex !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 /* 3. Theater Video Player Modal */
 .theater-player-dialog {
   max-width: 980px !important;
