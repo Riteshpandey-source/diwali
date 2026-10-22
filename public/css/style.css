@@ -3317,6 +3317,14 @@ html, body {
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #92400e 100%);
 }
 
+.enlarge-text-mobile {
+  display: none;
+}
+
+.enlarge-text-desktop {
+  display: inline;
+}
+
 /* Secondary Stage Buttons */
 .stage-btn-secondary {
   background: rgba(255, 255, 255, 0.08);
@@ -4607,10 +4615,12 @@ html, body {
   /* Cinema Stage Quick Controls on Mobile (Ultra-compact horizontal bar anchored cleanly to bottom) */
   .stage-quick-controls {
     position: fixed !important;
-    bottom: calc(18px + env(safe-area-inset-bottom, 12px)) !important;
+    bottom: calc(14px + env(safe-area-inset-bottom, 8px)) !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    max-width: 96vw !important;
+    width: auto !important;
+    max-width: calc(100vw - 12px) !important;
+    box-sizing: border-box !important;
     z-index: 100 !important;
     display: flex !important;
     justify-content: center !important;
@@ -4632,41 +4642,56 @@ html, body {
   }
 
   .stage-controls-glass {
-    padding: 6px 10px !important;
-    gap: 6px !important;
+    padding: 5px 8px !important;
+    gap: 5px !important;
     border-radius: 20px !important;
+    display: flex !important;
     flex-wrap: nowrap !important;
     justify-content: center !important;
     align-items: center !important;
-    background: rgba(13, 11, 36, 0.94) !important;
-    border: 1.5px solid rgba(251, 191, 36, 0.7) !important;
+    background: rgba(11, 15, 28, 0.94) !important;
+    border: 1.5px solid rgba(251, 191, 36, 0.65) !important;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.85), 0 0 16px rgba(245, 158, 11, 0.3) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
   }
 
-  /* Hide bulky title badge, 10s skips, scrubber, pills, and camera dropdown on tiny mobile controller */
+  /* Hide bulky title badge, 10s skips, scrubber, pills, camera dropdown, sound text and long desktop label on mobile */
   .stage-controls-badge,
   .stage-ep-pills,
   .stage-scrubber-wrap,
   #stageSkipBackBtn,
   #stageSkipFwdBtn,
-  #stageCamViewBtn {
+  #stageCamViewBtn,
+  #stageMuteText,
+  .enlarge-text-desktop {
     display: none !important;
   }
 
-  .stage-btn-primary {
-    padding: 6px 12px !important;
-    font-size: 12px !important;
-    border-radius: 12px !important;
-    height: 38px !important;
-    min-width: 76px !important;
+  .enlarge-text-mobile {
+    display: inline !important;
   }
 
-  .stage-btn-secondary,
-  .stage-btn-icon {
-    padding: 6px 10px !important;
-    font-size: 12px !important;
+  .stage-btn-primary {
+    padding: 5px 10px !important;
+    font-size: 11px !important;
     border-radius: 10px !important;
-    height: 38px !important;
+    height: 36px !important;
+    min-width: unset !important;
+    gap: 4px !important;
+  }
+
+  #stageMuteToggleBtn,
+  .stage-btn-icon {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 14px !important;
+    border-radius: 10px !important;
   }
 
   #stageEnlargeBtn,
@@ -4674,11 +4699,12 @@ html, body {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 6px 12px !important;
-    font-size: 12px !important;
+    padding: 5px 10px !important;
+    font-size: 11px !important;
     border-radius: 10px !important;
-    height: 38px !important;
+    height: 36px !important;
     white-space: nowrap !important;
+    gap: 4px !important;
   }
 
   #stageStandUpBtn,
@@ -4686,15 +4712,16 @@ html, body {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 6px 12px !important;
-    font-size: 12px !important;
+    padding: 5px 10px !important;
+    font-size: 11px !important;
     border-radius: 10px !important;
-    height: 38px !important;
+    height: 36px !important;
     white-space: nowrap !important;
     background: linear-gradient(135deg, #e11d48 0%, #be123c 100%) !important;
     border: 1.5px solid #fb7185 !important;
     color: #fff !important;
     font-weight: 700 !important;
+    gap: 4px !important;
   }
 
   /* 4. BOTTOM BAR & DESKTOP ACTIONS DE-CLUTTER */
