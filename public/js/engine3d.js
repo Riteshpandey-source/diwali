@@ -922,17 +922,15 @@ class DiwaliEngine3D {
     if (this.player3D && this.player3D.isSitting) {
       if (prompt) {
         if (this.player3D.currentBench && this.player3D.currentBench.isTheaterBench) {
-          prompt.classList.add('theater-seated-prompt');
-          if (msg) msg.textContent = isTouch
-            ? '▶️ Tap Screen to Play/Pause • Tap Here to Stand Up'
-            : '▶️ [Space / Button] Play/Pause Video • [E] Stand Up';
+          prompt.classList.add('hidden');
+          return;
         } else {
           prompt.classList.remove('theater-seated-prompt');
           if (msg) msg.textContent = isTouch ? '👆 Tap Here to Stand Up' : 'Press [E] or [W/A/S/D] to Stand Up';
+          if (keyBadge) keyBadge.textContent = isTouch ? 'TAP' : 'E';
+          prompt.classList.remove('hidden');
         }
       }
-      if (keyBadge) keyBadge.textContent = isTouch ? 'TAP' : 'E';
-      if (prompt) prompt.classList.remove('hidden');
       return;
     } else {
       if (prompt) prompt.classList.remove('theater-seated-prompt');

@@ -3321,6 +3321,31 @@ html, body {
   transform: translateY(-1px);
 }
 
+/* Stand Up / Exit Seat Button */
+.stage-btn-standup {
+  background: rgba(239, 68, 68, 0.22);
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  color: #fca5a5;
+  border-radius: 12px;
+  padding: 7px 12px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.stage-btn-standup:hover {
+  background: rgba(239, 68, 68, 0.45);
+  border-color: #f87171;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
 /* Scrubber & Time Display */
 .stage-scrubber-wrap {
   display: flex;
@@ -4525,13 +4550,13 @@ html, body {
     font-size: 11px;
   }
 
-  /* Cinema Stage Quick Controls on Mobile (Ultra-compact horizontal bar) */
+  /* Cinema Stage Quick Controls on Mobile (Ultra-compact horizontal bar anchored cleanly to bottom) */
   .stage-quick-controls {
-    bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    max-width: 94vw !important;
-    z-index: 45 !important;
+    max-width: 96vw !important;
+    z-index: 60 !important;
     display: flex !important;
     justify-content: center !important;
   }
@@ -4569,6 +4594,7 @@ html, body {
   }
 
   .stage-btn-secondary,
+  .stage-btn-standup,
   .stage-btn-icon {
     padding: 6px 10px !important;
     font-size: 12px !important;
@@ -4732,18 +4758,27 @@ html, body {
   }
 
   #interactionPrompt.theater-seated-prompt {
-    top: calc(54px + env(safe-area-inset-top, 0px)) !important;
-    bottom: auto !important;
-    left: auto !important;
-    right: calc(10px + env(safe-area-inset-right, 0px)) !important;
-    transform: none !important;
-    padding: 5px 12px !important;
-    font-size: 11px !important;
-    border-radius: 14px !important;
-    max-width: calc(100vw - 160px) !important;
-    height: auto !important;
-    max-height: 38px !important;
-    z-index: 44 !important;
+    display: none !important;
+  }
+
+  /* Clean Seated Mode on Mobile: Hide joystick and action buttons when sitting */
+  .player-is-seated #mobileControlsContainer,
+  .player-is-seated .mobile-action-buttons,
+  .player-is-seated #joystickZone,
+  .player-is-seated .quick-inventory-tray,
+  .player-is-seated #mobileInteractBtn,
+  .player-is-seated #mobileUseItemBtn,
+  .player-is-seated #mobileInventoryToggleBtn {
+    display: none !important;
+    pointer-events: none !important;
+  }
+
+  /* When sitting in theater, completely hide top location badge and prompts to prevent overlap */
+  .theater-seated .theater-location-badge,
+  .theater-seated #theaterLocationBadge,
+  .theater-seated #interactionPrompt,
+  .player-is-seated #theaterLocationBadge {
+    display: none !important;
   }
 
   /* 6. MOBILE QUICK MENU DRAWER */

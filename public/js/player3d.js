@@ -1019,6 +1019,15 @@ class DiwaliPlayer3D {
     this.walkCycle = 0;
     this.theaterCamMode = 'cinema'; // Default to crystal clear direct cinema view
 
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('player-is-seated');
+      if (benchData.isTheaterBench) {
+        document.body.classList.add('theater-seated');
+      }
+      const standBtn = document.getElementById('stageStandUpBtn');
+      if (standBtn) standBtn.style.display = benchData.isTheaterBench ? 'inline-flex' : 'none';
+    }
+
     // Place character precisely at bench seat
     this.x = benchData.seatX;
     this.z = benchData.seatZ;
@@ -1064,6 +1073,12 @@ class DiwaliPlayer3D {
     if (!this.isSitting) return;
     this.isSitting = false;
     this.currentBench = null;
+
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('player-is-seated', 'theater-seated');
+      const standBtn = document.getElementById('stageStandUpBtn');
+      if (standBtn) standBtn.style.display = 'none';
+    }
 
     // Reset vertical offset
     this.y = 0;

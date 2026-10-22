@@ -425,6 +425,17 @@ class DiwaliTheaterModal {
       });
     }
 
+    const stageStandUpBtn = document.getElementById('stageStandUpBtn');
+    if (stageStandUpBtn) {
+      stageStandUpBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const p = window.diwaliPlayer3D || window.diwaliEngine?.player3D;
+        if (p && typeof p.standUp === 'function') {
+          p.standUp();
+        }
+      });
+    }
+
     if (this.stageSeekSlider) {
       const onStageSeek = (e) => {
         const val = parseFloat(e.target.value);
