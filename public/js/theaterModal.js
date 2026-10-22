@@ -399,6 +399,36 @@ class DiwaliTheaterModal {
 
   // Toggle Video Play / Pause (Push / Resume)
   togglePlayPause() {
+    // If modal is open with active YouTube iframe, toggle YouTube playback
+    if (this.isOpen && this.iframe && !this.iframe.classList.contains('hidden') && this.iframe.contentWindow) {
+      if (this.isIframePaused) {
+        try {
+          this.iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+        } catch (_) {}
+        this.isIframePaused = false;
+        if (this.playPauseBtn) this.playPauseBtn.innerHTML = '<span class="ctrl-icon">⏸</span>';
+        if (this.stagePlayPauseIcon) this.stagePlayPauseIcon.textContent = '⏸️';
+        if (this.stagePlayPauseText) this.stagePlayPauseText.textContent = 'PAUSE';
+        if (this.stagePlayPauseBtn) this.stagePlayPauseBtn.classList.remove('paused');
+        if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
+          window.diwaliEngine.showToastNotice('▶️ Full Episode Resumed');
+        }
+      } else {
+        try {
+          this.iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo' }), '*');
+        } catch (_) {}
+        this.isIframePaused = true;
+        if (this.playPauseBtn) this.playPauseBtn.innerHTML = '<span class="ctrl-icon">▶</span>';
+        if (this.stagePlayPauseIcon) this.stagePlayPauseIcon.textContent = '▶️';
+        if (this.stagePlayPauseText) this.stagePlayPauseText.textContent = 'RESUME';
+        if (this.stagePlayPauseBtn) this.stagePlayPauseBtn.classList.add('paused');
+        if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
+          window.diwaliEngine.showToastNotice('⏸️ Full Episode Paused');
+        }
+      }
+      return;
+    }
+
     if (!this.video) return;
 
     if (this.video.paused) {
@@ -510,27 +540,37 @@ class DiwaliTheaterModal {
       this.directYtLink.href = this.currentEp.ytUrl;
     }
 
-    // Switch and play selected episode video right here!
-    if (this.video) {
-      if (this.iframe) {
-        this.iframe.classList.add('hidden');
-        this.iframe.src = '';
+    // When modal is open, play the full 20+ minute episode directly via YouTube embed
+    if (this.isOpen) {
+      if (this.video) {
+        this.video.pause();
+        this.video.classList.add('hidden');
       }
-      this.video.classList.remove('hidden');
+      if (this.iframe) {
+        this.iframe.classList.remove('hidden');
+        this.iframe.src = `https://www.youtube-nocookie.com/embed/${this.currentEp.ytId}?autoplay=1&enablejsapi=1&rel=0`;
+      }
+      if (this.playOverlay) {
+        this.playOverlay.classList.add('hidden');
+      }
+      this.isIframePaused = false;
+    }
 
-      // Update source if different
+    // Always update 3D stage screen video source so the stage matches the selected episode
+    if (this.video) {
       if (!this.video.src.includes(this.currentEp.videoSrc)) {
         this.video.src = this.currentEp.videoSrc;
         this.video.load();
       }
-      this.video.currentTime = 0;
-      const playPromise = this.video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.warn('Episode play interrupted / requires user gesture:', err);
-        });
+      if (!this.isOpen) {
+        this.video.currentTime = 0;
+        const playPromise = this.video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn('Episode play interrupted / requires user gesture:', err);
+          });
+        }
       }
-
       // Project onto 3D stage screen
       if (window.diwaliWorld3D?.societyTheater?.bindVideoTexture) {
         window.diwaliWorld3D.societyTheater.bindVideoTexture(this.video);
@@ -542,47 +582,66 @@ class DiwaliTheaterModal {
     }
   }
 
-  // Open Theater Modal & Play Video Right Here!
+  // Open Theater Modal & Play Full Episode Right Here!
   openTheaterModal(data = null) {
     this.isOpen = true;
     if (this.modal) {
       this.modal.classList.remove('hidden');
     }
 
-    // Adopt video element into modal video wrapper if needed
-    if (this.theaterVideoWrapper && this.video && this.video.parentNode !== this.theaterVideoWrapper) {
-      this.theaterVideoWrapper.insertBefore(this.video, this.theaterVideoWrapper.firstChild);
+    // Pause and hide local video so its sound does not clash with the full episode
+    if (this.video) {
+      this.video.pause();
+      this.video.classList.add('hidden');
     }
 
-    // Play video right here!
-    if (this.video) {
-      const playPromise = this.video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // If browser policy blocks autoplay with audio, show overlay for user gesture
-          if (this.playOverlay) {
-            this.playOverlay.classList.remove('hidden');
-          }
-        });
+    // Play the full 20+ minute episode in the iframe
+    if (this.iframe && this.currentEp) {
+      this.iframe.classList.remove('hidden');
+      const targetSrc = `https://www.youtube-nocookie.com/embed/${this.currentEp.ytId}?autoplay=1&enablejsapi=1&rel=0`;
+      if (!this.iframe.src || !this.iframe.src.includes(this.currentEp.ytId)) {
+        this.iframe.src = targetSrc;
       }
     }
+    this.isIframePaused = false;
 
-    // Inform 3D theater screen
-    if (window.diwaliWorld3D?.societyTheater?.bindVideoTexture && this.video) {
-      window.diwaliWorld3D.societyTheater.bindVideoTexture(this.video);
+    // Hide play overlay since YouTube iframe controls are interactive
+    if (this.playOverlay) {
+      this.playOverlay.classList.add('hidden');
+    }
+
+    // Update episode details
+    const titleEl = document.getElementById('theaterModalTitle');
+    const subtitleEl = document.getElementById('theaterModalSubtitle');
+    const descEl = document.getElementById('theaterEpisodeDesc');
+    const ytBannerTitle = document.getElementById('ytBannerTitle');
+
+    if (titleEl && this.currentEp) titleEl.textContent = this.currentEp.title;
+    if (subtitleEl && this.currentEp) subtitleEl.textContent = this.currentEp.subtitle;
+    if (descEl && this.currentEp) descEl.textContent = this.currentEp.desc;
+    if (ytBannerTitle && this.currentEp) ytBannerTitle.textContent = `Watch ${this.currentEp.num} on Official Sony SAB YouTube`;
+
+    if (this.directYtLink && this.currentEp) {
+      this.directYtLink.href = this.currentEp.ytUrl;
     }
 
     // Notify user
     if (window.diwaliEngine && typeof window.diwaliEngine.showToastNotice === 'function') {
-      window.diwaliEngine.showToastNotice('🎬 Now Playing: TMKOC Happy Diwali Special on Big Screen');
+      window.diwaliEngine.showToastNotice(`🎬 Now Playing: ${this.currentEp?.title || 'TMKOC Diwali Special'} (Full Episode)`);
     }
   }
 
-  // Close Modal (Keep video playing on 3D stage!)
+  // Close Modal (Stop YouTube audio & resume 3D stage projection)
   closeTheaterModal() {
     this.isOpen = false;
     if (this.modal) {
       this.modal.classList.add('hidden');
+    }
+
+    // Stop YouTube iframe audio immediately on modal close
+    if (this.iframe) {
+      this.iframe.src = '';
+      this.iframe.classList.add('hidden');
     }
 
     // Return video element to persistent host so it continues active GPU decoding
@@ -590,12 +649,17 @@ class DiwaliTheaterModal {
       this.stageVideoHost.appendChild(this.video);
     }
 
-    // Stop iframe if active
-    if (this.iframe) {
-      this.iframe.src = '';
+    // Unhide local video and resume 3D stage screen playback
+    if (this.video) {
+      this.video.classList.remove('hidden');
+      const playPromise = this.video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {});
+      }
+      if (window.diwaliWorld3D?.societyTheater?.bindVideoTexture) {
+        window.diwaliWorld3D.societyTheater.bindVideoTexture(this.video);
+      }
     }
-
-    // Note: Video is NOT paused here so it seamlessly keeps playing on the 3D ground stage!
   }
 
   openOfficialYouTube() {
