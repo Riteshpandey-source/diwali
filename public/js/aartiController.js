@@ -431,6 +431,17 @@ class DiwaliAartiController {
         this.badgeIndicator.classList.remove('active');
       }
     }
+
+    if (this.badge) {
+      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+      if (this.isMinimized) {
+        if (!isMobile || this.state === 'PLAYING' || this.state === 'PAUSED') {
+          this.badge.classList.remove('hidden');
+        } else {
+          this.badge.classList.add('hidden');
+        }
+      }
+    }
   }
 
   // -------------------------------------------------------------
@@ -449,7 +460,8 @@ class DiwaliAartiController {
     }
 
     if (this.badge) {
-      if (this.isMinimized) {
+      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+      if (this.isMinimized && (!isMobile || this.state === 'PLAYING' || this.state === 'PAUSED')) {
         this.badge.classList.remove('hidden');
       } else {
         this.badge.classList.add('hidden');
