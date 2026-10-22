@@ -3,14 +3,14 @@
     "category": "Startup & Server",
     "name": "API Status Endpoint Health",
     "status": "PASS",
-    "details": "Uptime: 55061.4s, Active Rooms: 0",
+    "details": "Uptime: 56504.1s, Active Rooms: 1",
     "error": null
   },
   {
     "category": "Startup & Server",
     "name": "Index HTML Delivery",
     "status": "PASS",
-    "details": "Received 56623 bytes",
+    "details": "Received 56692 bytes",
     "error": null
   },
   {
@@ -38,7 +38,7 @@
     "category": "Multiplayer",
     "name": "WebSocket Client A Handshake & Welcome",
     "status": "PASS",
-    "details": "Assigned ID: player_muhttbq, Room: audit-room-1792661175997",
+    "details": "Assigned ID: player_ierto83, Room: audit-room-1792662618736",
     "error": null
   },
   {
@@ -59,14 +59,14 @@
     "category": "Multiplayer",
     "name": "Realtime Movement Broadcast",
     "status": "PASS",
-    "details": "Received movement for: player_x8h3u9q at (820, 710)",
+    "details": "Received movement for: player_g2bnrqk at (820, 710)",
     "error": null
   },
   {
     "category": "Multiplayer",
     "name": "Shared Firework Event Broadcast",
     "status": "PASS",
-    "details": "Received fwType: anar from player_muhttbq",
+    "details": "Received fwType: anar from player_ierto83",
     "error": null
   },
   {

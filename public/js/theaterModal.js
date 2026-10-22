@@ -16,6 +16,7 @@ class DiwaliTheaterModal {
         subtitle: 'Iconic Diwali Celebration & Comedy (Full Episode)',
         desc: 'Jethalal, Daya, Champaklal, and the entire Gokuldham society celebrate their very first iconic Diwali celebration with Laxmi Pujan, festive sweets, and family laughter.',
         videoSrc: 'assets/videos/tmkoc_ep53_full.mp4',
+        durationSec: 1456,
         ytUrl: 'https://youtu.be/-j9CKPlPhnU?si=9e1NO_5_1LzRv2zY',
         ytId: '-j9CKPlPhnU'
       },
@@ -26,6 +27,7 @@ class DiwaliTheaterModal {
         subtitle: 'Gokuldham Society Grand Diwali Mela & Fireworks (Full Episode)',
         desc: 'Popatlal brings fireworks to Gokuldham society while Jethalal, Champaklal, and the Tapu Sena prepare for the grand Diwali celebration.',
         videoSrc: 'assets/videos/tmkoc_ep2598_full.mp4',
+        durationSec: 1178,
         ytUrl: 'https://www.youtube.com/watch?v=7_bDxQEkpN8',
         ytId: '7_bDxQEkpN8'
       },
@@ -36,6 +38,7 @@ class DiwaliTheaterModal {
         subtitle: 'Festive Kavi Sammelan, Sweets & Laughter (Full Episode)',
         desc: 'Taarak Mehta recites festive Diwali poetry while Jethalal relishes fresh hot jalebi fafda and the society distributes sweets.',
         videoSrc: 'assets/videos/tmkoc_ep247_full.mp4',
+        durationSec: 1325,
         ytUrl: 'https://www.youtube.com/watch?v=kES8Q1psYCI',
         ytId: 'kES8Q1psYCI'
       },
@@ -46,6 +49,7 @@ class DiwaliTheaterModal {
         subtitle: 'Rangoli Pratiyogita & Colorful Illumination (Full Episode)',
         desc: 'Mahila Mandal decorates the society ground with intricate rangoli patterns while Abdul helps illuminate the compound with fairy lights.',
         videoSrc: 'assets/videos/tmkoc_ep3604_full.mp4',
+        durationSec: 1221,
         ytUrl: 'https://www.youtube.com/watch?v=oK331RRfQac',
         ytId: 'oK331RRfQac'
       },
@@ -56,6 +60,7 @@ class DiwaliTheaterModal {
         subtitle: 'Grand Society Garba & Dazzling Sky Fireworks (Full Episode)',
         desc: 'All Gokuldham families gather in traditional festive attire for late-night garba, chakri, and magnificent sky shots.',
         videoSrc: 'assets/videos/tmkoc_ep4231_full.mp4',
+        durationSec: 1190,
         ytUrl: 'https://www.youtube.com/watch?v=2FuThuwrqeg',
         ytId: '2FuThuwrqeg'
       }
@@ -73,6 +78,9 @@ class DiwaliTheaterModal {
     // Cache DOM Elements
     this.modal = document.getElementById('theaterPlayerModal');
     this.video = document.getElementById('theaterNativeVideo');
+    if (this.video) {
+      this.video.loop = true;
+    }
     this.iframe = document.getElementById('theaterIframe');
     this.playOverlay = document.getElementById('theaterPlayOverlay');
     this.bigPlayBtn = document.getElementById('theaterBigPlayBtn');
@@ -153,24 +161,22 @@ class DiwaliTheaterModal {
       if (!this.video) return;
 
       const cur = this.video.currentTime || 0;
-      const dur = this.video.duration || 1200;
+      const fullDur = this.currentEp?.durationSec || 1455;
 
       // Update sliders unless user is actively dragging them
       if (!this.isUserSeeking) {
         if (this.seekSlider) this.seekSlider.value = cur;
         if (this.stageSeekSlider) this.stageSeekSlider.value = cur;
       }
-      this.updateTimeDisplay(cur, dur);
+      this.updateTimeDisplay(cur, fullDur);
     });
 
     // Loaded metadata
     this.video.addEventListener('loadedmetadata', () => {
-      if (this.video.duration) {
-        const maxVal = Math.floor(this.video.duration);
-        if (this.seekSlider) this.seekSlider.max = maxVal;
-        if (this.stageSeekSlider) this.stageSeekSlider.max = maxVal;
-      }
-      this.updateTimeDisplay(this.video.currentTime, this.video.duration);
+      const fullDur = this.currentEp?.durationSec || 1455;
+      if (this.seekSlider) this.seekSlider.max = fullDur;
+      if (this.stageSeekSlider) this.stageSeekSlider.max = fullDur;
+      this.updateTimeDisplay(this.video ? this.video.currentTime : 0, fullDur);
     });
 
     // Loop video on end
@@ -366,6 +372,7 @@ class DiwaliTheaterModal {
             else t.classList.remove('active');
           });
           this.switchEpisode(epKey);
+          this.openTheaterModal();
         }
       });
     });
@@ -708,10 +715,11 @@ class DiwaliTheaterModal {
   }
 
   updateTimeDisplay(currentSec, totalSec) {
-    if (!this.timeDisplay) return;
+    if (!this.timeDisplay && !this.stageTimeText) return;
 
     currentSec = Math.max(0, currentSec || 0);
-    totalSec = Math.max(0, totalSec || 120);
+    const fullDur = this.currentEp?.durationSec || 1455;
+    totalSec = fullDur;
 
     const curMin = Math.floor(currentSec / 60).toString().padStart(2, '0');
     const curS = Math.floor(currentSec % 60).toString().padStart(2, '0');

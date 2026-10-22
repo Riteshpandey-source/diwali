@@ -710,7 +710,7 @@ class DiwaliEngine3D {
     } else if (target.type === 'society_theater') {
       const theater = this.theaterModal || window.diwaliTheaterModal;
       if (theater) {
-        theater.togglePlayPause();
+        theater.openTheaterModal();
       }
       return;
     } else if (target.type === 'house') {
