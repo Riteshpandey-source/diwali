@@ -17,7 +17,7 @@ class DiwaliTheaterModal {
         desc: 'Jethalal, Daya, Champaklal, and the entire Gokuldham society celebrate their very first iconic Diwali celebration with Laxmi Pujan, festive sweets, and family laughter.',
         videoSrc: 'assets/videos/tmkoc_ep53_full.mp4',
         durationSec: 1456,
-        ytUrl: 'https://youtu.be/-j9CKPlPhnU?si=9e1NO_5_1LzRv2zY',
+        ytUrl: 'https://youtu.be/-j9CKPlPhnU?si=g9whV2dUIMn8NNMi',
         ytId: '-j9CKPlPhnU'
       },
       ep2598: {
