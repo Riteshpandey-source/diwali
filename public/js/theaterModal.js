@@ -558,7 +558,7 @@ class DiwaliTheaterModal {
       if (this.iframe && (!this.iframe.src || this.iframe.src === 'about:blank' || !this.iframe.src.includes(this.currentEp.ytId))) {
         const curTime = Math.floor(this.video?.currentTime || 0);
         const startParam = curTime > 2 ? `&start=${curTime}` : '';
-        this.iframe.src = `https://www.youtube-nocookie.com/embed/${this.currentEp.ytId}?autoplay=1&enablejsapi=1&rel=0${startParam}`;
+        this.iframe.src = `https://www.youtube-nocookie.com/embed/${this.currentEp.ytId}?autoplay=1&enablejsapi=1&rel=0&playsinline=1${startParam}`;
         this.iframe.classList.remove('hidden');
       } else {
         if (this.ytPlayer && typeof this.ytPlayer.playVideo === 'function') {
@@ -716,7 +716,7 @@ class DiwaliTheaterModal {
       }
       if (this.iframe) {
         this.iframe.classList.remove('hidden');
-        this.iframe.src = `https://www.youtube-nocookie.com/embed/${this.currentEp.ytId}?autoplay=1&enablejsapi=1&rel=0`;
+        this.iframe.src = `https://www.youtube-nocookie.com/embed/${this.currentEp.ytId}?autoplay=1&enablejsapi=1&rel=0&playsinline=1`;
       }
       if (this.playOverlay) {
         this.playOverlay.classList.add('hidden');
@@ -775,7 +775,7 @@ class DiwaliTheaterModal {
     if (this.iframe && this.currentEp) {
       this.iframe.classList.remove('hidden');
       const startParam = curStageTime > 2 ? `&start=${curStageTime}` : '';
-      const targetSrc = `https://www.youtube-nocookie.com/embed/${this.currentEp.ytId}?autoplay=1&enablejsapi=1&rel=0${startParam}`;
+      const targetSrc = `https://www.youtube-nocookie.com/embed/${this.currentEp.ytId}?autoplay=1&enablejsapi=1&rel=0&playsinline=1${startParam}`;
       if (!this.iframe.src || !this.iframe.src.includes(this.currentEp.ytId)) {
         this.iframe.src = targetSrc;
       } else if (curStageTime > 2 && this.ytPlayer && typeof this.ytPlayer.seekTo === 'function') {
