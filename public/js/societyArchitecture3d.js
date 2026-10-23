@@ -441,10 +441,10 @@ class DiwaliSocietyArchitecture3D {
     shopGroup.add(cabinRoof);
 
     // 2. High-Resolution "ABDUL KI DUKAAN" Illuminated Signboard Canvas Texture
-    const signCanvas = document.createElement('canvas');
-    signCanvas.width = 1024;
-    signCanvas.height = 256;
-    const sctx = signCanvas.getContext('2d');
+    const abdulSignCanvas = document.createElement('canvas');
+    abdulSignCanvas.width = 1024;
+    abdulSignCanvas.height = 256;
+    const sctx = abdulSignCanvas.getContext('2d');
 
     // Rich Emerald Green Lacquer Ground with Golden Borders
     sctx.fillStyle = '#064e3b';
@@ -490,7 +490,7 @@ class DiwaliSocietyArchitecture3D {
     sctx.font = 'bold 24px "Plus Jakarta Sans", sans-serif';
     sctx.fillText('🥤 CHILLED SODA • MITHAI • PATAKHE • DIYAS 🪔', 512, 196);
 
-    const abdulSignTex = new THREE.CanvasTexture(signCanvas);
+    const abdulSignTex = new THREE.CanvasTexture(abdulSignCanvas);
     abdulSignTex.anisotropy = 4;
 
     const abdulSignMat = new THREE.MeshStandardMaterial({
