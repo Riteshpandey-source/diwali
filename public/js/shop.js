@@ -15,26 +15,167 @@ class DiwaliShopManager {
       chakri: 5,
       rocket: 5,
       diya: 10,
-      kandil: 3
+      kandil: 3,
+      jeera_soda: 3,
+      nimbu_soda: 2,
+      mithai_box: 2,
+      motichoor: 2,
+      puja_thali: 1,
+      fairy_lights: 1,
+      brass_deepam: 1,
+      toran: 2,
+      rangoli_powder: 2
     };
 
-    // Shop Catalog
+    // Shop Catalog - Abdul's All-in-One Store (Gokuldham Society)
     this.catalog = [
-      // Fireworks & Sparklers
-      { id: 'anar', name: 'Golden Anar (Flowerpot)', category: 'fireworks', price: 20, icon: '🌋', desc: 'Fountain of sparkling gold & silver embers.' },
-      { id: 'chakri', name: 'Spinning Chakri (Wheel)', category: 'fireworks', price: 25, icon: '🌀', desc: 'Rapidly spinning wheel ejecting spiral sparks.' },
-      { id: 'rocket', name: 'Sky Rocket Bouquet', category: 'fireworks', price: 30, icon: '🚀', desc: 'Ascending whistling rocket exploding into colored peonies.' },
-      { id: 'kandil', name: 'Akash Kandil (Sky Lantern)', category: 'fireworks', price: 40, icon: '🏮', desc: 'Traditional glowing paper lantern floating into the heavens.' },
+      // 1. Abdul's Soda & Festive Sweets
+      {
+        id: 'jeera_soda',
+        name: "Abdul's Masala Jeera Soda",
+        hindiName: 'अब्दुल का स्पेशल मसाला जीरा सोडा',
+        category: 'soda_sweets',
+        price: 15,
+        icon: '🥤',
+        desc: "Gokuldham's pride! Chilled digestive soda with roasted cumin & rock salt.",
+        quote: "Yeh lijiye Jethalal Bhai! Ekdum chilled Jeera Soda, pet ekdum halka ho jayega!"
+      },
+      {
+        id: 'nimbu_soda',
+        name: 'Fresh Chilled Nimbu Soda',
+        hindiName: 'ताज़ा ठंडा नींबू सोडा',
+        category: 'soda_sweets',
+        price: 15,
+        icon: '🍋',
+        desc: 'Tangy fresh lemon soda with bubbly fizz to recharge your festival spirit.',
+        quote: "Ekdum refreshing Nimbu Soda! Diwali ki thakan ek ghoont mein gayab!"
+      },
+      {
+        id: 'mithai_box',
+        name: 'Assorted Kaju Katli & Peda Box',
+        hindiName: 'काजू कतली और पेड़ा बॉक्स',
+        category: 'soda_sweets',
+        price: 40,
+        icon: '🍬',
+        desc: 'Pure desi ghee sweets to distribute among Gokuldham colony neighbours!',
+        quote: "Pure desi ghee ki mithai! Sabhi colony walo ka mooh meetha kijiye!"
+      },
+      {
+        id: 'motichoor',
+        name: 'Motichoor Laddu Gift Box',
+        hindiName: 'मोतीचूर के लड्डू',
+        category: 'soda_sweets',
+        price: 30,
+        icon: '🟡',
+        desc: 'Soft aromatic saffron laddus crafted for Lakshmi Pujan and family joy.',
+        quote: "Garam garam motichoor laddu, Bapuji aur Tapu Sena ko bahut pasand hain!"
+      },
 
-      // Lights & Diyas
-      { id: 'diya', name: 'Handcrafted Clay Diya', category: 'lights', price: 10, icon: '🪔', desc: 'Sacred terracotta oil lamp that purifies the darkness.' },
-      { id: 'fairy_lights', name: 'Serial Fairy Light Strand', category: 'lights', price: 50, icon: '💡', desc: 'Vibrant strings of sparkling LEDs for houses.' },
-      { id: 'brass_deepam', name: 'Ornate Brass Temple Deepam', category: 'lights', price: 75, icon: '✨', desc: 'Sacred seven-tier traditional lamp for blessings.' },
+      // 2. Fireworks & Sparklers (Patakhe)
+      {
+        id: 'anar',
+        name: 'Golden Anar (Flowerpot)',
+        hindiName: 'गोल्डन अनार फव्वारा',
+        category: 'fireworks',
+        price: 20,
+        icon: '🌋',
+        desc: 'Fountain of sparkling gold & silver embers lighting up the courtyard.',
+        quote: "Yeh anar jab compound mein jalega, poora Gokuldham jagmaga uthega!"
+      },
+      {
+        id: 'chakri',
+        name: 'Spinning Ground Chakri',
+        hindiName: 'तेज घूमने वाली चकरी',
+        category: 'fireworks',
+        price: 25,
+        icon: '🌀',
+        desc: 'Rapidly spinning ground wheel ejecting spiral rings of brilliant fire.',
+        quote: "Zameen par ghoomne wali shaandar chakri! Tapu Sena ki favorite!"
+      },
+      {
+        id: 'rocket',
+        name: 'Sky Rocket Bouquet',
+        hindiName: 'रंगीन स्काई रॉकेट',
+        category: 'fireworks',
+        price: 30,
+        icon: '🚀',
+        desc: 'Ascending whistling rocket exploding into multicolored sparkling peonies.',
+        quote: "Seedha aakash mein jaakar dhamakedaar roshni karega!"
+      },
+      {
+        id: 'kandil',
+        name: 'Akash Kandil (Sky Lantern)',
+        hindiName: 'उड़ता हुआ आकाश कंदील',
+        category: 'fireworks',
+        price: 40,
+        icon: '🏮',
+        desc: 'Traditional glowing paper lantern floating serenely into the starry heavens.',
+        quote: "Shanti aur samriddhi ki prarthana ke sath aasmaan mein chodiye!"
+      },
 
-      // Festive Decor
-      { id: 'toran', name: 'Marigold & Mango Leaf Toran', category: 'decor', price: 35, icon: '🌸', desc: 'Auspicious fresh floral hanging for door arches.' },
-      { id: 'rangoli_powder', name: 'Gulal & Rangoli Color Pack', category: 'decor', price: 25, icon: '🎨', desc: 'Vivid powders for intricate floral doorstep art.' },
-      { id: 'mithai_box', name: 'Assorted Kaju Katli & Laddu Box', category: 'decor', price: 45, icon: '🍬', desc: 'Sweet treats to distribute among colony friends!' }
+      // 3. Lights & Diyas
+      {
+        id: 'diya',
+        name: 'Handcrafted Clay Diya',
+        hindiName: 'पवित्र मिट्टी का दीया',
+        category: 'lights',
+        price: 10,
+        icon: '🪔',
+        desc: 'Sacred terracotta oil lamp that purifies the darkness with warm glow.',
+        quote: "Mitti ke diye se ghar-aangan roshan kijiye, Ma Lakshmi ka aashirwad milega!"
+      },
+      {
+        id: 'fairy_lights',
+        name: 'Serial LED Light Strand',
+        hindiName: 'रंग-बिरंगी लड़ी लाइट्स',
+        category: 'lights',
+        price: 50,
+        icon: '💡',
+        desc: 'Vibrant strings of sparkling LEDs to decorate balcony railings & windows.',
+        quote: "Bhide master ke balcony ki tarah poori building mein chamak aayegi!"
+      },
+      {
+        id: 'brass_deepam',
+        name: 'Ornate Brass Temple Deepam',
+        hindiName: 'पीतल का मंदिर दीप',
+        category: 'lights',
+        price: 75,
+        icon: '✨',
+        desc: 'Sacred multi-tier brass lamp for mandir sanctum and prosperity.',
+        quote: "Mandir ke aage sthapit kijiye, shubh labh ka aagman hoga!"
+      },
+
+      // 4. Puja & Festive Decor
+      {
+        id: 'puja_thali',
+        name: 'Lakshmi Pujan Samagri Thali',
+        hindiName: 'लक्ष्मी पूजन सामग्री थाली',
+        category: 'decor',
+        price: 45,
+        icon: '🌺',
+        desc: 'Roli, chawal, dhoop, kapoor, diya, gangajal & fresh marigold flowers.',
+        quote: "Diwali pujan ke liye sampoorna pavitra samagri, sab ready hai!"
+      },
+      {
+        id: 'toran',
+        name: 'Marigold & Mango Leaf Toran',
+        hindiName: 'गेंदा और आम के पत्तों का तोरण',
+        category: 'decor',
+        price: 35,
+        icon: '🌸',
+        desc: 'Auspicious fresh floral hanging for society door arches & entrance.',
+        quote: "Dwar par lagaiye, ghar mein sakaratmak urja aayegi!"
+      },
+      {
+        id: 'rangoli_powder',
+        name: 'Gulal & Rangoli Color Pack',
+        hindiName: 'चमकीले रंगोली के रंग',
+        category: 'decor',
+        price: 25,
+        icon: '🎨',
+        desc: 'Vivid powders for intricate floral doorstep art in the society wing.',
+        quote: "Madhavi Bhabhi aur Daya Bhabhi jaisi khubsoorat rangoli banaiye!"
+      }
     ];
   }
 
@@ -122,6 +263,17 @@ class DiwaliShopManager {
     const earnBtn = document.getElementById('quickEarnCoinsBtn');
     if (earnBtn) {
       earnBtn.addEventListener('click', () => {
+        const miniGamesModal = document.getElementById('miniGamesModal');
+        if (miniGamesModal) miniGamesModal.classList.remove('hidden');
+      });
+    }
+
+    // Abdul Shop Modal Earn Coins button
+    const shopEarnBtn = document.getElementById('shopEarnCoinsBtn');
+    if (shopEarnBtn) {
+      shopEarnBtn.addEventListener('click', () => {
+        const modal = document.getElementById('shopModal');
+        if (modal) modal.classList.add('hidden');
         const miniGamesModal = document.getElementById('miniGamesModal');
         if (miniGamesModal) miniGamesModal.classList.remove('hidden');
       });
@@ -245,12 +397,26 @@ class DiwaliShopManager {
     return true;
   }
 
-  openShopModal() {
+  openShopModal(preferredCategory) {
     this.updateHUD();
-    this.renderShopGrid('fireworks');
+    const activeTab = document.querySelector('.shop-tab.active');
+    const cat = preferredCategory || (activeTab ? activeTab.getAttribute('data-category') : 'soda_sweets');
+    
+    // Ensure tab button visual state matches
+    document.querySelectorAll('.shop-tab').forEach(t => {
+      if (t.getAttribute('data-category') === cat) {
+        t.classList.add('active');
+      } else {
+        t.classList.remove('active');
+      }
+    });
+
+    this.renderShopGrid(cat);
     const modal = document.getElementById('shopModal');
     if (modal) modal.classList.remove('hidden');
-    window.festiveAudio.playDiyaChime();
+    if (window.festiveAudio && window.festiveAudio.playDiyaChime) {
+      window.festiveAudio.playDiyaChime();
+    }
   }
 
   renderShopGrid(category) {
@@ -258,16 +424,39 @@ class DiwaliShopManager {
     if (!grid) return;
     grid.innerHTML = '';
 
-    const items = this.catalog.filter(i => i.category === category);
+    const activeCat = category || 'soda_sweets';
+    const items = this.catalog.filter(i => i.category === activeCat);
+    
     items.forEach(item => {
+      const owned = this.inventory[item.id];
+      const ownedText = (item.id === 'phuljhadi') ? '∞ Starter' : (owned !== undefined ? `${owned} owned` : '0 owned');
+
       const card = document.createElement('div');
       card.className = 'shop-item-card';
+      card.setAttribute('data-card-id', item.id);
       card.innerHTML = `
-        <div class="item-img">${item.icon}</div>
-        <div class="item-title">${item.name}</div>
-        <div class="item-desc">${item.desc}</div>
-        <div class="item-cost"><span>${item.price}</span> 🪙</div>
-        <button class="btn-buy" data-id="${item.id}">Buy Item</button>
+        <div class="item-img-wrap">
+          <span class="item-icon">${item.icon}</span>
+        </div>
+        <div class="item-meta">
+          <h3 class="item-title">${item.name}</h3>
+          ${item.hindiName ? `<span class="item-hindi-title">${item.hindiName}</span>` : ''}
+          <p class="item-desc">${item.desc}</p>
+        </div>
+        <div class="item-status-row">
+          <span class="item-owned-pill">
+            <span class="owned-dot"></span>
+            <span class="item-owned-count">${ownedText}</span>
+          </span>
+          <div class="item-cost">
+            <span class="cost-val">${item.price}</span>
+            <span class="cost-coin">🪙</span>
+          </div>
+        </div>
+        <button class="btn-buy" data-id="${item.id}" aria-label="Buy ${item.name}">
+          <span class="btn-buy-icon">🛒</span>
+          <span class="btn-buy-label">Buy (+3)</span>
+        </button>
       `;
 
       const buyBtn = card.querySelector('.btn-buy');
@@ -279,34 +468,75 @@ class DiwaliShopManager {
 
   buyItem(item) {
     if (this.coins < item.price) {
-      alert(`You need ${item.price} coins for ${item.name}! Play festival mini-games to earn more coins.`);
+      const shortfall = item.price - this.coins;
+      const msg = `Arre Bhai, ${shortfall} coins kam pad gaye! ${item.name} lene ke liye festival mini-games khelkar coins le aaiye!`;
+      
+      const quoteEl = document.getElementById('abdulShopQuote');
+      if (quoteEl) {
+        quoteEl.textContent = `“Abdul: Arre Bhai, ${shortfall} coins kam pad gaye! Thode mini-games khelkar coins kamayiye!”`;
+      }
+
+      if (window.diwaliSocietyInteractions && typeof window.diwaliSocietyInteractions.showToast === 'function') {
+        window.diwaliSocietyInteractions.showToast(`🪙 Abdul: "${msg}"`, 4000);
+      } else {
+        alert(msg);
+      }
+
+      if (window.festiveAudio && window.festiveAudio.playDholakBeat) {
+        window.festiveAudio.playDholakBeat();
+      }
       return;
     }
 
     this.coins -= item.price;
-    if (this.inventory[item.id] !== undefined) {
-      this.inventory[item.id] = (this.inventory[item.id] || 0) + 3;
-    }
+    const addCount = (item.id === 'phuljhadi') ? 0 : 3;
+    this.inventory[item.id] = (this.inventory[item.id] !== undefined ? this.inventory[item.id] : 0) + addCount;
 
     this.saveInventory();
     this.updateHUD();
-    window.festiveAudio.playCoinChime();
+    
+    if (window.festiveAudio && window.festiveAudio.playCoinChime) {
+      window.festiveAudio.playCoinChime();
+    }
+
+    // Update Abdul quote banner in modal with custom festive dialogue
+    const quoteEl = document.getElementById('abdulShopQuote');
+    if (quoteEl && item.quote) {
+      quoteEl.textContent = `“Abdul: ${item.quote} Shubh Deepawali!”`;
+    }
+
+    // Show floating toast in society
+    if (window.diwaliSocietyInteractions && typeof window.diwaliSocietyInteractions.showToast === 'function') {
+      const toastText = item.quote 
+        ? `🏪 Abdul: "${item.quote}" (+${addCount} added to inventory)`
+        : `🏪 Abdul: "Yeh lijiye ${item.name}! Shubh Deepawali!" (+${addCount} added)`;
+      window.diwaliSocietyInteractions.showToast(toastText, 3500);
+    }
 
     // Notify Diwali Night Mission
-    if (window.diwaliMission) {
+    if (window.diwaliMission && typeof window.diwaliMission.onItemPurchased === 'function') {
       window.diwaliMission.onItemPurchased(item);
     }
 
-    // Visual confirmation
-    const btn = document.querySelector(`[data-id="${item.id}"]`);
-    if (btn) {
-      const origText = btn.textContent;
-      btn.textContent = '✓ Purchased!';
-      btn.style.background = '#10b981';
-      setTimeout(() => {
-        btn.textContent = origText;
-        btn.style.background = '';
-      }, 1400);
+    // Visual button & card update confirmation
+    const card = document.querySelector(`.shop-item-card[data-card-id="${item.id}"]`);
+    if (card) {
+      const ownedCountEl = card.querySelector('.item-owned-count');
+      if (ownedCountEl) {
+        const owned = this.inventory[item.id];
+        ownedCountEl.textContent = (item.id === 'phuljhadi') ? '∞ Starter' : `${owned} owned`;
+      }
+
+      const btn = card.querySelector('.btn-buy');
+      if (btn) {
+        const origHtml = btn.innerHTML;
+        btn.innerHTML = '✓ Khareed Liya!';
+        btn.classList.add('purchased');
+        setTimeout(() => {
+          btn.innerHTML = origHtml;
+          btn.classList.remove('purchased');
+        }, 1200);
+      }
     }
   }
 }

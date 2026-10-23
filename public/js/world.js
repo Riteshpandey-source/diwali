@@ -128,8 +128,8 @@ class DiwaliWorld {
     this.stalls = [
       {
         id: 'bazaar_stall',
-        name: 'Shubh Deepawali Bazaar (Shop)',
-        sub: 'Sweets, Diyas & Virtual Fireworks',
+        name: "Abdul's All-in-One Store (Shop)",
+        sub: 'Gokuldham Soda, Mithai, Diye & Patakhe',
         x: 1290,
         y: 650,
         width: 240,
@@ -300,7 +300,7 @@ class DiwaliWorld {
             type: 'shop',
             id: s.id,
             name: s.name,
-            prompt: `Press [E] to Open Diwali Bazaar Shop`
+            prompt: `Press [E] to Visit Abdul's All-in-One Store`
           };
         } else if (s.type === 'minigame_rangoli') {
           return {

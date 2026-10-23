@@ -1614,8 +1614,8 @@ class DiwaliWorld3D {
     const signW = w * 0.68;
     const signH = 1.0;
     const signboard = this.createShopSignboard(
-      isShop ? 'SHREE GANESH DIWALI BAZAAR' : 'RANGOLI & UTSAV KENDRA',
-      isShop ? 'Crackers, Diyas, Sweets & Gifts' : 'Colors, Stencils & Festive Decor',
+      isShop ? "ABDUL'S ALL-IN-ONE STORE" : 'RANGOLI & UTSAV KENDRA',
+      isShop ? 'Gokuldham Soda, Mithai & Patakhe' : 'Colors, Stencils & Festive Decor',
       signW, signH, isShop
     );
     signboard.position.set(0, h + plinthH - 1.1, counterZ + 0.45);
@@ -1745,7 +1745,7 @@ class DiwaliWorld3D {
       x: 1330, // 2D coords right at the counter
       z: isShop ? 700 : 860,
       radius: 65,
-      prompt: isShop ? 'Press [E] to Browse Diwali Bazaar Shop' : 'Press [E] to Play Rangoli Artisan Minigame'
+      prompt: isShop ? "Press [E] to Visit Abdul's All-in-One Store" : 'Press [E] to Play Rangoli Artisan Minigame'
     });
 
     return group;

@@ -745,36 +745,60 @@
   <!-- MODALS & POPUPS                                           -->
   <!-- ========================================================= -->
 
-  <!-- 1. FESTIVAL BAZAAR SHOP MODAL -->
+  <!-- 1. ABDUL'S ALL-IN-ONE STORE (TMKOC GOKULDHAM SHOP) -->
   <div id="shopModal" class="modal-backdrop hidden">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <span class="title-icon">🎪</span>
-          <h2>Shubh Deepawali Bazaar</h2>
+    <div class="modal-dialog abdul-shop-dialog">
+      <div class="modal-header abdul-shop-header">
+        <div class="abdul-brand-group">
+          <div class="abdul-avatar-badge" title="Abdul Kaka • Shopkeeper">
+            <span class="abdul-icon">🏪</span>
+            <span class="abdul-status-dot" title="Open 24x7 for Gokuldham"></span>
+          </div>
+          <div class="abdul-title-meta">
+            <span class="abdul-shop-tag">GOKULDHAM SOCIETY • ALL-IN-ONE STORE</span>
+            <h2 class="abdul-shop-title">Abdul's All-in-One Store <span class="abdul-hindi-name">(अब्दुल की दुकान)</span></h2>
+            <p class="abdul-shop-sub">Special Chilled Soda, Mithai, Diye, Patakhe & Puja Samagri!</p>
+          </div>
         </div>
-        <div class="shop-balance-pill">
-          <span>Coins: </span>
-          <strong id="shopModalCoins">150</strong> 🪙
+        <div class="abdul-header-right">
+          <div class="shop-balance-pill" title="Your Festival Coin Balance">
+            <span class="coin-icon">🪙</span>
+            <span class="coin-val-wrap"><strong id="shopModalCoins">150</strong> <small>Coins</small></span>
+          </div>
+          <button class="modal-close-btn" data-close="shopModal" aria-label="Close Shop">&times;</button>
         </div>
-        <button class="modal-close-btn" data-close="shopModal">&times;</button>
       </div>
 
-      <div class="shop-tabs">
-        <button class="shop-tab active" data-category="fireworks">🎆 Fireworks & Sparklers</button>
-        <button class="shop-tab" data-category="lights">💡 Lights & Diyas</button>
-        <button class="shop-tab" data-category="decor">🌸 Festive Decor</button>
+      <!-- Abdul's Character Dialogue Greeting Banner -->
+      <div class="abdul-greeting-banner">
+        <div class="abdul-quote-icon">🥤</div>
+        <div class="abdul-quote-body">
+          <span class="abdul-speaker-tag">Abdul Kaka:</span>
+          <p id="abdulShopQuote" class="abdul-quote-text">“Namaste Jethalal Bhai, Mehta Sahab, Bapuji! Happy Diwali! Aaj ekdum chilled Masala Soda, taaza Peda, Kaju Katli, Diye aur shaandar Patakhe ready hain!”</p>
+        </div>
       </div>
 
-      <div class="modal-body">
-        <div id="shopItemsGrid" class="shop-items-grid">
+      <div class="shop-tabs abdul-tabs" role="tablist">
+        <button class="shop-tab active" data-category="soda_sweets">🥤 Abdul's Soda & Sweets (सोडा-मिठाई)</button>
+        <button class="shop-tab" data-category="fireworks">🎆 Patakhe & Crackers (पटाखे)</button>
+        <button class="shop-tab" data-category="lights">🪔 Diyas & Lights (दीये-लाइट्स)</button>
+        <button class="shop-tab" data-category="decor">🌸 Puja & Decor (पूजा-सजावट)</button>
+      </div>
+
+      <div class="modal-body abdul-shop-body">
+        <div id="shopItemsGrid" class="shop-items-grid abdul-items-grid">
           <!-- Dynamic item cards will be populated here -->
         </div>
       </div>
 
-      <div class="modal-footer">
-        <p class="safe-notice">🛡️ 100% Virtual in-game festive items. No real currency or real explosives.</p>
-        <button class="btn btn-secondary" data-close="shopModal">Done Shopping</button>
+      <div class="modal-footer abdul-shop-footer">
+        <div class="abdul-footer-notice">
+          <span class="safe-notice">🛡️ 100% Virtual celebratory items. Gokuldham Society celebration!</span>
+        </div>
+        <div class="abdul-footer-actions">
+          <button id="shopEarnCoinsBtn" class="btn btn-earn-quick" title="Play festival mini-games to earn coins">🪙 Earn Coins</button>
+          <button class="btn btn-secondary" data-close="shopModal">Done Shopping</button>
+        </div>
       </div>
     </div>
   </div>

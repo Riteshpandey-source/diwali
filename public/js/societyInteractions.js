@@ -57,6 +57,7 @@ class SocietyInteractions3D {
             <button class="dialogue-btn" data-topic="aboutDiwali">🪔 Taiyari ke baare mein poochna</button>
             <button class="dialogue-btn" data-topic="aboutSociety">🏠 Society ke baare mein poochna</button>
             <button class="dialogue-btn" data-topic="taskNotice">📋 Aaj ke karyakram ki jaankari</button>
+            <button class="dialogue-btn hidden" id="dialogueShopBtn" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #fff; font-weight: 700; border: 1px solid #34d399;">🏪 Abdul Ki Dukan (Visit Shop & Buy Items)</button>
           </div>
         </div>
       </div>
@@ -71,7 +72,17 @@ class SocietyInteractions3D {
       });
     }
 
-    modal.querySelectorAll('.dialogue-btn').forEach(btn => {
+    const shopBtn = modal.querySelector('#dialogueShopBtn');
+    if (shopBtn) {
+      shopBtn.addEventListener('click', () => {
+        this.closeDialogue();
+        if (window.diwaliShop) {
+          window.diwaliShop.openShopModal();
+        }
+      });
+    }
+
+    modal.querySelectorAll('.dialogue-btn[data-topic]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const topic = e.target.getAttribute('data-topic');
         this.handleDialogueTopic(topic);
@@ -111,6 +122,15 @@ class SocietyInteractions3D {
       priest: '🕉️'
     };
     avatarEl.textContent = icons[char.role] || '🪔';
+
+    const shopBtn = modal.querySelector('#dialogueShopBtn');
+    if (shopBtn) {
+      if (char.role === 'shopkeeper' || char.id === 'abdul_kaka') {
+        shopBtn.classList.remove('hidden');
+      } else {
+        shopBtn.classList.add('hidden');
+      }
+    }
 
     modal.classList.remove('hidden');
 
