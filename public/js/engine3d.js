@@ -43,6 +43,9 @@ class DiwaliEngine3D {
 
     // Session Entrance Cinematic Intro flag
     this._hasPlayedEntranceIntro = false;
+
+    // Abdul's Shop Wayfinder discovery state
+    this.abdulShopDiscovered = false;
   }
 
   init() {
@@ -867,6 +870,9 @@ class DiwaliEngine3D {
       this.currentInteractive = this.world3D.getInteractiveTarget(px, py, this.player3D.x, this.player3D.z);
       this.updateInteractionPrompt();
 
+      // Update Abdul's Shop Wayfinder Directional Indicator
+      this.updateAbdulShopIndicator();
+
       // Update Society Ground Theater proximity for location badge & bottom banner
       if (this.theaterModal) {
         this.theaterModal.updateProximity(this.player3D.x, this.player3D.z);
@@ -1044,12 +1050,48 @@ class DiwaliEngine3D {
     }, duration * 1000);
   }
 
-  showToastNotice(msg) {
+  updateAbdulShopIndicator() {
+    const wayfinder = document.getElementById('abdulShopWayfinder');
+    if (!wayfinder) return;
+
+    if (this.abdulShopDiscovered) {
+      if (!wayfinder.classList.contains('hidden')) {
+        wayfinder.classList.add('hidden');
+      }
+      return;
+    }
+
+    if (!this.player3D) return;
+
+    // Abdul's shop front & counter is at 3D coords: x = -48.0, z = -9.0
+    const dx = this.player3D.x - (-48.0);
+    const dz = this.player3D.z - (-9.0);
+    const distToShop = Math.hypot(dx, dz);
+
+    // If player has approached near Abdul's shop (< 8.5m), mark discovered and auto-dismiss
+    if (distToShop <= 8.5) {
+      this.abdulShopDiscovered = true;
+      wayfinder.classList.add('hidden');
+      return;
+    }
+
+    // Show indicator when player is entering or in the entrance gate courtyard zone
+    // Player spawn is x: -52, gate is at x: -48, courtyard entrance extends to x: -18
+    const px = this.player3D.x;
+    if (px >= -68 && px <= -18) {
+      wayfinder.classList.remove('hidden');
+    } else {
+      wayfinder.classList.add('hidden');
+    }
+  }
+
+  showToastNotice(msg, duration = 3200) {
     const toast = document.getElementById('audioNotice');
     if (toast) {
       toast.innerHTML = `<span>${msg}</span>`;
       toast.classList.remove('hidden');
-      setTimeout(() => toast.classList.add('hidden'), 4500);
+      if (this._toastTimeout) clearTimeout(this._toastTimeout);
+      this._toastTimeout = setTimeout(() => toast.classList.add('hidden'), duration);
     }
   }
 
@@ -1083,6 +1125,13 @@ class DiwaliEngine3D {
     bgCtx.beginPath();
     bgCtx.arc(650 * scaleX, 580 * scaleY, 15, 0, Math.PI * 2);
     bgCtx.fill();
+
+    // Abdul's Shop (Prominent Emerald & Gold shop stall behind Main Gate)
+    bgCtx.fillStyle = '#059669';
+    bgCtx.fillRect(390 * scaleX, 500 * scaleY, 40 * scaleX, 36 * scaleY);
+    bgCtx.strokeStyle = '#f59e0b';
+    bgCtx.lineWidth = 1.5;
+    bgCtx.strokeRect(390 * scaleX, 500 * scaleY, 40 * scaleX, 36 * scaleY);
 
     // Houses, Temple, Stalls
     if (window.diwaliWorld) {

@@ -406,30 +406,328 @@ class DiwaliSocietyArchitecture3D {
     gateGroup.add(welcomeRangoli);
 
     // -------------------------------------------------------------
-    // F. SECURITY GATEHOUSE CABIN (Positioned safely off-road at z = -11.5)
+    // F. ABDUL KI DUKAAN (ALL-IN-ONE GENERAL STORE) AT ENTRANCE GATE
+    // Iconic Gokuldham shop located right beside the main entrance (z = -11.5)
     // -------------------------------------------------------------
+    const shopGroup = new THREE.Group();
+    shopGroup.name = 'AbdulKiDukaan';
+
+    // 1. Base Shop Cabin & Heritage Plinth
     const cabin = new THREE.Mesh(
       new THREE.BoxGeometry(4.0, 3.5, 4.0),
       this.materials.creamWall
     );
     cabin.position.set(0, 1.75, -11.5);
     cabin.castShadow = true;
-    gateGroup.add(cabin);
+    cabin.receiveShadow = true;
+    shopGroup.add(cabin);
 
+    // Terracotta base foundation plinth
+    const cabinPlinth = new THREE.Mesh(
+      new THREE.BoxGeometry(4.25, 0.4, 4.25),
+      this.materials.terracottaWall
+    );
+    cabinPlinth.position.set(0, 0.2, -11.5);
+    cabinPlinth.receiveShadow = true;
+    shopGroup.add(cabinPlinth);
+
+    // Sloped Heritage Roof
     const cabinRoof = new THREE.Mesh(
-      new THREE.BoxGeometry(4.6, 0.5, 4.6),
+      new THREE.BoxGeometry(4.6, 0.55, 4.6),
       this.materials.roofTile
     );
     cabinRoof.position.set(0, 3.75, -11.5);
-    gateGroup.add(cabinRoof);
+    cabinRoof.castShadow = true;
+    shopGroup.add(cabinRoof);
 
-    // Window on cabin facing road
-    const cabinWin = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.6, 1.2),
+    // 2. High-Resolution "ABDUL KI DUKAAN" Illuminated Signboard Canvas Texture
+    const signCanvas = document.createElement('canvas');
+    signCanvas.width = 1024;
+    signCanvas.height = 256;
+    const sctx = signCanvas.getContext('2d');
+
+    // Rich Emerald Green Lacquer Ground with Golden Borders
+    sctx.fillStyle = '#064e3b';
+    sctx.fillRect(0, 0, 1024, 256);
+
+    const sGrad = sctx.createLinearGradient(0, 0, 1024, 256);
+    sGrad.addColorStop(0, '#047857');
+    sGrad.addColorStop(0.5, '#065f46');
+    sGrad.addColorStop(1, '#022c22');
+    sctx.fillStyle = sGrad;
+    sctx.fillRect(8, 8, 1008, 240);
+
+    // Double Ornate Gold Filigree Border
+    sctx.strokeStyle = '#fbbf24';
+    sctx.lineWidth = 10;
+    sctx.strokeRect(12, 12, 1000, 232);
+
+    sctx.strokeStyle = '#f59e0b';
+    sctx.lineWidth = 4;
+    sctx.strokeRect(24, 24, 976, 208);
+
+    // Top Line: Sanskrit / Hindi Auspicious Blessing
+    sctx.fillStyle = '#fde047';
+    sctx.font = 'bold 28px "Tiro Devanagari Sanskrit", serif, sans-serif';
+    sctx.textAlign = 'center';
+    sctx.fillText('॥ ऑल इन वन जनरल स्टोर • गोकुलधाम ॥', 512, 60);
+
+    // Main Inscription: "ABDUL KI DUKAAN"
+    sctx.font = '900 66px "Playfair Display", Georgia, serif';
+    sctx.fillStyle = '#1e1b4b'; // Drop shadow
+    sctx.fillText('ABDUL KI DUKAAN', 514, 138);
+
+    const goldTextGrad = sctx.createLinearGradient(0, 85, 0, 145);
+    goldTextGrad.addColorStop(0, '#ffffff');
+    goldTextGrad.addColorStop(0.2, '#fef08a');
+    goldTextGrad.addColorStop(0.7, '#facc15');
+    goldTextGrad.addColorStop(1, '#d97706');
+    sctx.fillStyle = goldTextGrad;
+    sctx.fillText('ABDUL KI DUKAAN', 512, 136);
+
+    // Sub-Label: Soda, Sweets & Crackers
+    sctx.fillStyle = '#fef08a';
+    sctx.font = 'bold 24px "Plus Jakarta Sans", sans-serif';
+    sctx.fillText('🥤 CHILLED SODA • MITHAI • PATAKHE • DIYAS 🪔', 512, 196);
+
+    const abdulSignTex = new THREE.CanvasTexture(signCanvas);
+    abdulSignTex.anisotropy = 4;
+
+    const abdulSignMat = new THREE.MeshStandardMaterial({
+      map: abdulSignTex,
+      roughness: 0.35,
+      metalness: 0.15,
+      emissive: 0x064e3b,
+      emissiveIntensity: 0.42
+    });
+
+    // 2a. Primary South-Facing Sign (Mounted above shop front facing road/courtyard)
+    const signBoardSouth = new THREE.Mesh(
+      new THREE.BoxGeometry(3.8, 1.1, 0.12),
+      this.materials.darkWood
+    );
+    signBoardSouth.position.set(0, 4.45, -9.28);
+    shopGroup.add(signBoardSouth);
+
+    const signFaceSouth = new THREE.Mesh(new THREE.PlaneGeometry(3.68, 0.98), abdulSignMat);
+    signFaceSouth.position.set(0, 4.45, -9.21);
+    shopGroup.add(signFaceSouth);
+
+    // Decorative Kalash atop sign
+    const signKalash = new THREE.Mesh(
+      new THREE.ConeGeometry(0.22, 0.5, 8),
+      this.materials.templeGoldKalash
+    );
+    signKalash.position.set(0, 5.25, -9.28);
+    shopGroup.add(signKalash);
+
+    // 2b. West-Facing Approach Sign (Angled so player approaching from outside gate sees it directly)
+    const signBoardWest = new THREE.Mesh(
+      new THREE.BoxGeometry(0.12, 0.95, 2.6),
+      this.materials.darkWood
+    );
+    signBoardWest.position.set(-2.06, 4.45, -10.5);
+    shopGroup.add(signBoardWest);
+
+    const signFaceWest = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 0.88), abdulSignMat);
+    signFaceWest.position.set(-2.13, 4.45, -10.5);
+    signFaceWest.rotation.y = -Math.PI / 2;
+    shopGroup.add(signFaceWest);
+
+    // 2c. Elevated 45° Rooftop Marquee Beacon (Faces SW, visible from outside & inside gate)
+    const marqueeAngled = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.85), abdulSignMat);
+    marqueeAngled.position.set(-0.75, 4.9, -9.9);
+    marqueeAngled.rotation.y = -Math.PI / 6; // 30° angled towards incoming player path
+    shopGroup.add(marqueeAngled);
+
+    // 3. Sloped Striped Awning / Canopy (Chhajja)
+    const awningW = 3.6;
+    const awningD = 1.35;
+    const awningCanvas = document.createElement('canvas');
+    awningCanvas.width = 512;
+    awningCanvas.height = 256;
+    const actx = awningCanvas.getContext('2d');
+    // TMKOC Green and Cream stripes
+    const stripeW = 512 / 8;
+    for (let i = 0; i < 8; i++) {
+      actx.fillStyle = (i % 2 === 0) ? '#047857' : '#fef3c7';
+      actx.fillRect(i * stripeW, 0, stripeW, 256);
+    }
+    const awningTex = new THREE.CanvasTexture(awningCanvas);
+    awningTex.wrapS = THREE.RepeatWrapping;
+    awningTex.repeat.set(2, 1);
+
+    const awningMat = new THREE.MeshStandardMaterial({
+      map: awningTex,
+      roughness: 0.8,
+      side: THREE.DoubleSide
+    });
+
+    const awningMesh = new THREE.Mesh(new THREE.PlaneGeometry(awningW, awningD), awningMat);
+    awningMesh.position.set(0, 2.85, -8.82);
+    awningMesh.rotation.x = Math.PI / 4.8; // ~37° downward slope
+    shopGroup.add(awningMesh);
+
+    // Awning Support Rods (Wrought Iron / Brass)
+    [-awningW / 2 + 0.15, awningW / 2 - 0.15].forEach(rx => {
+      const rod = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.03, 0.03, 1.4, 6),
+        this.materials.lampBrass
+      );
+      rod.position.set(rx, 2.7, -8.85);
+      rod.rotation.x = Math.PI / 4.8;
+      shopGroup.add(rod);
+    });
+
+    // Marigold Garland Draped on Awning Front
+    const valanceY = 2.42;
+    const valanceZ = -8.25;
+    for (let gx = -awningW / 2 + 0.2; gx <= awningW / 2 - 0.2; gx += 0.25) {
+      const gBead = new THREE.Mesh(
+        new THREE.SphereGeometry(0.08, 6, 6),
+        Math.random() > 0.5 ? this.materials.marigoldOrange : this.materials.marigoldYellow
+      );
+      gBead.position.set(gx, valanceY, valanceZ);
+      shopGroup.add(gBead);
+    }
+
+    // 4. Shop Front Opening, Counter & Shelves
+    // Service bay recess
+    const bayRecess = new THREE.Mesh(
+      new THREE.BoxGeometry(3.3, 2.1, 0.2),
+      this.materials.darkWood
+    );
+    bayRecess.position.set(0, 1.95, -9.48);
+    shopGroup.add(bayRecess);
+
+    // Warm Interior Glow behind counter
+    const interiorGlow = new THREE.Mesh(
+      new THREE.PlaneGeometry(3.1, 1.8),
       this.materials.windowGlow
     );
-    cabinWin.position.set(0, 2.0, -9.45);
-    gateGroup.add(cabinWin);
+    interiorGlow.position.set(0, 2.05, -9.44);
+    shopGroup.add(interiorGlow);
+
+    // Sturdy Teak Wood Service Counter
+    const counterBody = new THREE.Mesh(
+      new THREE.BoxGeometry(3.4, 1.0, 0.75),
+      this.materials.darkWood
+    );
+    counterBody.position.set(0, 0.5, -9.05);
+    counterBody.castShadow = true;
+    counterBody.receiveShadow = true;
+    shopGroup.add(counterBody);
+
+    const counterTop = new THREE.Mesh(
+      new THREE.BoxGeometry(3.6, 0.1, 0.9),
+      this.materials.goldTrim
+    );
+    counterTop.position.set(0, 1.05, -9.05);
+    shopGroup.add(counterTop);
+
+    // 5. Recognizable Shop Details on Counter
+    // (a) Row of Abdul's Famous Soda Bottles (Green Jeera, Yellow Nimbu, Red Rose)
+    const bottleColors = [
+      0x10b981, 0x10b981, // Masala Jeera Soda
+      0xfacc15, 0xfacc15, // Fresh Nimbu Lemon Soda
+      0xef4444, 0xef4444, // Sweet Rose Sharbat
+      0x10b981, 0xfacc15
+    ];
+    bottleColors.forEach((bColor, bi) => {
+      const bottleMat = new THREE.MeshStandardMaterial({
+        color: bColor,
+        roughness: 0.2,
+        metalness: 0.1,
+        transparent: true,
+        opacity: 0.88
+      });
+      const bottle = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.045, 0.055, 0.28, 8),
+        bottleMat
+      );
+      const bx = -1.2 + bi * 0.18;
+      bottle.position.set(bx, 1.24, -9.0);
+      shopGroup.add(bottle);
+
+      const cap = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.02, 0.02, 0.04, 6),
+        this.materials.lampBrass
+      );
+      cap.position.set(bx, 1.4, -9.0);
+      shopGroup.add(cap);
+    });
+
+    // (b) Sweet & Candy Glass Jars with Brass Lids
+    [-1.4, 1.0, 1.35].forEach(jx => {
+      const jarMat = new THREE.MeshStandardMaterial({
+        color: 0xfef3c7,
+        roughness: 0.15,
+        transparent: true,
+        opacity: 0.85
+      });
+      const jar = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.1, 0.1, 0.32, 8),
+        jarMat
+      );
+      jar.position.set(jx, 1.26, -9.1);
+      shopGroup.add(jar);
+
+      const jarLid = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.11, 0.11, 0.06, 8),
+        this.materials.lampBrass
+      );
+      jarLid.position.set(jx, 1.44, -9.1);
+      shopGroup.add(jarLid);
+    });
+
+    // (c) Stack of Newspapers ("Gokuldham Samachar")
+    const newspaper = new THREE.Mesh(
+      new THREE.BoxGeometry(0.35, 0.12, 0.28),
+      this.materials.curbStone
+    );
+    newspaper.position.set(0.65, 1.16, -9.05);
+    shopGroup.add(newspaper);
+
+    // (d) Pair of Earthen Clay Diyas on Counter Ends
+    [-1.6, 1.6].forEach(dx => {
+      const diya = this.createClayDiya(dx, 1.1, -9.05);
+      shopGroup.add(diya);
+    });
+
+    // 6. Cozy Golden Shop Lantern & Point Light Under Awning
+    const hangingLantern = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.24, 0),
+      this.materials.windowGlow
+    );
+    hangingLantern.position.set(0, 2.38, -8.65);
+    shopGroup.add(hangingLantern);
+
+    const lanternChain = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.015, 0.015, 0.45, 6),
+      this.materials.lampBrass
+    );
+    lanternChain.position.set(0, 2.65, -8.65);
+    shopGroup.add(lanternChain);
+
+    const shopPointLight = new THREE.PointLight(0xffb703, 1.9, 9.5);
+    shopPointLight.position.set(0, 2.35, -8.65);
+    shopGroup.add(shopPointLight);
+
+    gateGroup.add(shopGroup);
+
+    // Register Direct Shop Counter Interaction Target in World3D
+    if (this.world3D && this.world3D.interactiveTargets) {
+      this.world3D.interactiveTargets.push({
+        id: 'abdul_shop_gate_counter',
+        name: "Abdul's All-in-One Store (अब्दुल की दुकान)",
+        type: 'shop',
+        is3D: true,
+        x: -48.0,
+        z: -9.0,
+        radius: 4.8,
+        prompt: "Press [E] to Visit Abdul's All-in-One Store"
+      });
+    }
 
     // -------------------------------------------------------------
     // G. COLLIDERS (Left Pillar, Right Pillar, and Cabin ONLY)

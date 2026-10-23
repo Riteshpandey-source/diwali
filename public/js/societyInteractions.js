@@ -324,6 +324,26 @@ class SocietyInteractions3D {
       this.isSocietyEventActive = false;
     }, 22000);
   }
+
+  // General Toast Notification Handler
+  showToast(msg, duration = 3200) {
+    if (this.engine3D && typeof this.engine3D.showToastNotice === 'function') {
+      this.engine3D.showToastNotice(msg, duration);
+      return;
+    }
+    const audioNotice = document.getElementById('audioNotice');
+    if (audioNotice) {
+      audioNotice.innerHTML = `<span>${msg}</span>`;
+      audioNotice.classList.remove('hidden');
+      setTimeout(() => audioNotice.classList.add('hidden'), duration);
+      return;
+    }
+    const toast = document.createElement('div');
+    toast.className = 'society-toast-notification';
+    toast.innerHTML = `<span>${msg}</span>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), duration);
+  }
 }
 
 window.SocietyInteractions3D = SocietyInteractions3D;

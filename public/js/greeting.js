@@ -224,10 +224,10 @@ class GreetingController {
         window.diwaliEngine.start();
       }
 
-      // Welcome message toast during gate banner reveal
+      // Welcome message toast during gate banner reveal (concise duration to prevent obstructing scenery)
       setTimeout(() => {
         if (window.diwaliSocietyInteractions) {
-          window.diwaliSocietyInteractions.showToast('✨ Welcome to Gokuldham Society! Shubh Deepawali! ✨', 4500);
+          window.diwaliSocietyInteractions.showToast('✨ Welcome to Gokuldham Society! Shubh Deepawali! ✨', 3200);
         }
       }, 1000);
 

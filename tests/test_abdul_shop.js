@@ -79,6 +79,36 @@ test("world.js and world3d.js prompts reference Abdul's All-in-One Store", () =>
   assert(world3dJs.includes("Press [E] to Visit Abdul's All-in-One Store"), "world3d.js prompt not updated");
 });
 
+// 5. 3D Architecture, Illuminated Signage & Entrance Wayfinder
+const arch3dJs = fs.readFileSync('public/js/societyArchitecture3d.js', 'utf8');
+const engine3dJs = fs.readFileSync('public/js/engine3d.js', 'utf8');
+const player3dJs = fs.readFileSync('public/js/player3d.js', 'utf8');
+
+test("societyArchitecture3d.js features illuminated ABDUL KI DUKAAN signage, striped awning, wooden counter & lanterns", () => {
+  assert(arch3dJs.includes("ABDUL KI DUKAAN"), "Missing ABDUL KI DUKAAN illuminated sign text");
+  assert(arch3dJs.includes("ऑल इन वन जनरल स्टोर • गोकुलधाम"), "Missing Hindi subtitle on Dukaan sign");
+  assert(arch3dJs.includes("abdulSignTex"), "Missing abdulSignTex texture");
+  assert(arch3dJs.includes("abdul_shop_gate_counter"), "Missing interactive gate counter target");
+  assert(arch3dJs.includes("PointLight"), "Missing warm lantern PointLight on Abdul shop");
+});
+
+test("index.html and style.css include the tasteful abdulShopWayfinder directional indicator", () => {
+  assert(html.includes('id="abdulShopWayfinder"'), "Missing abdulShopWayfinder in index.html");
+  assert(html.includes("Abdul Ki Dukaan"), "Missing wayfinder title");
+  assert(css.includes(".abdul-wayfinder"), "Missing .abdul-wayfinder styles");
+  assert(css.includes(".wayfinder-badge"), "Missing .wayfinder-badge styles");
+});
+
+test("engine3d.js updates wayfinder indicator and automatically dismisses it upon approaching shop", () => {
+  assert(engine3dJs.includes("abdulShopDiscovered"), "Missing abdulShopDiscovered state");
+  assert(engine3dJs.includes("updateAbdulShopIndicator"), "Missing updateAbdulShopIndicator method");
+  assert(engine3dJs.includes("abdulShopWayfinder"), "engine3d.js does not reference abdulShopWayfinder");
+});
+
+test("player3d.js orients cameraYaw subtly towards Abdul's shop upon spawn", () => {
+  assert(player3dJs.includes("-Math.PI / 2 - 0.08"), "cameraYaw subtle left-framing missing");
+});
+
 console.log('====================================================');
 console.log(`TOTAL ABDUL SHOP TESTS: ${passCount} | PASSED: ${passCount} | FAILED: 0`);
 console.log('====================================================');

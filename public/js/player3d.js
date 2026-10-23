@@ -649,7 +649,7 @@ class DiwaliPlayer3D {
     this.cameraDistance = 6.2;
     this.cameraHeight = 2.3;
     this.cameraPitch = 0.15; // Low-to-mid elevation framing street, bazaar, temple & sky
-    this.cameraYaw = -Math.PI / 2; // Facing East through the gate
+    this.cameraYaw = -Math.PI / 2 - 0.08; // Facing East through the gate with subtle left-framing of Abdul's Dukaan
     this.cameraTarget = new THREE.Vector3();
     this.cameraPosition = new THREE.Vector3();
     this.cameraLerp = 0.095;

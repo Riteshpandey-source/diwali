@@ -414,6 +414,14 @@ class DiwaliShopManager {
     this.renderShopGrid(cat);
     const modal = document.getElementById('shopModal');
     if (modal) modal.classList.remove('hidden');
+
+    // Mark Abdul's shop as discovered and dismiss wayfinder indicator
+    if (window.diwaliEngine3D) {
+      window.diwaliEngine3D.abdulShopDiscovered = true;
+    }
+    const wayfinder = document.getElementById('abdulShopWayfinder');
+    if (wayfinder) wayfinder.classList.add('hidden');
+
     if (window.festiveAudio && window.festiveAudio.playDiyaChime) {
       window.festiveAudio.playDiyaChime();
     }
