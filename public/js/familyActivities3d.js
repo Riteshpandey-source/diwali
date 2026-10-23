@@ -224,7 +224,8 @@ class DiwaliFamilyActivities3D {
       name: 'Abdul Kaka (All-in-One Store)',
       role: 'shopkeeper',
       homeWp: 'entrance_gate',
-      x: -49.2,
+      x: -49.3,
+      y: 0.2,
       z: -11.5,
       rotation: -Math.PI / 2, // Facing West (-x) directly behind the counter towards players arriving outside the gate
       colors: { main: 0x047857, accent: 0xfbbf24, turban: 0x065f46, bottom: 0xf8fafc, skin: 0xc88f68 }

@@ -412,15 +412,55 @@ class DiwaliSocietyArchitecture3D {
     const shopGroup = new THREE.Group();
     shopGroup.name = 'AbdulKiDukaan';
 
-    // 1. Base Shop Cabin & Heritage Plinth
-    const cabin = new THREE.Mesh(
-      new THREE.BoxGeometry(4.0, 3.5, 4.0),
-      this.materials.creamWall
-    );
-    cabin.position.set(0, 1.75, -11.5);
-    cabin.castShadow = true;
-    cabin.receiveShadow = true;
-    shopGroup.add(cabin);
+    // 1. Base Shop Cabin (Hollow Authentically Framed Shop Structure with Open Service Front)
+    // Back Wall (East)
+    const wallEast = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3.5, 4.0), this.materials.creamWall);
+    wallEast.position.set(1.9, 1.75, -11.5);
+    wallEast.castShadow = true;
+    wallEast.receiveShadow = true;
+    shopGroup.add(wallEast);
+
+    // North Wall
+    const wallNorth = new THREE.Mesh(new THREE.BoxGeometry(3.8, 3.5, 0.2), this.materials.creamWall);
+    wallNorth.position.set(0, 1.75, -13.4);
+    wallNorth.castShadow = true;
+    wallNorth.receiveShadow = true;
+    shopGroup.add(wallNorth);
+
+    // South Wall (Facing Courtyard Road)
+    const wallSouth = new THREE.Mesh(new THREE.BoxGeometry(3.8, 3.5, 0.2), this.materials.creamWall);
+    wallSouth.position.set(0, 1.75, -9.6);
+    wallSouth.castShadow = true;
+    wallSouth.receiveShadow = true;
+    shopGroup.add(wallSouth);
+
+    // West Wall (Front Wall Facing Outside): Framing posts & lintel leaving wide open service counter
+    const postNorth = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3.5, 0.45), this.materials.creamWall);
+    postNorth.position.set(-1.9, 1.75, -13.25);
+    shopGroup.add(postNorth);
+
+    const postSouth = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3.5, 0.45), this.materials.creamWall);
+    postSouth.position.set(-1.9, 1.75, -9.75);
+    shopGroup.add(postSouth);
+
+    const wallLintel = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.7, 3.1), this.materials.creamWall);
+    wallLintel.position.set(-1.9, 3.15, -11.5);
+    shopGroup.add(wallLintel);
+
+    const wallUnderCounter = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.95, 3.1), this.materials.creamWall);
+    wallUnderCounter.position.set(-1.9, 0.475, -11.5);
+    shopGroup.add(wallUnderCounter);
+
+    // Wooden Interior Shop Floor
+    const shopFloor = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.15, 3.8), this.materials.darkWood);
+    shopFloor.position.set(0, 0.22, -11.5);
+    shopFloor.receiveShadow = true;
+    shopGroup.add(shopFloor);
+
+    // Back-Wall Wooden Shelves Inside the Shop
+    const backShelf = new THREE.Mesh(new THREE.BoxGeometry(0.25, 2.2, 3.2), this.materials.darkWood);
+    backShelf.position.set(1.7, 1.7, -11.5);
+    shopGroup.add(backShelf);
 
     // Terracotta base foundation plinth
     const cabinPlinth = new THREE.Mesh(
@@ -599,21 +639,13 @@ class DiwaliSocietyArchitecture3D {
       shopFrontGroup.add(gBead);
     }
 
-    // Service bay recess
-    const bayRecess = new THREE.Mesh(
-      new THREE.BoxGeometry(3.3, 2.1, 0.2),
-      this.materials.darkWood
+    // Teak Wood Service Opening Trim
+    const openingTrimTop = new THREE.Mesh(
+      new THREE.BoxGeometry(3.3, 0.1, 0.15),
+      this.materials.goldTrim
     );
-    bayRecess.position.set(0, 1.95, 0.05);
-    shopFrontGroup.add(bayRecess);
-
-    // Warm Interior Glow behind counter
-    const interiorGlow = new THREE.Mesh(
-      new THREE.PlaneGeometry(3.1, 1.8),
-      this.materials.windowGlow
-    );
-    interiorGlow.position.set(0, 2.05, 0.08);
-    shopFrontGroup.add(interiorGlow);
+    openingTrimTop.position.set(0, 2.8, 0.05);
+    shopFrontGroup.add(openingTrimTop);
 
     // Sturdy Teak Wood Service Counter (Facing West)
     const counterBody = new THREE.Mesh(
