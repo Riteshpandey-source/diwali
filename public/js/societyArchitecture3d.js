@@ -501,46 +501,54 @@ class DiwaliSocietyArchitecture3D {
       emissiveIntensity: 0.42
     });
 
-    // 2a. Primary South-Facing Sign (Mounted above shop front facing road/courtyard)
-    const signBoardSouth = new THREE.Mesh(
-      new THREE.BoxGeometry(3.8, 1.1, 0.12),
+    // 2a. Primary West-Facing Sign (Mounted above shop front facing outside the society gate)
+    const signBoardWest = new THREE.Mesh(
+      new THREE.BoxGeometry(0.12, 1.1, 3.8),
       this.materials.darkWood
     );
-    signBoardSouth.position.set(0, 4.45, -9.28);
-    shopGroup.add(signBoardSouth);
+    signBoardWest.position.set(-2.06, 4.45, -11.5);
+    shopGroup.add(signBoardWest);
 
-    const signFaceSouth = new THREE.Mesh(new THREE.PlaneGeometry(3.68, 0.98), abdulSignMat);
-    signFaceSouth.position.set(0, 4.45, -9.21);
-    shopGroup.add(signFaceSouth);
+    const signFaceWest = new THREE.Mesh(new THREE.PlaneGeometry(3.68, 0.98), abdulSignMat);
+    signFaceWest.position.set(-2.13, 4.45, -11.5);
+    signFaceWest.rotation.y = -Math.PI / 2; // Facing West (-x) towards players arriving from outside
+    shopGroup.add(signFaceWest);
 
-    // Decorative Kalash atop sign
-    const signKalash = new THREE.Mesh(
+    // Decorative Kalash atop West sign
+    const signKalashWest = new THREE.Mesh(
       new THREE.ConeGeometry(0.22, 0.5, 8),
       this.materials.templeGoldKalash
     );
-    signKalash.position.set(0, 5.25, -9.28);
-    shopGroup.add(signKalash);
+    signKalashWest.position.set(-2.06, 5.25, -11.5);
+    shopGroup.add(signKalashWest);
 
-    // 2b. West-Facing Approach Sign (Angled so player approaching from outside gate sees it directly)
-    const signBoardWest = new THREE.Mesh(
-      new THREE.BoxGeometry(0.12, 0.95, 2.6),
+    // 2b. Secondary South-Facing Sign (Visible to players walking on the courtyard road)
+    const signBoardSouth = new THREE.Mesh(
+      new THREE.BoxGeometry(2.6, 0.95, 0.12),
       this.materials.darkWood
     );
-    signBoardWest.position.set(-2.06, 4.45, -10.5);
-    shopGroup.add(signBoardWest);
+    signBoardSouth.position.set(0, 4.45, -9.45);
+    shopGroup.add(signBoardSouth);
 
-    const signFaceWest = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 0.88), abdulSignMat);
-    signFaceWest.position.set(-2.13, 4.45, -10.5);
-    signFaceWest.rotation.y = -Math.PI / 2;
-    shopGroup.add(signFaceWest);
+    const signFaceSouth = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 0.88), abdulSignMat);
+    signFaceSouth.position.set(0, 4.45, -9.38);
+    shopGroup.add(signFaceSouth);
 
     // 2c. Elevated 45° Rooftop Marquee Beacon (Faces SW, visible from outside & inside gate)
     const marqueeAngled = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.85), abdulSignMat);
-    marqueeAngled.position.set(-0.75, 4.9, -9.9);
-    marqueeAngled.rotation.y = -Math.PI / 6; // 30° angled towards incoming player path
+    marqueeAngled.position.set(-0.85, 4.9, -10.5);
+    marqueeAngled.rotation.y = -Math.PI * 0.35; // Angled SW towards incoming player path
     shopGroup.add(marqueeAngled);
 
-    // 3. Sloped Striped Awning / Canopy (Chhajja)
+    // -------------------------------------------------------------
+    // 3. SHOP FRONT OPENING, AWNING, COUNTER & DETAILS (FACING WEST OUTSIDE GATE)
+    // Positioned on the West face (-x) so it faces arriving players directly without merging with the gate pillar!
+    // -------------------------------------------------------------
+    const shopFrontGroup = new THREE.Group();
+    shopFrontGroup.position.set(-2.0, 0, -11.5);
+    shopFrontGroup.rotation.y = -Math.PI / 2; // Orients front towards West (-x, outside gate)
+
+    // Sloped Striped Awning / Canopy (Chhajja)
     const awningW = 3.6;
     const awningD = 1.35;
     const awningCanvas = document.createElement('canvas');
@@ -564,68 +572,67 @@ class DiwaliSocietyArchitecture3D {
     });
 
     const awningMesh = new THREE.Mesh(new THREE.PlaneGeometry(awningW, awningD), awningMat);
-    awningMesh.position.set(0, 2.85, -8.82);
-    awningMesh.rotation.x = Math.PI / 4.8; // ~37° downward slope
-    shopGroup.add(awningMesh);
+    awningMesh.position.set(0, 2.85, 0.68);
+    awningMesh.rotation.x = Math.PI / 4.8; // Downward slope towards outside
+    shopFrontGroup.add(awningMesh);
 
-    // Awning Support Rods (Wrought Iron / Brass)
+    // Awning Support Rods (Brass)
     [-awningW / 2 + 0.15, awningW / 2 - 0.15].forEach(rx => {
       const rod = new THREE.Mesh(
         new THREE.CylinderGeometry(0.03, 0.03, 1.4, 6),
         this.materials.lampBrass
       );
-      rod.position.set(rx, 2.7, -8.85);
+      rod.position.set(rx, 2.7, 0.65);
       rod.rotation.x = Math.PI / 4.8;
-      shopGroup.add(rod);
+      shopFrontGroup.add(rod);
     });
 
     // Marigold Garland Draped on Awning Front
     const valanceY = 2.42;
-    const valanceZ = -8.25;
+    const valanceZ = 1.25;
     for (let gx = -awningW / 2 + 0.2; gx <= awningW / 2 - 0.2; gx += 0.25) {
       const gBead = new THREE.Mesh(
         new THREE.SphereGeometry(0.08, 6, 6),
         Math.random() > 0.5 ? this.materials.marigoldOrange : this.materials.marigoldYellow
       );
       gBead.position.set(gx, valanceY, valanceZ);
-      shopGroup.add(gBead);
+      shopFrontGroup.add(gBead);
     }
 
-    // 4. Shop Front Opening, Counter & Shelves
     // Service bay recess
     const bayRecess = new THREE.Mesh(
       new THREE.BoxGeometry(3.3, 2.1, 0.2),
       this.materials.darkWood
     );
-    bayRecess.position.set(0, 1.95, -9.48);
-    shopGroup.add(bayRecess);
+    bayRecess.position.set(0, 1.95, 0.05);
+    shopFrontGroup.add(bayRecess);
 
     // Warm Interior Glow behind counter
     const interiorGlow = new THREE.Mesh(
       new THREE.PlaneGeometry(3.1, 1.8),
       this.materials.windowGlow
     );
-    interiorGlow.position.set(0, 2.05, -9.44);
-    shopGroup.add(interiorGlow);
+    interiorGlow.position.set(0, 2.05, 0.08);
+    shopFrontGroup.add(interiorGlow);
 
-    // Sturdy Teak Wood Service Counter
+    // Sturdy Teak Wood Service Counter (Facing West)
     const counterBody = new THREE.Mesh(
       new THREE.BoxGeometry(3.4, 1.0, 0.75),
       this.materials.darkWood
     );
-    counterBody.position.set(0, 0.5, -9.05);
+    counterBody.position.set(0, 0.5, 0.45);
     counterBody.castShadow = true;
     counterBody.receiveShadow = true;
-    shopGroup.add(counterBody);
+    shopFrontGroup.add(counterBody);
 
     const counterTop = new THREE.Mesh(
       new THREE.BoxGeometry(3.6, 0.1, 0.9),
       this.materials.goldTrim
     );
-    counterTop.position.set(0, 1.05, -9.05);
-    shopGroup.add(counterTop);
+    counterTop.position.set(0, 1.05, 0.45);
+    shopFrontGroup.add(counterTop);
 
-    // 5. Recognizable Shop Details on Counter
+    // Recognizable Shop Details on Counter
     // (a) Row of Abdul's Famous Soda Bottles (Green Jeera, Yellow Nimbu, Red Rose)
     const bottleColors = [
       0x10b981, 0x10b981, // Masala Jeera Soda
@@ -646,15 +653,15 @@ class DiwaliSocietyArchitecture3D {
         bottleMat
       );
       const bx = -1.2 + bi * 0.18;
-      bottle.position.set(bx, 1.24, -9.0);
-      shopGroup.add(bottle);
+      bottle.position.set(bx, 1.24, 0.5);
+      shopFrontGroup.add(bottle);
 
       const cap = new THREE.Mesh(
         new THREE.CylinderGeometry(0.02, 0.02, 0.04, 6),
         this.materials.lampBrass
       );
-      cap.position.set(bx, 1.4, -9.0);
-      shopGroup.add(cap);
+      cap.position.set(bx, 1.4, 0.5);
+      shopFrontGroup.add(cap);
     });
 
     // (b) Sweet & Candy Glass Jars with Brass Lids
@@ -669,15 +676,15 @@ class DiwaliSocietyArchitecture3D {
         new THREE.CylinderGeometry(0.1, 0.1, 0.32, 8),
         jarMat
       );
-      jar.position.set(jx, 1.26, -9.1);
-      shopGroup.add(jar);
+      jar.position.set(jx, 1.26, 0.4);
+      shopFrontGroup.add(jar);
 
       const jarLid = new THREE.Mesh(
         new THREE.CylinderGeometry(0.11, 0.11, 0.06, 8),
         this.materials.lampBrass
       );
-      jarLid.position.set(jx, 1.44, -9.1);
-      shopGroup.add(jarLid);
+      jarLid.position.set(jx, 1.44, 0.4);
+      shopFrontGroup.add(jarLid);
     });
 
     // (c) Stack of Newspapers ("Gokuldham Samachar")
@@ -685,57 +692,58 @@ class DiwaliSocietyArchitecture3D {
       new THREE.BoxGeometry(0.35, 0.12, 0.28),
       this.materials.curbStone
     );
-    newspaper.position.set(0.65, 1.16, -9.05);
-    shopGroup.add(newspaper);
+    newspaper.position.set(0.65, 1.16, 0.45);
+    shopFrontGroup.add(newspaper);
 
     // (d) Pair of Earthen Clay Diyas on Counter Ends
     [-1.6, 1.6].forEach(dx => {
-      const diya = this.createClayDiya(dx, 1.1, -9.05);
-      shopGroup.add(diya);
+      const diya = this.createClayDiya(dx, 1.1, 0.45);
+      shopFrontGroup.add(diya);
     });
 
-    // 6. Cozy Golden Shop Lantern & Point Light Under Awning
+    // (e) Cozy Golden Shop Lantern & Point Light Under Awning
     const hangingLantern = new THREE.Mesh(
       new THREE.OctahedronGeometry(0.24, 0),
       this.materials.windowGlow
     );
-    hangingLantern.position.set(0, 2.38, -8.65);
-    shopGroup.add(hangingLantern);
+    hangingLantern.position.set(0, 2.38, 0.85);
+    shopFrontGroup.add(hangingLantern);
 
     const lanternChain = new THREE.Mesh(
       new THREE.CylinderGeometry(0.015, 0.015, 0.45, 6),
       this.materials.lampBrass
     );
-    lanternChain.position.set(0, 2.65, -8.65);
-    shopGroup.add(lanternChain);
+    lanternChain.position.set(0, 2.65, 0.85);
+    shopFrontGroup.add(lanternChain);
 
     const shopPointLight = new THREE.PointLight(0xffb703, 1.9, 9.5);
-    shopPointLight.position.set(0, 2.35, -8.65);
-    shopGroup.add(shopPointLight);
+    shopPointLight.position.set(0, 2.35, 0.85);
+    shopFrontGroup.add(shopPointLight);
 
+    shopGroup.add(shopFrontGroup);
     gateGroup.add(shopGroup);
 
-    // Register Direct Shop Counter Interaction Target in World3D
+    // Register Direct Shop Counter Interaction Target in World3D (at West counter)
     if (this.world3D && this.world3D.interactiveTargets) {
       this.world3D.interactiveTargets.push({
         id: 'abdul_shop_gate_counter',
         name: "Abdul's All-in-One Store (अब्दुल की दुकान)",
         type: 'shop',
         is3D: true,
-        x: -48.0,
-        z: -9.0,
+        x: -51.0,
+        z: -11.5,
         radius: 4.8,
         prompt: "Press [E] to Visit Abdul's All-in-One Store"
       });
     }
 
     // -------------------------------------------------------------
-    // G. COLLIDERS (Left Pillar, Right Pillar, and Cabin ONLY)
+    // G. COLLIDERS (Left Pillar, Right Pillar, and Cabin + Counter)
     // Wide 11.6-meter clear opening (-5.8 to +5.8) is 100% collision-free!
     // -------------------------------------------------------------
     this.world3D.colliders.push({ minX: -50.0, maxX: -46.0, minZ: -9.5, maxZ: -5.8 }); // Left Pillar
     this.world3D.colliders.push({ minX: -50.0, maxX: -46.0, minZ: 5.8, maxZ: 9.5 });   // Right Pillar
-    this.world3D.colliders.push({ minX: -50.5, maxX: -45.5, minZ: -14.0, maxZ: -9.2 });// Cabin
+    this.world3D.colliders.push({ minX: -51.2, maxX: -46.0, minZ: -13.8, maxZ: -9.2 });// Cabin & Counter
 
     this.exteriorGroup.add(gateGroup);
   }

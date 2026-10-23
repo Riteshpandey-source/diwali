@@ -1063,9 +1063,9 @@ class DiwaliEngine3D {
 
     if (!this.player3D) return;
 
-    // Abdul's shop front & counter is at 3D coords: x = -48.0, z = -9.0
-    const dx = this.player3D.x - (-48.0);
-    const dz = this.player3D.z - (-9.0);
+    // Abdul's shop front & counter is at 3D coords: x = -51.0, z = -11.5 (facing outside the gate)
+    const dx = this.player3D.x - (-51.0);
+    const dz = this.player3D.z - (-11.5);
     const distToShop = Math.hypot(dx, dz);
 
     // If player has approached near Abdul's shop (< 8.5m), mark discovered and auto-dismiss
